@@ -40,6 +40,7 @@ import {
 	prepareCompaction,
 	shouldCompact,
 } from "./compaction/index.js";
+import { createDcpHook, type DcpHook } from "./dcp/session-hook.js";
 import { DEFAULT_THINKING_LEVEL } from "./defaults.js";
 import { exportSessionToHtml, type ToolHtmlRenderer } from "./export-html/index.js";
 import { createToolHtmlRenderer } from "./export-html/tool-renderer.js";
@@ -271,6 +272,9 @@ export class AgentSession {
 	// Base system prompt (without extension appends) - used to apply fresh appends each turn
 	private _baseSystemPrompt = "";
 
+	// DCP — Dynamic Compaction Protocol
+	private _dcpHook: DcpHook | undefined = undefined;
+
 	constructor(config: AgentSessionConfig) {
 		this.agent = config.agent;
 		this.sessionManager = config.sessionManager;
@@ -283,6 +287,12 @@ export class AgentSession {
 		this._extensionRunnerRef = config.extensionRunnerRef;
 		this._initialActiveToolNames = config.initialActiveToolNames;
 		this._baseToolsOverride = config.baseToolsOverride;
+
+		// DCP: initialize hook with store path under session dir
+		const dcpStorePath = this.sessionManager.getSessionFile()
+			? join(dirname(this.sessionManager.getSessionFile()!), ".dcp-store")
+			: undefined;
+		this._dcpHook = createDcpHook(dcpStorePath, this.sessionManager.getSessionId());
 
 		// Always subscribe to agent events for internal handling
 		// (session persistence, extensions, auto-compaction, retry logic)
@@ -332,6 +342,11 @@ export class AgentSession {
 					}
 				}
 			}
+		}
+
+		// DCP: capture CoT on turn_end (before extensions, before listeners)
+		if (event.type === "turn_end") {
+			this._dcpHook?.turnEnd(event.message);
 		}
 
 		// Emit to extensions first
@@ -543,6 +558,7 @@ export class AgentSession {
 	dispose(): void {
 		this._disconnectFromAgent();
 		this._eventListeners = [];
+		this._dcpHook?.shutdown();
 	}
 
 	// =========================================================================
@@ -675,8 +691,15 @@ export class AgentSession {
 		const validToolNames = toolNames.filter((name) => this._baseToolRegistry.has(name));
 		const loaderSystemPrompt = this._resourceLoader.getSystemPrompt();
 		const loaderAppendSystemPrompt = this._resourceLoader.getAppendSystemPrompt();
-		const appendSystemPrompt =
-			loaderAppendSystemPrompt.length > 0 ? loaderAppendSystemPrompt.join("\n\n") : undefined;
+
+		// DCP: append DCP system prompt instructions
+		const dcpAddition = this._dcpHook
+			? this._dcpHook.systemPromptAddition(0, 200000) // initial, no pressure yet
+			: undefined;
+		const allAppends = [...loaderAppendSystemPrompt];
+		if (dcpAddition) allAppends.push(dcpAddition);
+
+		const appendSystemPrompt = allAppends.length > 0 ? allAppends.join("\n\n") : undefined;
 		const loadedSkills = this._resourceLoader.getSkills().skills;
 		const loadedContextFiles = this._resourceLoader.getAgentsFiles().agentsFiles;
 
@@ -2015,6 +2038,13 @@ export class AgentSession {
 			toolRegistry.set(tool.name, tool);
 		}
 
+		// DCP: register push-down DSL tools (handle_lines, handle_grep, etc.)
+		if (this._dcpHook) {
+			for (const tool of this._dcpHook.getTools()) {
+				toolRegistry.set(tool.name, tool);
+			}
+		}
+
 		const defaultActiveToolNames = this._baseToolsOverride
 			? Object.keys(this._baseToolsOverride)
 			: ["read", "bash", "edit", "write"];
@@ -2022,6 +2052,13 @@ export class AgentSession {
 		const activeToolNameSet = new Set<string>(baseActiveToolNames);
 		if (options.includeAllExtensionTools) {
 			for (const tool of wrappedExtensionTools as AgentTool[]) {
+				activeToolNameSet.add(tool.name);
+			}
+		}
+
+		// DCP: always include push-down DSL tools
+		if (this._dcpHook) {
+			for (const tool of this._dcpHook.getTools()) {
 				activeToolNameSet.add(tool.name);
 			}
 		}
