@@ -18,7 +18,7 @@
  *   }
  */
 
-import type { AgentMessage, AgentTool } from "@mariozechner/pi-agent-core";
+import type { AgentMessage, AgentTool } from "@punkin-pi/agent-core";
 import type { TSchema } from "@sinclair/typebox";
 import { Type } from "@sinclair/typebox";
 import type { DcpRuntime, PushDownToolDef } from "./runtime.js";

@@ -26,14 +26,14 @@ mkdir -p "$BUILDS_DIR"
 
 # Copy binary
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
-BINARY_NAME="pi-${PLATFORM}-${TIMESTAMP}"
+BINARY_NAME="punkin-${PLATFORM}-${TIMESTAMP}"
 
-cp dist/pi "$BUILDS_DIR/$BINARY_NAME"
+cp dist/punkin "$BUILDS_DIR/$BINARY_NAME"
 chmod +x "$BUILDS_DIR/$BINARY_NAME"
 
 # Also copy as just 'pi' for convenience
-cp dist/pi "$BUILDS_DIR/pi"
-chmod +x "$BUILDS_DIR/pi"
+cp dist/punkin "$BUILDS_DIR/punkin"
+chmod +x "$BUILDS_DIR/punkin"
 
 # Copy supporting assets
 cp -r dist/theme "$BUILDS_DIR/" 2>/dev/null || true
@@ -42,5 +42,5 @@ cp -r dist/docs "$BUILDS_DIR/" 2>/dev/null || true
 cp dist/photon_rs_bg.wasm "$BUILDS_DIR/" 2>/dev/null || true
 
 echo "==> Built: $BUILDS_DIR/$BINARY_NAME"
-echo "==> Symlink: $BUILDS_DIR/pi"
-ls -lh "$BUILDS_DIR/pi"
+echo "==> Binary: $BUILDS_DIR/punkin"
+ls -lh "$BUILDS_DIR/punkin"

@@ -14,15 +14,15 @@
  * built-in `grep` tool in src/core/tools/grep.ts for a more complete implementation.
  */
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@punkin-pi/coding-agent";
 import {
 	DEFAULT_MAX_BYTES,
 	DEFAULT_MAX_LINES,
 	formatSize,
 	type TruncationResult,
 	truncateHead,
-} from "@mariozechner/pi-coding-agent";
-import { Text } from "@mariozechner/pi-tui";
+} from "@punkin-pi/coding-agent";
+import { Text } from "@punkin-pi/tui";
 import { Type } from "@sinclair/typebox";
 import { execSync } from "child_process";
 import { mkdtempSync, writeFileSync } from "fs";

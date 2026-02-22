@@ -19,8 +19,8 @@
  * In Haskell this would be a ReaderT DcpRuntime IO monad.
  */
 
-import type { AgentMessage } from "@mariozechner/pi-agent-core";
-import type { AssistantMessage } from "@mariozechner/pi-ai";
+import type { AgentMessage } from "@punkin-pi/agent-core";
+import type { AssistantMessage } from "@punkin-pi/ai";
 import { captureCoT, captureResult, decideIntercept, execHandleOp, type HandleOp } from "./interceptor.js";
 import type { Store } from "./store.js";
 import { closeStore, getBlobContent, openStore } from "./store.js";

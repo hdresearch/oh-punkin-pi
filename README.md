@@ -1,59 +1,54 @@
-# 🏖️ OSS Vacation
+# Punkin Pi
 
-**Issue tracker and PRs reopen February 23, 2026.**
-
-All PRs will be auto-closed until then. Approved contributors can submit PRs after vacation without reapproval. For support, join [Discord](https://discord.com/invite/3cU7Bz4UPx).
-
----
-
-<p align="center">
-  <a href="https://shittycodingagent.ai">
-    <img src="https://shittycodingagent.ai/logo.svg" alt="pi logo" width="128">
-  </a>
-</p>
-<p align="center">
-  <a href="https://discord.com/invite/3cU7Bz4UPx"><img alt="Discord" src="https://img.shields.io/badge/discord-community-5865F2?style=flat-square&logo=discord&logoColor=white" /></a>
-  <a href="https://github.com/badlogic/pi-mono/actions/workflows/ci.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/badlogic/pi-mono/ci.yml?style=flat-square&branch=main" /></a>
-</p>
-<p align="center">
-  <a href="https://pi.dev">pi.dev</a> domain graciously donated by
-  <br /><br />
-  <a href="https://exe.dev"><img src="packages/coding-agent/docs/images/exy.png" alt="Exy mascot" width="48" /><br />exe.dev</a>
-</p>
-
-# Pi Monorepo
-
-> **Looking for the pi coding agent?** See **[packages/coding-agent](packages/coding-agent)** for installation and usage.
-
-Tools for building AI agents and managing LLM deployments.
+An AI coding agent with DCP (Dynamic Compaction Protocol) for context management.
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| **[@mariozechner/pi-ai](packages/ai)** | Unified multi-provider LLM API (OpenAI, Anthropic, Google, etc.) |
-| **[@mariozechner/pi-agent-core](packages/agent)** | Agent runtime with tool calling and state management |
-| **[@mariozechner/pi-coding-agent](packages/coding-agent)** | Interactive coding agent CLI |
-| **[@mariozechner/pi-mom](packages/mom)** | Slack bot that delegates messages to the pi coding agent |
-| **[@mariozechner/pi-tui](packages/tui)** | Terminal UI library with differential rendering |
-| **[@mariozechner/pi-web-ui](packages/web-ui)** | Web components for AI chat interfaces |
-| **[@mariozechner/pi-pods](packages/pods)** | CLI for managing vLLM deployments on GPU pods |
+| **[@punkin-pi/ai](packages/ai)** | Unified multi-provider LLM API |
+| **[@punkin-pi/agent-core](packages/agent)** | Agent runtime with tool calling |
+| **[@punkin-pi/coding-agent](packages/coding-agent)** | Interactive coding agent CLI |
+| **[@punkin-pi/mom](packages/mom)** | Slack bot delegation |
+| **[@punkin-pi/tui](packages/tui)** | Terminal UI library |
+| **[@punkin-pi/web-ui](packages/web-ui)** | Web components for AI chat |
+| **[@punkin-pi/pods](packages/pods)** | vLLM deployment CLI |
 
-## Contributing
+## Install
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [AGENTS.md](AGENTS.md) for project-specific rules (for both humans and agents).
+```bash
+npm install
+npm run build
+```
+
+## Usage
+
+```bash
+# From repo
+./punkin-test.sh
+
+# Or after build
+./builds/punkin
+```
 
 ## Development
 
 ```bash
-npm install          # Install all dependencies
 npm run build        # Build all packages
-npm run check        # Lint, format, and type check
-./test.sh            # Run tests (skips LLM-dependent tests without API keys)
-./pi-test.sh         # Run pi from sources (must be run from repo root)
+npm run check        # Lint, format, type check
+./build-local.sh     # Build standalone binary to builds/
 ```
 
-> **Note:** `npm run check` requires `npm run build` to be run first. The web-ui package uses `tsc` which needs compiled `.d.ts` files from dependencies.
+## Config
+
+Config lives in `~/.punkin/agent/`:
+- `AGENTS.md` — agent instructions
+- `skills/` — skill definitions
+- `settings.json` — user settings
+
+## DCP
+
+See [dcp/DESIGN.md](dcp/DESIGN.md) for the Dynamic Compaction Protocol spec.
 
 ## License
 
