@@ -2070,20 +2070,75 @@ export class AgentSession {
 		const activeExtensionTools = wrappedExtensionTools.filter((tool) => activeToolNameSet.has(tool.name));
 		const activeToolsArray: AgentTool[] = [...activeBaseTools, ...activeExtensionTools];
 
+		// DCP: wrap tools with handle-based interception
+		const dcpWrap = this._dcpHook ? this._wrapToolWithDcp.bind(this) : <T>(t: AgentTool<any, T>) => t;
+		const dcpActiveTools = activeToolsArray.map(dcpWrap);
+		const dcpAllTools = Array.from(toolRegistry.values()).map(dcpWrap);
+
 		if (this._extensionRunner) {
-			const wrappedActiveTools = wrapToolsWithExtensions(activeToolsArray, this._extensionRunner);
+			const wrappedActiveTools = wrapToolsWithExtensions(dcpActiveTools, this._extensionRunner);
 			this.agent.setTools(wrappedActiveTools as AgentTool[]);
 
-			const wrappedAllTools = wrapToolsWithExtensions(Array.from(toolRegistry.values()), this._extensionRunner);
+			const wrappedAllTools = wrapToolsWithExtensions(dcpAllTools, this._extensionRunner);
 			this._toolRegistry = new Map(wrappedAllTools.map((tool) => [tool.name, tool]));
 		} else {
-			this.agent.setTools(activeToolsArray);
-			this._toolRegistry = toolRegistry;
+			this.agent.setTools(dcpActiveTools);
+			this._toolRegistry = new Map(dcpAllTools.map((tool) => [tool.name, tool]));
 		}
 
 		const systemPromptToolNames = Array.from(activeToolNameSet).filter((name) => this._baseToolRegistry.has(name));
 		this._baseSystemPrompt = this._rebuildSystemPrompt(systemPromptToolNames);
 		this.agent.setSystemPrompt(this._baseSystemPrompt);
+	}
+
+	/**
+	 * Wrap a tool with DCP interception: cache check before, result capture after.
+	 */
+	private _wrapToolWithDcp<T>(tool: AgentTool<any, T>): AgentTool<any, T> {
+		const hook = this._dcpHook;
+		if (!hook) return tool;
+
+		// Skip DCP's own push-down tools
+		if (tool.name.startsWith("handle_") || tool.name === "cot_replay") return tool;
+
+		return {
+			...tool,
+			execute: async (toolCallId, params, signal, onUpdate) => {
+				// Before: check cache, create handle
+				const intercept = hook.beforeToolCall(tool.name, params);
+
+				if (intercept.skipResult !== undefined) {
+					// Cache hit — return cached result
+					return { content: [{ type: "text" as const, text: intercept.skipResult }], details: {} as T };
+				}
+
+				// Execute
+				const result = await tool.execute(toolCallId, params, signal, onUpdate);
+
+				// After: capture result, maybe replace with handle summary
+				if (intercept.handleId) {
+					const textParts = result.content.filter((c): c is { type: "text"; text: string } => c.type === "text");
+					const nonText = result.content.filter((c) => c.type !== "text");
+					const text = textParts.map((c) => c.text).join("\n");
+
+					if (text) {
+						const usage = this.getContextUsage();
+						const tokens = usage?.tokens ?? 0;
+						const window = usage?.contextWindow ?? 200000;
+						const newText = hook.afterToolResult(intercept.handleId, text, tokens, window);
+
+						if (newText !== text) {
+							return {
+								content: [{ type: "text" as const, text: newText }, ...nonText],
+								details: result.details,
+							};
+						}
+					}
+				}
+
+				return result;
+			},
+		};
 	}
 
 	async reload(): Promise<void> {
