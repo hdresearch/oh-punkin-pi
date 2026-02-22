@@ -1,8 +1,13 @@
 # DCP Handoff Document
 
-**Date**: 2026-02-19
-**Session**: design conversation, Noah + Carter context
+**Date**: 2026-02-19  
+**Session**: design conversation, Noah + Carter context  
 **Artifacts**: `/Users/noah/dcp/`, snapshot at `/tmp/dcp-sessions/20260219-182339-design/`
+
+**Provenance**: Carter Schonwald drove Noah's agent session to produce this spec.
+Noah had no AGENTS.md prior to 2026-02-21. Architecture is Carter's; Noah's agent
+was the scribe. See also `docs/specs/*.md` (Carter's agent as scribe) for the
+model-facing API layer of the same design.
 
 ## What DCP Is
 

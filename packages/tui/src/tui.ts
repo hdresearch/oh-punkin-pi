@@ -899,12 +899,26 @@ export class TUI extends Container {
 			this.previousWidth = width;
 		};
 
-		const debugRedraw = process.env.PI_DEBUG_REDRAW === "1";
-		const logRedraw = (reason: string): void => {
-			if (!debugRedraw) return;
-			const logPath = path.join(os.homedir(), ".pi", "agent", "pi-debug.log");
-			const msg = `[${new Date().toISOString()}] fullRender: ${reason} (prev=${this.previousLines.length}, new=${newLines.length}, height=${height})\n`;
-			fs.appendFileSync(logPath, msg);
+		const _debugRedraw = process.env.PI_DEBUG_REDRAW === "1";
+		const logRedraw = (reason: string, extra?: Record<string, unknown>): void => {
+			const logPath = path.join(os.homedir(), ".punkin", "agent", "punkin-debug.log");
+			const msg = `${JSON.stringify({
+				ts: new Date().toISOString(),
+				reason,
+				prevLines: this.previousLines.length,
+				newLines: newLines.length,
+				height,
+				maxLinesRendered: this.maxLinesRendered,
+				cursorRow: this.cursorRow,
+				prevViewportTop: this.previousViewportTop,
+				...extra,
+			})}\n`;
+			try {
+				fs.mkdirSync(path.dirname(logPath), { recursive: true });
+			} catch {}
+			try {
+				fs.appendFileSync(logPath, msg);
+			} catch {}
 		};
 
 		// First render - just output everything without clearing (assumes clean screen)
@@ -953,6 +967,22 @@ export class TUI extends Container {
 			lastChanged = newLines.length - 1;
 		}
 		const appendStart = appendedLines && firstChanged === this.previousLines.length && firstChanged > 0;
+
+		// Log differential render state
+		try {
+			const logPath = path.join(os.homedir(), ".punkin", "agent", "punkin-debug.log");
+			const diffState = `${JSON.stringify({
+				ts: new Date().toISOString(),
+				type: "diff",
+				firstChanged,
+				lastChanged,
+				appendStart,
+				prevLines: this.previousLines.length,
+				newLines: newLines.length,
+				height,
+			})}\n`;
+			fs.appendFileSync(logPath, diffState);
+		} catch {}
 
 		// No changes - but still need to update hardware cursor position if it moved
 		if (firstChanged === -1) {
