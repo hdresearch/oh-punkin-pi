@@ -2068,7 +2068,11 @@ export class AgentSession {
 			.filter((name) => this._baseToolRegistry.has(name) && !extensionToolNames.has(name))
 			.map((name) => this._baseToolRegistry.get(name) as AgentTool);
 		const activeExtensionTools = wrappedExtensionTools.filter((tool) => activeToolNameSet.has(tool.name));
-		const activeToolsArray: AgentTool[] = [...activeBaseTools, ...activeExtensionTools];
+		
+		// DCP: get push-down tools to include in active tools
+		const dcpTools = this._dcpHook ? this._dcpHook.getTools() : [];
+		
+		const activeToolsArray: AgentTool[] = [...activeBaseTools, ...activeExtensionTools, ...dcpTools];
 
 		// DCP: wrap tools with handle-based interception
 		const dcpWrap = this._dcpHook ? this._wrapToolWithDcp.bind(this) : <T>(t: AgentTool<any, T>) => t;
