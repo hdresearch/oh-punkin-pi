@@ -81,19 +81,18 @@ function loadProjectContextFiles(
 	const contextFiles: Array<{ path: string; content: string }> = [];
 	const seenPaths = new Set<string>();
 
-	// Check ~/.agent/ first (user priority location)
+	// Check ~/.agent/ first — if present, it's authoritative (skip all project/ancestor files)
 	const userAgentDir = join(homedir(), ".agent");
 	if (existsSync(userAgentDir)) {
 		const userContext = loadContextFileFromDir(userAgentDir);
 		if (userContext) {
-			contextFiles.push(userContext);
-			seenPaths.add(userContext.path);
+			return [userContext];
 		}
 	}
 
-	// Then check the default agent dir (e.g., ~/.punkin/agent/)
+	// No ~/.agent/ context — fall back to default agent dir + ancestor walk
 	const globalContext = loadContextFileFromDir(resolvedAgentDir);
-	if (globalContext && !seenPaths.has(globalContext.path)) {
+	if (globalContext) {
 		contextFiles.push(globalContext);
 		seenPaths.add(globalContext.path);
 	}
