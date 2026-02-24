@@ -194,9 +194,18 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 						endTimestamp: m.timestamp,
 					};
 				case "user":
-				case "assistant":
 				case "toolResult":
 					return m;
+				case "assistant":
+					// Strip thinkingSignature so provider converts thinking to visible text.
+					// Anthropic's extended thinking is write-only - model can't see prior thinking
+					// blocks with signatures. Without signature, thinking becomes text the model sees.
+					return {
+						...m,
+						content: m.content.map((c) =>
+							c.type === "thinking" ? { type: "thinking" as const, thinking: c.thinking } : c
+						),
+					};
 				default:
 					// biome-ignore lint/correctness/noSwitchDeclarations: fine
 					const _exhaustiveCheck: never = m;
