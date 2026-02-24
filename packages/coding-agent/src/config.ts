@@ -159,14 +159,13 @@ export function getChangelogPath(): string {
 }
 
 // =============================================================================
-// App Config (from package.json piConfig)
+// App Config (embedded at build time via build-info.ts)
 // =============================================================================
 
-const pkg = JSON.parse(readFileSync(getPackageJsonPath(), "utf-8"));
-
-export const APP_NAME: string = pkg.punkinConfig?.name || "punkin";
-export const CONFIG_DIR_NAME: string = pkg.punkinConfig?.configDir || ".punkin";
-export const VERSION: string = pkg.version;
+// Import from build-info.ts - these are embedded at build time to avoid
+// runtime dependency on package.json for compiled binaries
+import { APP_NAME, CONFIG_DIR_NAME, VERSION } from "./build-info.js";
+export { APP_NAME, CONFIG_DIR_NAME, VERSION };
 
 // e.g., PI_CODING_AGENT_DIR or TAU_CODING_AGENT_DIR
 export const ENV_AGENT_DIR = `${APP_NAME.toUpperCase()}_CODING_AGENT_DIR`;

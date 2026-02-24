@@ -288,6 +288,21 @@ export class AgentSession {
 			: undefined;
 		this._carterKit = createCarterKitHook(carterKitStorePath, this.sessionManager.getSessionId());
 
+		// Wire up turn bracket prefill — getPrefill is called in streamAssistantResponse
+		// before each LLM call, so we initialize bracket state here (not in turn_start
+		// event handler, which races with the agent-loop).
+		if (this._carterKit) {
+			const hook = this._carterKit;
+			const self = this;
+			this.agent.setPrefill(() => {
+				const bracket = hook.turnStart(self._turnIndex);
+				return {
+					prefillText: bracket.openTag,
+					wrapContent: (content: string) => hook.wrapAssistantContent(content),
+				};
+			});
+		}
+
 		// Always subscribe to agent events for internal handling
 		// (session persistence, extensions, auto-compaction, retry logic)
 		this._unsubscribeAgent = this.agent.subscribe(this._handleAgentEvent);

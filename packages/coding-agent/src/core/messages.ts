@@ -191,9 +191,12 @@ function messageToRawText(m: AgentMessage): string | null {
 		case "user":
 			return extractText(m.content);
 		case "assistant": {
+			// Always return content for wrapping - even tool-only turns get boundary markers
 			const thinking = m.content.filter((c): c is { type: "thinking"; thinking: string } => c.type === "thinking").map((c) => c.thinking);
 			const text = m.content.filter((c): c is { type: "text"; text: string } => c.type === "text").map((c) => c.text);
-			return [...thinking, ...text].join("\n") || null;
+			const combined = [...thinking, ...text].join("\n");
+			// Return empty string (not null) so wrapper is always added
+			return combined || "";
 		}
 		case "toolResult":
 			return null; // Don't wrap tool results
@@ -231,7 +234,8 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 		// Get raw text and wrap it
 		const rawText = messageToRawText(m);
 		const isUser = m.role !== "assistant" && m.role !== "toolResult";
-		const wrapped = rawText && params 
+		// Use explicit null check - empty string should still be wrapped
+		const wrapped = rawText !== null && params 
 			? (isUser ? wrapUser(rawText, params) : wrapAssistant(rawText, params))
 			: rawText;
 

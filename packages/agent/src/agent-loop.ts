@@ -218,6 +218,9 @@ async function streamAssistantResponse(
 	// Convert to LLM-compatible messages (AgentMessage[] → Message[])
 	const llmMessages = await config.convertToLlm(messages);
 
+	// Get bracket wrapper for post-hoc wrapping (no prefill injection — incompatible with extended thinking)
+	const prefill = config.getPrefill?.();
+
 	// Build LLM context
 	const llmContext: Context = {
 		systemPrompt: context.systemPrompt,
@@ -271,7 +274,13 @@ async function streamAssistantResponse(
 
 			case "done":
 			case "error": {
-				const finalMessage = await response.result();
+				let finalMessage = await response.result();
+
+				// Apply bracket wrapping if prefill was used
+				if (prefill) {
+					finalMessage = applyBracketWrap(finalMessage, prefill.prefillText, prefill.wrapContent);
+				}
+
 				if (addedPartial) {
 					context.messages[context.messages.length - 1] = finalMessage;
 				} else {
@@ -417,4 +426,62 @@ function skipToolCall(
 	stream.push({ type: "message_end", message: toolResultMessage });
 
 	return toolResultMessage;
+}
+
+/**
+ * Apply bracket wrapping to a completed assistant message.
+ * Prepends the prefill text to the first text block and appends the close bracket
+ * (computed by wrapContent) to the last text block.
+ */
+function applyBracketWrap(
+	message: AssistantMessage,
+	prefillText: string,
+	wrapContent: (content: string) => string,
+): AssistantMessage {
+	// Extract all text from content blocks
+	const textParts: string[] = [];
+	for (const block of message.content) {
+		if (block.type === "text") {
+			textParts.push(block.text);
+		}
+	}
+	const rawContent = textParts.join("");
+
+	// wrapContent adds both open and close brackets around the content
+	const wrapped = wrapContent(rawContent);
+
+	// Find first text block index and prepend prefill
+	const newContent = [...message.content];
+	let firstTextIdx = newContent.findIndex((b) => b.type === "text");
+	let lastTextIdx = -1;
+	for (let i = newContent.length - 1; i >= 0; i--) {
+		if (newContent[i].type === "text") {
+			lastTextIdx = i;
+			break;
+		}
+	}
+
+	if (firstTextIdx === -1) {
+		// No text blocks — add the whole wrapped thing as a new text block
+		newContent.push({ type: "text", text: wrapped });
+	} else if (firstTextIdx === lastTextIdx) {
+		// Single text block — replace with wrapped
+		newContent[firstTextIdx] = { type: "text", text: wrapped };
+	} else {
+		// Multiple text blocks — prepend open to first, append close to last
+		// Split wrapped to extract open and close parts
+		const firstBlock = newContent[firstTextIdx];
+		const lastBlock = newContent[lastTextIdx];
+		if (firstBlock.type === "text" && lastBlock.type === "text") {
+			// The wrapped content = openTag + "\n" + rawContent + "\n" + closeTag
+			// We need to extract closeTag. Since wrapContent(rawContent) = openTag + "\n" + rawContent + "\n" + closeTag
+			// closeTag = wrapped.slice(wrapped.lastIndexOf("\n" + rawContent) ... no, simpler:
+			// openTag = prefillText, closeTag = wrapped.slice(prefillText.length + 1 + rawContent.length + 1)
+			const closeTag = wrapped.slice(prefillText.length + 1 + rawContent.length + 1);
+			newContent[firstTextIdx] = { type: "text", text: prefillText + "\n" + firstBlock.text };
+			newContent[lastTextIdx] = { type: "text", text: lastBlock.text + "\n" + closeTag };
+		}
+	}
+
+	return { ...message, content: newContent };
 }

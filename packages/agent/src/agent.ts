@@ -92,6 +92,12 @@ export interface AgentOptions {
 	 * Default: 60000 (60 seconds). Set to 0 to disable the cap.
 	 */
 	maxRetryDelayMs?: number;
+
+	/**
+	 * Returns prefill text for turn bracketing.
+	 * Called before each LLM request to inject a partial assistant message.
+	 */
+	getPrefill?: () => { prefillText: string; wrapContent: (content: string) => string } | undefined;
 }
 
 export class Agent {
@@ -123,6 +129,7 @@ export class Agent {
 	private _thinkingBudgets?: ThinkingBudgets;
 	private _transport: Transport;
 	private _maxRetryDelayMs?: number;
+	private _getPrefill?: () => { prefillText: string; wrapContent: (content: string) => string } | undefined;
 
 	constructor(opts: AgentOptions = {}) {
 		this._state = { ...this._state, ...opts.initialState };
@@ -136,6 +143,7 @@ export class Agent {
 		this._thinkingBudgets = opts.thinkingBudgets;
 		this._transport = opts.transport ?? "sse";
 		this._maxRetryDelayMs = opts.maxRetryDelayMs;
+		this._getPrefill = opts.getPrefill;
 	}
 
 	/**
@@ -194,6 +202,10 @@ export class Agent {
 	 */
 	set maxRetryDelayMs(value: number | undefined) {
 		this._maxRetryDelayMs = value;
+	}
+
+	setPrefill(fn: (() => { prefillText: string; wrapContent: (content: string) => string } | undefined) | undefined) {
+		this._getPrefill = fn;
 	}
 
 	get state(): AgentState {
@@ -436,6 +448,7 @@ export class Agent {
 			maxRetryDelayMs: this._maxRetryDelayMs,
 			convertToLlm: this.convertToLlm,
 			transformContext: this.transformContext,
+			getPrefill: this._getPrefill,
 			getApiKey: this.getApiKey,
 			getSteeringMessages: async () => {
 				if (skipInitialSteeringPoll) {

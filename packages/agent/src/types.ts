@@ -95,6 +95,15 @@ export interface AgentLoopConfig extends SimpleStreamOptions {
 	 * Use this for follow-up messages that should wait until the agent finishes.
 	 */
 	getFollowUpMessages?: () => Promise<AgentMessage[]>;
+
+	/**
+	 * Returns a prefill string to inject as a partial assistant message before the LLM call.
+	 * Used for turn bracketing — the prefill text is prepended to the assistant response.
+	 * Also returns a wrapContent function to append a closing bracket after generation.
+	 *
+	 * The prefill text must NOT end with whitespace (Anthropic constraint).
+	 */
+	getPrefill?: () => { prefillText: string; wrapContent: (content: string) => string } | undefined;
 }
 
 /**

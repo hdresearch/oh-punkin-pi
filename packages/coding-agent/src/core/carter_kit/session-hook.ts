@@ -35,6 +35,7 @@ import {
 	shutdownRuntime,
 } from "./runtime.js";
 import type { HandleId } from "./types.js";
+import { type TurnBracketState, mkOpenBracket, wrapContent } from "./turn-bracket.js";
 
 // ============================================================================
 // Hook state
@@ -92,6 +93,26 @@ export interface CarterKitHook {
 	 * Shutdown and persist.
 	 */
 	shutdown(): void;
+
+	// ========================================================================
+	// Turn bracket support
+	// ========================================================================
+
+	/**
+	 * Called at turn start. Generates bracket state and returns open tag for prefill.
+	 */
+	turnStart(turnIndex: number): TurnBracketState;
+
+	/**
+	 * Current bracket state (valid during turn).
+	 */
+	readonly currentBracket: TurnBracketState;
+
+	/**
+	 * Wrap assistant message content with brackets.
+	 * Call on message_end for assistant messages.
+	 */
+	wrapAssistantContent(content: string): string;
 }
 
 // ============================================================================
@@ -101,8 +122,25 @@ export interface CarterKitHook {
 export function createCarterKitHook(storePath: string | undefined, sessionId: string): CarterKitHook {
 	const rt = initRuntime(storePath, sessionId);
 
+	// Turn bracket state - initialized on first turnStart call
+	let _currentBracket: TurnBracketState = mkOpenBracket(0);
+
 	return {
 		runtime: rt,
+
+		// Turn bracket methods
+		turnStart(turnIndex: number): TurnBracketState {
+			_currentBracket = mkOpenBracket(turnIndex);
+			return _currentBracket;
+		},
+
+		get currentBracket(): TurnBracketState {
+			return _currentBracket;
+		},
+
+		wrapAssistantContent(content: string): string {
+			return wrapContent(_currentBracket, content);
+		},
 
 		beforeToolCall(toolName: string, args: unknown) {
 			const intercept = interceptToolCall(rt, toolName, args);

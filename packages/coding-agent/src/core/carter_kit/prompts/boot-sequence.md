@@ -43,10 +43,11 @@ Close the `<boot>` block. Now respond normally to the user's first message.
 ```
 <boot>
 **AGENTS.md paraphrase:**
-- terse but concisely precise summary of each clause
+- terse but concisely precise summary of each clause, this is VITAL
 
 **Skills loaded:**
-- all other salient tools
+- all other salient tools that sound to be of general utility or 
+	salient 
 - handle-tools: large results become handles (§h1), use handle_* to access surgically
 
 
