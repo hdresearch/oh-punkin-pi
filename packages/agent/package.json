@@ -1,6 +1,6 @@
 {
 	"name": "@punkin-pi/agent-core",
-	"version": "0.54.0",
+	"version": "0.8.0.0",
 	"description": "General-purpose agent with transport abstraction, state management, and attachment support",
 	"type": "module",
 	"main": "./dist/index.js",
@@ -17,7 +17,7 @@
 		"prepublishOnly": "npm run clean && npm run build"
 	},
 	"dependencies": {
-		"@punkin-pi/ai": "^0.54.0"
+		"@punkin-pi/ai": "^0.8.0.0"
 	},
 	"keywords": [
 		"ai",

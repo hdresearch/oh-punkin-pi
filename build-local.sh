@@ -15,7 +15,23 @@ case "$(uname -s)-$(uname -m)" in
     *) PLATFORM="unknown" ;;
 esac
 
-echo "==> Building pi for $PLATFORM"
+echo "==> Building punkin for $PLATFORM"
+
+# Generate build info
+GIT_COMMIT=$(git rev-parse --short=12 HEAD)
+BUILD_TIME=$(TZ=America/New_York date +%Y%m%dT%H%M%S)
+BUILD_INFO_FILE="$CODING_AGENT/src/build-info.ts"
+
+echo "==> Generating build-info.ts (commit: $GIT_COMMIT, time: $BUILD_TIME)"
+cat > "$BUILD_INFO_FILE" << EOF
+/**
+ * Build info - generated at build time.
+ * DO NOT EDIT - this file is overwritten by build-local.sh
+ */
+
+export const BUILD_COMMIT: string = "$GIT_COMMIT";
+export const BUILD_TIME: string = "${BUILD_TIME}NYC";
+EOF
 
 # Build all packages in dependency order
 echo "==> Building packages..."

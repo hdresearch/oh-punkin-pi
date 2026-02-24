@@ -2,6 +2,8 @@
 
 A coding agent that manages its own context.
 
+> **Versioning**: This fork uses [PVP](https://pvp.haskell.org/) (A.B.C.D) — A.B is major, C is minor, D is patch.
+
 ## What It Does
 
 - **Handles**: Large outputs become references, not context bloat. Surgical access via `handle_lines`, `handle_grep`, etc.
