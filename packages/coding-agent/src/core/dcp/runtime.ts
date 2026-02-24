@@ -211,6 +211,8 @@ When you see a handle, use these tools to access the data surgically:
 - handle_head("§h7", 20) — first 20 lines
 - handle_tail("§h7", 20) — last 20 lines
 - handle_count("§h7") — count lines
+- handle_count_matches("§h7", "pattern") — count matching lines
+- handle_slice("§h7", offset, length) — read a byte range
 
 This avoids flooding context with large outputs. Read what you need, not everything.
 
