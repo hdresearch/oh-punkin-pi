@@ -13,6 +13,7 @@ import type {
 	StreamOptions,
 	Usage,
 } from "../types.js";
+import { now } from "../types.js";
 import { AssistantMessageEventStream } from "../utils/event-stream.js";
 import { buildCopilotDynamicHeaders, hasCopilotVisionInput } from "./github-copilot-headers.js";
 import { convertResponsesMessages, convertResponsesTools, processResponsesStream } from "./openai-responses-shared.js";
@@ -82,7 +83,8 @@ export const streamOpenAIResponses: StreamFunction<"openai-responses", OpenAIRes
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 			},
 			stopReason: "stop",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		try {

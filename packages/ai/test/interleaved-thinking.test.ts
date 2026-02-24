@@ -4,6 +4,7 @@ import { getEnvApiKey } from "../src/env-api-keys.js";
 import { getModel } from "../src/models.js";
 import { completeSimple } from "../src/stream.js";
 import type { Api, Context, Model, StopReason, Tool, ToolCall, ToolResultMessage } from "../src/types.js";
+import { now } from "../src/types.js";
 import { StringEnum } from "../src/utils/typebox-helpers.js";
 import { hasBedrockCredentials } from "./bedrock-utils.js";
 
@@ -80,7 +81,8 @@ async function assertSecondToolCallWithInterleavedThinking<TApi extends Api>(
 					"Provide the final answer based on the best guess given the tool result, even if it seems unreliable.",
 					"Start by thinking about the steps you will take to solve the problem.",
 				].join(" "),
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		tools: [calculatorTool],
@@ -107,7 +109,8 @@ async function assertSecondToolCallWithInterleavedThinking<TApi extends Api>(
 		toolName: firstToolCall.name,
 		content: [{ type: "text", text: `The answer is ${correctAnswer} or ${correctAnswer * 2}.` }],
 		isError: false,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 	context.messages.push(firstToolResult);
 

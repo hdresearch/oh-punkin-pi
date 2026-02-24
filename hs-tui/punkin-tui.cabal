@@ -1,0 +1,61 @@
+cabal-version: 3.0
+name:          punkin-tui
+version:       0.1.0.0
+synopsis:      Haskell TUI for punkin-pi agent
+license:       BSD-3-Clause
+author:        Carter Schonwald
+maintainer:    carter@wellposed.com
+build-type:    Simple
+
+executable punkin-tui
+  default-language: GHC2021
+  hs-source-dirs:   src
+  main-is:          Main.hs
+  
+  other-modules:
+    Punkin.Types
+    Punkin.UI
+    Punkin.UI.MessageList
+    Punkin.UI.Editor
+    Punkin.UI.ThinkingBlock
+    Punkin.UI.ToolOutput
+    Punkin.Protocol
+    Punkin.Theme
+  
+  build-depends:
+    , base                 >= 4.17 && < 5
+    , brick                >= 2.0
+    , vty                  >= 6.0
+    , vty-crossplatform    >= 0.4
+    , text                 >= 2.0
+    , vector
+    , containers
+    , bytestring
+    , aeson                >= 2.0
+    , cborg                -- CBOR for protocol
+    , serialise
+    , microlens
+    , microlens-th
+    , async
+    , stm
+    , network              -- UDS communication
+    , time
+  
+  default-extensions:
+    OverloadedStrings
+    LambdaCase
+    DerivingStrategies
+    DeriveGeneric
+    DeriveAnyClass
+    RecordWildCards
+    TypeFamilies
+  
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wredundant-constraints
+    -threaded
+    -rtsopts
+    "-with-rtsopts=-N"

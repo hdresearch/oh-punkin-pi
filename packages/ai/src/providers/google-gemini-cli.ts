@@ -1,3 +1,4 @@
+import { now } from "../types.js";
 /**
  * Google Gemini CLI / Antigravity provider.
  * Shared implementation for both google-gemini-cli and google-antigravity providers.
@@ -330,7 +331,8 @@ export const streamGoogleGeminiCli: StreamFunction<"google-gemini-cli", GoogleGe
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 			},
 			stopReason: "stop",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		try {
@@ -466,7 +468,8 @@ export const streamGoogleGeminiCli: StreamFunction<"google-gemini-cli", GoogleGe
 				};
 				output.stopReason = "stop";
 				output.errorMessage = undefined;
-				output.timestamp = Date.now();
+				output.timestamp = now();
+				output.endTimestamp = now();
 				started = false;
 			};
 

@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import type { Api, Context, Model, Tool, ToolResultMessage } from "../src/index.js";
 import { complete, getModel } from "../src/index.js";
 import type { StreamOptions } from "../src/types.js";
+import { now } from "../src/types.js";
 
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
@@ -55,7 +56,8 @@ async function handleToolWithImageResult<TApi extends Api>(model: Model<TApi>, o
 			{
 				role: "user",
 				content: "Call the get_circle tool to get an image, and describe what you see, shapes, colors, etc.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		tools: [getImageTool],
@@ -89,7 +91,8 @@ async function handleToolWithImageResult<TApi extends Api>(model: Model<TApi>, o
 			},
 		],
 		isError: false,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	context.messages.push(toolResult);
@@ -147,7 +150,8 @@ async function handleToolWithTextAndImageResult<TApi extends Api>(
 				role: "user",
 				content:
 					"Use the get_circle_with_description tool and tell me what you learned. Also say what color the shape is.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		tools: [getImageTool],
@@ -185,7 +189,8 @@ async function handleToolWithTextAndImageResult<TApi extends Api>(
 			},
 		],
 		isError: false,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	context.messages.push(toolResult);

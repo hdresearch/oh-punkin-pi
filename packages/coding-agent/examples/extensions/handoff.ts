@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Handoff extension - transfer context to a new focused session
  *
@@ -90,7 +91,8 @@ export default function (pi: ExtensionAPI) {
 								text: `## Conversation History\n\n${conversationText}\n\n## User's Goal for New Thread\n\n${goal}`,
 							},
 						],
-						timestamp: Date.now(),
+						timestamp: now(),
+						endTimestamp: now(),
 					};
 
 					const response = await complete(

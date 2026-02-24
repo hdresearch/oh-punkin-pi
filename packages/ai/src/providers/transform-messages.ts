@@ -1,4 +1,5 @@
 import type { Api, AssistantMessage, Message, Model, ToolCall, ToolResultMessage } from "../types.js";
+import { now } from "../types.js";
 
 /**
  * Normalize tool call ID for cross-provider compatibility.
@@ -114,7 +115,8 @@ export function transformMessages<TApi extends Api>(
 							toolName: tc.name,
 							content: [{ type: "text", text: "No result provided" }],
 							isError: true,
-							timestamp: Date.now(),
+							timestamp: now(),
+							endTimestamp: now(),
 						} as ToolResultMessage);
 					}
 				}
@@ -154,7 +156,8 @@ export function transformMessages<TApi extends Api>(
 							toolName: tc.name,
 							content: [{ type: "text", text: "No result provided" }],
 							isError: true,
-							timestamp: Date.now(),
+							timestamp: now(),
+							endTimestamp: now(),
 						} as ToolResultMessage);
 					}
 				}

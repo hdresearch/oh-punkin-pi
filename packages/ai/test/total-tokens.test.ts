@@ -1,3 +1,4 @@
+import { now } from "../src/types.js";
 /**
  * Test totalTokens field across all providers.
  *
@@ -57,7 +58,8 @@ async function testTotalTokensWithCache<TApi extends Api>(
 			{
 				role: "user",
 				content: "What is 2 + 2? Reply with just the number.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 	};
@@ -74,7 +76,8 @@ async function testTotalTokensWithCache<TApi extends Api>(
 			{
 				role: "user",
 				content: "What is 3 + 3? Reply with just the number.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 	};

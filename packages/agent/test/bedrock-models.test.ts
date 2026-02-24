@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * A test suite to ensure Amazon Bedrock models work correctly with the agent loop.
  *
@@ -261,7 +262,8 @@ describe("Amazon Bedrock Models - Agent Loop", () => {
 								cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 							},
 							stopReason: "stop",
-							timestamp: Date.now(),
+							timestamp: now(),
+							endTimestamp: now(),
 						};
 
 						agent.replaceMessages([

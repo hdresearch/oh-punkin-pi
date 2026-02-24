@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Q&A extraction extension - extracts questions from assistant responses
  *
@@ -81,7 +82,8 @@ export default function (pi: ExtensionAPI) {
 					const userMessage: UserMessage = {
 						role: "user",
 						content: [{ type: "text", text: lastAssistantText! }],
-						timestamp: Date.now(),
+						timestamp: now(),
+						endTimestamp: now(),
 					};
 
 					const response = await complete(

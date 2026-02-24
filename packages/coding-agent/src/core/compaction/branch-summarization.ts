@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Branch summarization for tree navigation.
  *
@@ -313,7 +314,8 @@ export async function generateBranchSummary(
 		{
 			role: "user" as const,
 			content: [{ type: "text" as const, text: promptText }],
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		},
 	];
 

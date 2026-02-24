@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Agent class that uses the agent-loop directly.
  * No transport abstraction - calls streamSimple via the loop.
@@ -356,7 +357,8 @@ export class Agent {
 				{
 					role: "user",
 					content,
-					timestamp: Date.now(),
+					timestamp: now(),
+					endTimestamp: now(),
 				},
 			];
 		} else {
@@ -534,7 +536,8 @@ export class Agent {
 				},
 				stopReason: this.abortController?.signal.aborted ? "aborted" : "error",
 				errorMessage: err?.message || String(err),
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			} as AgentMessage;
 
 			this.appendMessage(errorMsg);

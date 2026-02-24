@@ -1,3 +1,4 @@
+import type { Timestamp } from "@punkin-pi/ai";
 /**
  * Custom message types and transformers for the coding agent.
  *
@@ -34,7 +35,8 @@ export interface BashExecutionMessage {
 	cancelled: boolean;
 	truncated: boolean;
 	fullOutputPath?: string;
-	timestamp: number;
+	timestamp: Timestamp;
+	endTimestamp: Timestamp;
 	/** If true, this message is excluded from LLM context (!! prefix) */
 	excludeFromContext?: boolean;
 }
@@ -49,21 +51,24 @@ export interface CustomMessage<T = unknown> {
 	content: string | (TextContent | ImageContent)[];
 	display: boolean;
 	details?: T;
-	timestamp: number;
+	timestamp: Timestamp;
+	endTimestamp: Timestamp;
 }
 
 export interface BranchSummaryMessage {
 	role: "branchSummary";
 	summary: string;
 	fromId: string;
-	timestamp: number;
+	timestamp: Timestamp;
+	endTimestamp: Timestamp;
 }
 
 export interface CompactionSummaryMessage {
 	role: "compactionSummary";
 	summary: string;
 	tokensBefore: number;
-	timestamp: number;
+	timestamp: Timestamp;
+	endTimestamp: Timestamp;
 }
 
 // Extend CustomAgentMessages via declaration merging
@@ -102,7 +107,8 @@ export function createBranchSummaryMessage(summary: string, fromId: string, time
 		role: "branchSummary",
 		summary,
 		fromId,
-		timestamp: new Date(timestamp).getTime(),
+		timestamp: timestamp as Timestamp,
+		endTimestamp: timestamp as Timestamp,
 	};
 }
 
@@ -115,7 +121,8 @@ export function createCompactionSummaryMessage(
 		role: "compactionSummary",
 		summary: summary,
 		tokensBefore,
-		timestamp: new Date(timestamp).getTime(),
+		timestamp: timestamp as Timestamp,
+		endTimestamp: timestamp as Timestamp,
 	};
 }
 
@@ -133,7 +140,8 @@ export function createCustomMessage(
 		content,
 		display,
 		details,
-		timestamp: new Date(timestamp).getTime(),
+		timestamp: timestamp as Timestamp,
+		endTimestamp: timestamp as Timestamp,
 	};
 }
 
@@ -158,6 +166,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 						role: "user",
 						content: [{ type: "text", text: bashExecutionToText(m) }],
 						timestamp: m.timestamp,
+						endTimestamp: m.timestamp,
 					};
 				case "custom": {
 					const content = typeof m.content === "string" ? [{ type: "text" as const, text: m.content }] : m.content;
@@ -165,6 +174,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 						role: "user",
 						content,
 						timestamp: m.timestamp,
+						endTimestamp: m.timestamp,
 					};
 				}
 				case "branchSummary":
@@ -172,6 +182,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 						role: "user",
 						content: [{ type: "text" as const, text: BRANCH_SUMMARY_PREFIX + m.summary + BRANCH_SUMMARY_SUFFIX }],
 						timestamp: m.timestamp,
+						endTimestamp: m.timestamp,
 					};
 				case "compactionSummary":
 					return {
@@ -180,6 +191,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 							{ type: "text" as const, text: COMPACTION_SUMMARY_PREFIX + m.summary + COMPACTION_SUMMARY_SUFFIX },
 						],
 						timestamp: m.timestamp,
+						endTimestamp: m.timestamp,
 					};
 				case "user":
 				case "assistant":

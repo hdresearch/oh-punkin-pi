@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getModel } from "../src/models.js";
 import { complete, stream } from "../src/stream.js";
 import type { Api, Context, Model, StreamOptions } from "../src/types.js";
+import { now } from "../src/types.js";
 
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
@@ -21,7 +22,8 @@ async function testAbortSignal<TApi extends Api>(llm: Model<TApi>, options: Stre
 			{
 				role: "user",
 				content: "What is 15 + 27? Think step by step. Then list 50 first names.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		systemPrompt: "You are a helpful assistant.",
@@ -51,7 +53,8 @@ async function testAbortSignal<TApi extends Api>(llm: Model<TApi>, options: Stre
 	context.messages.push({
 		role: "user",
 		content: "Please continue, but only generate 5 names.",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	});
 
 	const followUp = await complete(llm, context, options);
@@ -93,7 +96,8 @@ async function testAbortThenNewMessage<TApi extends Api>(llm: Model<TApi>, optio
 	context.messages.push({
 		role: "user",
 		content: "What is 2 + 2?",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	});
 
 	const followUp = await complete(llm, context, options);

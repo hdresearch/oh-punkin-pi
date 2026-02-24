@@ -19,7 +19,6 @@ import {
 	type ToolConfiguration,
 	ToolResultStatus,
 } from "@aws-sdk/client-bedrock-runtime";
-
 import { calculateCost } from "../models.js";
 import type {
 	Api,
@@ -39,6 +38,7 @@ import type {
 	ToolCall,
 	ToolResultMessage,
 } from "../types.js";
+import { now } from "../types.js";
 import { AssistantMessageEventStream } from "../utils/event-stream.js";
 import { parseStreamingJson } from "../utils/json-parse.js";
 import { sanitizeSurrogates } from "../utils/sanitize-unicode.js";
@@ -82,7 +82,8 @@ export const streamBedrock: StreamFunction<"bedrock-converse-stream", BedrockOpt
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 			},
 			stopReason: "stop",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		const blocks = output.content as Block[];

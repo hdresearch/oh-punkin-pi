@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Agent } from "@punkin-pi/agent-core";
-import { getModel } from "@punkin-pi/ai";
+import { getModel, now } from "@punkin-pi/ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AgentSession } from "../src/core/agent-session.js";
 import { AuthStorage } from "../src/core/auth-storage.js";
@@ -75,7 +75,8 @@ describe("AgentSession auto-compaction queue resume", () => {
 			customType: "test",
 			content: [{ type: "text", text: "Queued custom" }],
 			display: false,
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		});
 
 		expect(session.pendingMessageCount).toBe(0);

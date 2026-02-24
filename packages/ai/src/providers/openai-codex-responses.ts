@@ -1,3 +1,5 @@
+import { now } from "../types.js";
+
 // NEVER convert to top-level import - breaks browser/Vite builds (web-ui)
 let _os: typeof import("node:os") | null = null;
 if (typeof process !== "undefined" && (process.versions?.node || process.versions?.bun)) {
@@ -122,7 +124,8 @@ export const streamOpenAICodexResponses: StreamFunction<"openai-codex-responses"
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 			},
 			stopReason: "stop",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		try {

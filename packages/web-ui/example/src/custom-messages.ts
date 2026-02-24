@@ -88,7 +88,8 @@ export function customConvertToLlm(messages: AgentMessage[]): Message[] {
 			return {
 				role: "user",
 				content: `<system>${notification.message}</system>`,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 		}
 		return m;

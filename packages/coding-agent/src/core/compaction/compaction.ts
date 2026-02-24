@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Context compaction for long sessions.
  *
@@ -550,7 +551,8 @@ export async function generateSummary(
 		{
 			role: "user" as const,
 			content: [{ type: "text" as const, text: promptText }],
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		},
 	];
 
@@ -788,7 +790,8 @@ async function generateTurnPrefixSummary(
 		{
 			role: "user" as const,
 			content: [{ type: "text" as const, text: promptText }],
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		},
 	];
 

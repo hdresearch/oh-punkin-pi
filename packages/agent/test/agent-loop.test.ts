@@ -4,6 +4,7 @@ import {
 	EventStream,
 	type Message,
 	type Model,
+	now,
 	type UserMessage,
 } from "@punkin-pi/ai";
 import { Type } from "@sinclair/typebox";
@@ -63,7 +64,8 @@ function createAssistantMessage(
 		model: "mock",
 		usage: createUsage(),
 		stopReason,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 }
 
@@ -71,7 +73,8 @@ function createUserMessage(text: string): UserMessage {
 	return {
 		role: "user",
 		content: text,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 }
 
@@ -139,7 +142,8 @@ describe("agentLoop with AgentMessage", () => {
 		const notification: CustomNotification = {
 			role: "notification",
 			text: "This is a notification",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		const context: AgentContext = {
@@ -483,7 +487,8 @@ describe("agentLoopContinue with AgentMessage", () => {
 		const customMessage: CustomMessage = {
 			role: "custom",
 			text: "Hook content",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		const context: AgentContext = {

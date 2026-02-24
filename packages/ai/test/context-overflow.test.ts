@@ -1,3 +1,4 @@
+import { now } from "../src/types.js";
 /**
  * Test context overflow error handling across providers.
  *
@@ -63,7 +64,8 @@ async function testContextOverflow(model: Model<any>, apiKey: string): Promise<O
 			{
 				role: "user",
 				content: overflowContent,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 	};

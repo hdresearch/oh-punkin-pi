@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { getModel } from "../src/models.js";
 import { stream } from "../src/stream.js";
 import type { Context, Tool } from "../src/types.js";
+import { now } from "../src/types.js";
 import { resolveApiKey } from "./oauth.js";
 
 const oauthToken = await resolveApiKey("anthropic");
@@ -43,7 +44,8 @@ describe.skipIf(!oauthToken)("Anthropic OAuth tool name normalization", () => {
 				{
 					role: "user",
 					content: "Add a todo: buy milk. Use the todowrite tool.",
-					timestamp: Date.now(),
+					timestamp: now(),
+					endTimestamp: now(),
 				},
 			],
 			tools: [todoTool],
@@ -84,7 +86,8 @@ describe.skipIf(!oauthToken)("Anthropic OAuth tool name normalization", () => {
 				{
 					role: "user",
 					content: "Read the file /tmp/test.txt using the read tool.",
-					timestamp: Date.now(),
+					timestamp: now(),
+					endTimestamp: now(),
 				},
 			],
 			tools: [readTool],
@@ -127,7 +130,8 @@ describe.skipIf(!oauthToken)("Anthropic OAuth tool name normalization", () => {
 				{
 					role: "user",
 					content: "Find all .ts files using the find tool.",
-					timestamp: Date.now(),
+					timestamp: now(),
+					endTimestamp: now(),
 				},
 			],
 			tools: [findTool],
@@ -178,7 +182,8 @@ describe.skipIf(!oauthToken)("Anthropic OAuth tool name normalization", () => {
 				{
 					role: "user",
 					content: "Use my_custom_tool with input 'hello'.",
-					timestamp: Date.now(),
+					timestamp: now(),
+					endTimestamp: now(),
 				},
 			],
 			tools: [customTool],

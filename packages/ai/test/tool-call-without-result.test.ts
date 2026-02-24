@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { getModel } from "../src/models.js";
 import { complete } from "../src/stream.js";
 import type { Api, Context, Model, StreamOptions, Tool } from "../src/types.js";
+import { now } from "../src/types.js";
 
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
@@ -43,7 +44,8 @@ async function testToolCallWithoutResult<TApi extends Api>(model: Model<TApi>, o
 	context.messages.push({
 		role: "user",
 		content: "Please calculate 25 * 18 using the calculate tool.",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	});
 
 	// Step 3: Get the assistant's response (should contain a tool call)
@@ -65,7 +67,8 @@ async function testToolCallWithoutResult<TApi extends Api>(model: Model<TApi>, o
 	context.messages.push({
 		role: "user",
 		content: "Never mind, just tell me what is 2+2?",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	});
 
 	// Step 5: The fix should filter out the orphaned tool call, and the request should succeed

@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getModel } from "../src/models.js";
 import { complete, stream } from "../src/stream.js";
 import type { Api, Context, ImageContent, Model, StreamOptions, Tool, ToolResultMessage } from "../src/types.js";
+import { now } from "../src/types.js";
 
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
@@ -81,7 +82,8 @@ async function handleToolCall<TApi extends Api>(model: Model<TApi>, options?: St
 			{
 				role: "user",
 				content: "Calculate 15 + 27 using the math_operation tool.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		tools: [calculatorTool],
@@ -192,7 +194,8 @@ async function handleThinking<TApi extends Api>(model: Model<TApi>, options?: St
 			{
 				role: "user",
 				content: `Think long and hard about ${(Math.random() * 255) | 0} + 27. Think step by step. Then output the result.`,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		systemPrompt: "You are a helpful assistant.",
@@ -248,7 +251,8 @@ async function handleImage<TApi extends Api>(model: Model<TApi>, options?: Strea
 					},
 					imageContent,
 				],
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		systemPrompt: "You are a helpful assistant.",
@@ -273,7 +277,8 @@ async function multiTurn<TApi extends Api>(model: Model<TApi>, options?: StreamO
 			{
 				role: "user",
 				content: "Think about this briefly, then calculate 42 * 17 and 453 + 434 using the math_operation tool.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		tools: [calculatorTool],
@@ -326,7 +331,8 @@ async function multiTurn<TApi extends Api>(model: Model<TApi>, options?: StreamO
 					toolName: block.name,
 					content: [{ type: "text", text: `${result}` }],
 					isError: false,
-					timestamp: Date.now(),
+					timestamp: now(),
+					endTimestamp: now(),
 				});
 			}
 		}
@@ -1260,7 +1266,8 @@ describe("Generate E2E Tests", () => {
 						{
 							role: "user",
 							content: "Think first, then calculate 15 + 27 using the math_operation tool.",
-							timestamp: Date.now(),
+							timestamp: now(),
+							endTimestamp: now(),
 						},
 					],
 					tools: [calculatorTool],

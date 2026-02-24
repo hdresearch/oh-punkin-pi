@@ -1,4 +1,4 @@
-import { complete, getModel } from "@punkin-pi/ai";
+import { complete, getModel, now } from "@punkin-pi/ai";
 import type { ExtensionAPI, ExtensionCommandContext } from "@punkin-pi/coding-agent";
 import { DynamicBorder, getMarkdownTheme } from "@punkin-pi/coding-agent";
 import { Container, Markdown, matchesKey, Text } from "@punkin-pi/tui";
@@ -178,7 +178,8 @@ export default function (pi: ExtensionAPI) {
 				{
 					role: "user" as const,
 					content: [{ type: "text" as const, text: buildSummaryPrompt(conversationText) }],
-					timestamp: Date.now(),
+					timestamp: now(),
+					endTimestamp: now(),
 				},
 			];
 

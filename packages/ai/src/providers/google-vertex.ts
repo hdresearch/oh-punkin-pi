@@ -20,6 +20,7 @@ import type {
 	ThinkingContent,
 	ToolCall,
 } from "../types.js";
+import { now } from "../types.js";
 import { AssistantMessageEventStream } from "../utils/event-stream.js";
 import { sanitizeSurrogates } from "../utils/sanitize-unicode.js";
 import type { GoogleThinkingLevel } from "./google-gemini-cli.js";
@@ -80,7 +81,8 @@ export const streamGoogleVertex: StreamFunction<"google-vertex", GoogleVertexOpt
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 			},
 			stopReason: "stop",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		try {

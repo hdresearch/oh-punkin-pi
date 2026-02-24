@@ -17,7 +17,15 @@ esac
 
 echo "==> Building pi for $PLATFORM"
 
-# Build
+# Build all packages in dependency order
+echo "==> Building packages..."
+cd "$REPO_ROOT/packages/tui" && npm run build
+cd "$REPO_ROOT/packages/ai" && npm run build
+cd "$REPO_ROOT/packages/agent" && npm run build
+cd "$REPO_ROOT/packages/coding-agent" && npm run build
+
+# Build binary
+echo "==> Building binary..."
 cd "$CODING_AGENT"
 npm run build:binary
 
@@ -40,6 +48,7 @@ cp -r dist/theme "$BUILDS_DIR/" 2>/dev/null || true
 cp -r dist/export-html "$BUILDS_DIR/" 2>/dev/null || true
 cp -r dist/docs "$BUILDS_DIR/" 2>/dev/null || true
 cp dist/photon_rs_bg.wasm "$BUILDS_DIR/" 2>/dev/null || true
+cp package.json "$BUILDS_DIR/" 2>/dev/null || true
 
 echo "==> Built: $BUILDS_DIR/$BINARY_NAME"
 echo "==> Binary: $BUILDS_DIR/punkin"

@@ -2,6 +2,7 @@ import { writeFileSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { now } from "@punkin-pi/ai";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { SessionHeader } from "../src/core/session-manager.js";
 import { SessionManager } from "../src/core/session-manager.js";
@@ -35,7 +36,8 @@ function createSessionFile(path: string): void {
 			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 		},
 		stopReason: "stop",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	});
 }
 

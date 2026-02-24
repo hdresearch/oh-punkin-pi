@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { transformMessages } from "../src/providers/transform-messages.js";
 import type { AssistantMessage, Message, Model, ToolCall } from "../src/types.js";
+import { now } from "../src/types.js";
 
 // Normalize function matching what anthropic.ts uses
 function anthropicNormalizeToolCallId(
@@ -53,7 +54,8 @@ describe("OpenAI to Anthropic session migration for Copilot Claude", () => {
 					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 				},
 				stopReason: "stop",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		];
 
@@ -94,7 +96,8 @@ describe("OpenAI to Anthropic session migration for Copilot Claude", () => {
 					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 				},
 				stopReason: "toolUse",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 			{
 				role: "toolResult",
@@ -102,7 +105,8 @@ describe("OpenAI to Anthropic session migration for Copilot Claude", () => {
 				toolName: "bash",
 				content: [{ type: "text", text: "output" }],
 				isError: false,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		];
 

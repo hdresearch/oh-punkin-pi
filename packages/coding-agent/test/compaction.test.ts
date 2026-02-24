@@ -1,6 +1,6 @@
 import type { AgentMessage } from "@punkin-pi/agent-core";
 import type { AssistantMessage, Usage } from "@punkin-pi/ai";
-import { getModel } from "@punkin-pi/ai";
+import { getModel, now } from "@punkin-pi/ai";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -58,7 +58,8 @@ function createAssistantMessage(text: string, usage?: Usage): AssistantMessage {
 		content: [{ type: "text", text }],
 		usage: usage || createMockUsage(100, 50),
 		stopReason: "stop",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 		api: "anthropic-messages",
 		provider: "anthropic",
 		model: "claude-sonnet-4-5",

@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Tests for AgentSession concurrent prompt guard.
  */
@@ -45,7 +46,8 @@ function createAssistantMessage(text: string): AssistantMessage {
 			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 		},
 		stopReason: "stop",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 }
 

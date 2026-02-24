@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Custom Compaction Extension
  *
@@ -77,7 +78,8 @@ ${conversationText}
 </conversation>`,
 					},
 				],
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		];
 

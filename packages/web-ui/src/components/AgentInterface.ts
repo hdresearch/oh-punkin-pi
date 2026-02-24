@@ -244,7 +244,8 @@ export class AgentInterface extends LitElement {
 				role: "user-with-attachments",
 				content: input,
 				attachments,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 			await this.session?.prompt(message);
 		} else {

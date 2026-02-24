@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Agent loop that works with AgentMessage throughout.
  * Transforms to Message[] only at the LLM call boundary.
@@ -353,7 +354,8 @@ async function executeToolCalls(
 			content: result.content,
 			details: result.details,
 			isError,
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		results.push(toolResultMessage);
@@ -407,7 +409,8 @@ function skipToolCall(
 		content: result.content,
 		details: {},
 		isError: true,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	stream.push({ type: "message_start", message: toolResultMessage });

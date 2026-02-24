@@ -1,4 +1,4 @@
-import { type AssistantMessage, type AssistantMessageEvent, EventStream, getModel } from "@punkin-pi/ai";
+import { type AssistantMessage, type AssistantMessageEvent, EventStream, getModel, now } from "@punkin-pi/ai";
 import { describe, expect, it } from "vitest";
 import { Agent } from "../src/index.js";
 
@@ -32,7 +32,8 @@ function createAssistantMessage(text: string): AssistantMessage {
 			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 		},
 		stopReason: "stop",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 }
 
@@ -253,7 +254,8 @@ describe("Agent", () => {
 		agent.followUp({
 			role: "user",
 			content: [{ type: "text", text: "Queued follow-up" }],
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		});
 
 		await expect(agent.continue()).resolves.toBeUndefined();
@@ -297,7 +299,8 @@ describe("Agent", () => {
 		agent.steer({
 			role: "user",
 			content: [{ type: "text", text: "Steering 1" }],
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		});
 		agent.steer({
 			role: "user",

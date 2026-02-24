@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Interactive mode for the coding agent.
  * Handles TUI rendering and user interaction, delegating business logic to AgentSession.
@@ -2269,7 +2270,8 @@ export class InteractiveMode {
 						role: "compactionSummary",
 						tokensBefore: event.result.tokensBefore,
 						summary: event.result.summary,
-						timestamp: Date.now(),
+						timestamp: now(),
+						endTimestamp: now(),
 					});
 					this.footer.invalidate();
 				} else if (event.errorMessage) {

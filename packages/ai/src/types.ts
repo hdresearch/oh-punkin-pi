@@ -2,6 +2,31 @@ import type { AssistantMessageEventStream } from "./utils/event-stream.js";
 
 export type { AssistantMessageEventStream } from "./utils/event-stream.js";
 
+/**
+ * ISO 8601 timestamp in America/New_York.
+ */
+export type Timestamp = string & { readonly __brand: "Timestamp" };
+
+export function now(): Timestamp {
+	const d = new Date();
+	const opts: Intl.DateTimeFormatOptions = {
+		timeZone: "America/New_York",
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		hour12: false,
+	};
+	const parts = new Intl.DateTimeFormat("en-US", opts).formatToParts(d);
+	const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+	const ts = `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}:${get("second")}`;
+	const jan = new Date(d.getFullYear(), 0, 1).getTimezoneOffset();
+	const jul = new Date(d.getFullYear(), 6, 1).getTimezoneOffset();
+	const isDST = d.getTimezoneOffset() < Math.max(jan, jul);
+	return (ts + (isDST ? "-04:00" : "-05:00")) as Timestamp;
+}
 export type KnownApi =
 	| "openai-completions"
 	| "openai-responses"
@@ -164,7 +189,8 @@ export type StopReason = "stop" | "length" | "toolUse" | "error" | "aborted";
 export interface UserMessage {
 	role: "user";
 	content: string | (TextContent | ImageContent)[];
-	timestamp: number; // Unix timestamp in milliseconds
+	timestamp: Timestamp;
+	endTimestamp: Timestamp;
 }
 
 export interface AssistantMessage {
@@ -176,7 +202,8 @@ export interface AssistantMessage {
 	usage: Usage;
 	stopReason: StopReason;
 	errorMessage?: string;
-	timestamp: number; // Unix timestamp in milliseconds
+	timestamp: Timestamp;
+	endTimestamp: Timestamp;
 }
 
 export interface ToolResultMessage<TDetails = any> {
@@ -186,7 +213,8 @@ export interface ToolResultMessage<TDetails = any> {
 	content: (TextContent | ImageContent)[]; // Supports text and images
 	details?: TDetails;
 	isError: boolean;
-	timestamp: number; // Unix timestamp in milliseconds
+	timestamp: Timestamp;
+	endTimestamp: Timestamp;
 }
 
 export type Message = UserMessage | AssistantMessage | ToolResultMessage;

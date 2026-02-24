@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getModel } from "../src/models.js";
 import { stream } from "../src/stream.js";
 import type { Api, Context, Model, StreamOptions } from "../src/types.js";
+import { now } from "../src/types.js";
 
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
@@ -25,7 +26,8 @@ async function testTokensOnAbort<TApi extends Api>(llm: Model<TApi>, options: St
 			{
 				role: "user",
 				content: "Write a long poem with 20 stanzas about the beauty of nature.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		systemPrompt: "You are a helpful assistant.",

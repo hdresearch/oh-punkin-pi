@@ -1,3 +1,4 @@
+import { now } from "../src/types.js";
 /**
  * A test suite to ensure all configured Amazon Bedrock models are usable.
  *
@@ -39,7 +40,8 @@ describe("Amazon Bedrock Models", () => {
 						{
 							role: "user",
 							content: "Reply with exactly: 'OK'",
-							timestamp: Date.now(),
+							timestamp: now(),
+							endTimestamp: now(),
 						},
 					],
 				};

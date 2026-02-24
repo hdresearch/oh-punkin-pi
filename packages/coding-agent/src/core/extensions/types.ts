@@ -1,3 +1,4 @@
+import type { Timestamp } from "@punkin-pi/ai";
 /**
  * Extension system types.
  *
@@ -503,7 +504,7 @@ export interface AgentEndEvent {
 export interface TurnStartEvent {
 	type: "turn_start";
 	turnIndex: number;
-	timestamp: number;
+	timestamp: Timestamp;
 }
 
 /** Fired at the end of each turn */

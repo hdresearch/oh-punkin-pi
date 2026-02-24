@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Proxy stream function for apps that route LLM calls through a server.
  * The server manages auth and proxies requests to LLM providers.
@@ -102,7 +103,8 @@ export function streamProxy(model: Model<any>, context: Context, options: ProxyS
 				totalTokens: 0,
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 			},
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;

@@ -1,3 +1,4 @@
+import { now } from "../src/types.js";
 /**
  * Tool Call ID Normalization Tests
  *
@@ -53,7 +54,8 @@ describe("Tool Call ID Normalization - Live Handoff", () => {
 			const userMessage: Message = {
 				role: "user",
 				content: "Use the echo tool to echo 'hello world'",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			const assistantResponse = await completeSimple(
@@ -85,7 +87,8 @@ describe("Tool Call ID Normalization - Live Handoff", () => {
 				toolName: "echo",
 				content: [{ type: "text", text: "hello world" }],
 				isError: false,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			// Step 2: Complete with openrouter (uses openai-completions API)
@@ -123,7 +126,8 @@ describe("Tool Call ID Normalization - Live Handoff", () => {
 			const userMessage: Message = {
 				role: "user",
 				content: "Use the echo tool to echo 'test message'",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			const assistantResponse = await completeSimple(
@@ -148,7 +152,8 @@ describe("Tool Call ID Normalization - Live Handoff", () => {
 				toolName: "echo",
 				content: [{ type: "text", text: "test message" }],
 				isError: false,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			// Step 2: Complete with openai-codex (uses openai-codex-responses API)
@@ -231,7 +236,8 @@ describe("Tool Call ID Normalization - Prefilled Context", () => {
 		const followUpUser: Message = {
 			role: "user",
 			content: "Say hi",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		return [userMessage, assistantMessage, toolResult, followUpUser];

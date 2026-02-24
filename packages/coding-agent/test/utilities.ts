@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * Shared test utilities for coding-agent tests.
  */
@@ -148,7 +149,8 @@ export function assistantMsg(text: string) {
 			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 		},
 		stopReason: "stop" as const,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 }
 

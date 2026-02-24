@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { getModel } from "../src/models.js";
 import { complete, getEnvApiKey } from "../src/stream.js";
 import type { AssistantMessage, Context, Message, Tool, ToolCall } from "../src/types.js";
+import { now } from "../src/types.js";
 
 const testToolSchema = Type.Object({
 	value: Type.Number({ description: "A number to double" }),
@@ -28,7 +29,8 @@ describe.skipIf(!process.env.OPENAI_API_KEY || !process.env.ANTHROPIC_API_KEY)(
 			const userMessage: Message = {
 				role: "user",
 				content: "Use the double_number tool to double 21.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			const assistantResponse = await complete(
@@ -60,7 +62,8 @@ describe.skipIf(!process.env.OPENAI_API_KEY || !process.env.ANTHROPIC_API_KEY)(
 			const followUp: Message = {
 				role: "user",
 				content: "Say hello to confirm you can continue.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			const context: Context = {
@@ -101,7 +104,8 @@ describe.skipIf(!process.env.OPENAI_API_KEY || !process.env.ANTHROPIC_API_KEY)(
 			const userMessage: Message = {
 				role: "user",
 				content: "Use the double_number tool to double 21.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			// Get a real response from Model A with reasoning + tool call
@@ -133,13 +137,15 @@ describe.skipIf(!process.env.OPENAI_API_KEY || !process.env.ANTHROPIC_API_KEY)(
 				toolName: toolCallBlock.name,
 				content: [{ type: "text", text: "42" }],
 				isError: false,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			const followUp: Message = {
 				role: "user",
 				content: "What was the result? Answer with just the number.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			// Now continue with Model B (different model, same provider)
@@ -201,7 +207,8 @@ describe.skipIf(!process.env.OPENAI_API_KEY || !process.env.ANTHROPIC_API_KEY)(
 			const userMessage: Message = {
 				role: "user",
 				content: "Use the double_number tool to double 21.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			// Get a real response from Anthropic with thinking + tool call
@@ -236,13 +243,15 @@ describe.skipIf(!process.env.OPENAI_API_KEY || !process.env.ANTHROPIC_API_KEY)(
 				toolName: toolCallBlock.name,
 				content: [{ type: "text", text: "42" }],
 				isError: false,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			const followUp: Message = {
 				role: "user",
 				content: "What was the result? Answer with just the number.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			// Now continue with Codex (different provider)

@@ -510,9 +510,9 @@ function getLastActivityTime(entries: FileEntry[]): number | undefined {
 		if (!isMessageWithContent(message)) continue;
 		if (message.role !== "user" && message.role !== "assistant") continue;
 
-		const msgTimestamp = (message as { timestamp?: number }).timestamp;
-		if (typeof msgTimestamp === "number") {
-			lastActivityTime = Math.max(lastActivityTime ?? 0, msgTimestamp);
+		const msgTimestamp = (message as { timestamp?: string }).timestamp;
+		if (typeof msgTimestamp === "string") {
+			lastActivityTime = Math.max(lastActivityTime ?? 0, new Date(msgTimestamp).getTime());
 			continue;
 		}
 

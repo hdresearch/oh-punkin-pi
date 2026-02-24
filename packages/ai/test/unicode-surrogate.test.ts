@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { getModel } from "../src/models.js";
 import { complete } from "../src/stream.js";
 import type { Api, Context, Model, StreamOptions, ToolResultMessage } from "../src/types.js";
+import { now } from "../src/types.js";
 
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
@@ -43,7 +44,8 @@ async function testEmojiInToolResults<TApi extends Api>(llm: Model<TApi>, option
 			{
 				role: "user",
 				content: "Use the test tool",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 			{
 				role: "assistant",
@@ -67,7 +69,8 @@ async function testEmojiInToolResults<TApi extends Api>(llm: Model<TApi>, option
 					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 				},
 				stopReason: "toolUse",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		tools: [
@@ -101,7 +104,8 @@ async function testEmojiInToolResults<TApi extends Api>(llm: Model<TApi>, option
 			},
 		],
 		isError: false,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	context.messages.push(toolResult);
@@ -110,7 +114,8 @@ async function testEmojiInToolResults<TApi extends Api>(llm: Model<TApi>, option
 	context.messages.push({
 		role: "user",
 		content: "Summarize the tool result briefly.",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	});
 
 	// This should not throw a surrogate pair error
@@ -129,7 +134,8 @@ async function testRealWorldLinkedInData<TApi extends Api>(llm: Model<TApi>, opt
 			{
 				role: "user",
 				content: "Use the linkedin tool to get comments",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 			{
 				role: "assistant",
@@ -153,7 +159,8 @@ async function testRealWorldLinkedInData<TApi extends Api>(llm: Model<TApi>, opt
 					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 				},
 				stopReason: "toolUse",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		tools: [
@@ -191,7 +198,8 @@ Unanswered Comments: 2
 			},
 		],
 		isError: false,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	context.messages.push(toolResult);
@@ -199,7 +207,8 @@ Unanswered Comments: 2
 	context.messages.push({
 		role: "user",
 		content: "How many comments are there?",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	});
 
 	// This should not throw a surrogate pair error
@@ -218,7 +227,8 @@ async function testUnpairedHighSurrogate<TApi extends Api>(llm: Model<TApi>, opt
 			{
 				role: "user",
 				content: "Use the test tool",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 			{
 				role: "assistant",
@@ -242,7 +252,8 @@ async function testUnpairedHighSurrogate<TApi extends Api>(llm: Model<TApi>, opt
 					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 				},
 				stopReason: "toolUse",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 		tools: [
@@ -264,7 +275,8 @@ async function testUnpairedHighSurrogate<TApi extends Api>(llm: Model<TApi>, opt
 		toolName: "test_tool",
 		content: [{ type: "text", text: `Text with unpaired surrogate: ${unpairedSurrogate} <- should be sanitized` }],
 		isError: false,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	context.messages.push(toolResult);
@@ -272,7 +284,8 @@ async function testUnpairedHighSurrogate<TApi extends Api>(llm: Model<TApi>, opt
 	context.messages.push({
 		role: "user",
 		content: "What did the tool return?",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	});
 
 	// This should not throw a surrogate pair error

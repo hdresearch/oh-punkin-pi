@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getModel } from "../src/models.js";
 import { stream } from "../src/stream.js";
 import type { Context, Model } from "../src/types.js";
+import { now } from "../src/types.js";
 
 function makeContext(): Context {
 	return {
@@ -9,7 +10,8 @@ function makeContext(): Context {
 			{
 				role: "user",
 				content: `What is ${(Math.random() * 100) | 0} + ${(Math.random() * 100) | 0}? Think step by step.`,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 	};

@@ -1,5 +1,5 @@
 import type { AssistantMessage, Model, ToolResultMessage, UserMessage } from "@punkin-pi/ai";
-import { getModel } from "@punkin-pi/ai";
+import { getModel, now } from "@punkin-pi/ai";
 import { describe, expect, it } from "vitest";
 import { Agent } from "../src/index.js";
 import { hasBedrockCredentials } from "./bedrock-utils.js";
@@ -387,7 +387,8 @@ describe("Agent.continue()", () => {
 					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 				},
 				stopReason: "stop",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 			agent.replaceMessages([assistantMessage]);
 
@@ -412,7 +413,8 @@ describe("Agent.continue()", () => {
 			const userMessage: UserMessage = {
 				role: "user",
 				content: [{ type: "text", text: "Say exactly: HELLO WORLD" }],
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 			agent.replaceMessages([userMessage]);
 
@@ -451,7 +453,8 @@ describe("Agent.continue()", () => {
 			const userMessage: UserMessage = {
 				role: "user",
 				content: [{ type: "text", text: "What is 5 + 3?" }],
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			const assistantMessage: AssistantMessage = {
@@ -472,7 +475,8 @@ describe("Agent.continue()", () => {
 					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 				},
 				stopReason: "toolUse",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			const toolResult: ToolResultMessage = {
@@ -481,7 +485,8 @@ describe("Agent.continue()", () => {
 				toolName: "calculate",
 				content: [{ type: "text", text: "5 + 3 = 8" }],
 				isError: false,
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			};
 
 			agent.replaceMessages([userMessage, assistantMessage, toolResult]);

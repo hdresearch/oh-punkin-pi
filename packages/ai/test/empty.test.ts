@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getModel } from "../src/models.js";
 import { complete } from "../src/stream.js";
 import type { Api, AssistantMessage, Context, Model, StreamOptions, UserMessage } from "../src/types.js";
+import { now } from "../src/types.js";
 
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
@@ -24,7 +25,8 @@ async function testEmptyMessage<TApi extends Api>(llm: Model<TApi>, options: Str
 	const emptyMessage: UserMessage = {
 		role: "user",
 		content: [],
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	const context: Context = {
@@ -51,7 +53,8 @@ async function testEmptyStringMessage<TApi extends Api>(llm: Model<TApi>, option
 			{
 				role: "user",
 				content: "",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 	};
@@ -76,7 +79,8 @@ async function testWhitespaceOnlyMessage<TApi extends Api>(llm: Model<TApi>, opt
 			{
 				role: "user",
 				content: "   \n\t  ",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 	};
@@ -112,7 +116,8 @@ async function testEmptyAssistantMessage<TApi extends Api>(llm: Model<TApi>, opt
 			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 		},
 		stopReason: "stop",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	const context: Context = {
@@ -120,13 +125,15 @@ async function testEmptyAssistantMessage<TApi extends Api>(llm: Model<TApi>, opt
 			{
 				role: "user",
 				content: "Hello, how are you?",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 			emptyAssistant,
 			{
 				role: "user",
 				content: "Please respond this time.",
-				timestamp: Date.now(),
+				timestamp: now(),
+				endTimestamp: now(),
 			},
 		],
 	};

@@ -1,3 +1,4 @@
+import { now } from "../src/types.js";
 /**
  * Cross-Provider Handoff Test
  *
@@ -170,7 +171,8 @@ async function generateContext(
 	const userMessage: Message = {
 		role: "user",
 		content: "Please double the number 21 using the double_number tool.",
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	const supportsReasoning = model.reasoning === true;
@@ -232,7 +234,8 @@ async function generateContext(
 		toolName: toolCall.name,
 		content: [{ type: "text", text: "42" }],
 		isError: false,
-		timestamp: Date.now(),
+		timestamp: now(),
+		endTimestamp: now(),
 	};
 
 	let finalResponse: AssistantMessage;
@@ -365,7 +368,8 @@ describe.skipIf(!hasAnyApiKey())("Cross-Provider Handoff", () => {
 						role: "user",
 						content:
 							"Great, thanks for all that help! Now just say 'Hello, handoff successful!' to confirm you received everything.",
-						timestamp: Date.now(),
+						timestamp: now(),
+						endTimestamp: now(),
 					},
 				];
 

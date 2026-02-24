@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { getModel } from "../src/models.js";
 import { streamSimple } from "../src/stream.js";
 import type { Tool } from "../src/types.js";
+import { now } from "../src/types.js";
 
 const mockState = vi.hoisted(() => ({ lastParams: undefined as unknown }));
 
@@ -55,7 +56,8 @@ describe("openai-completions tool_choice", () => {
 					{
 						role: "user",
 						content: "Call ping with ok=true",
-						timestamp: Date.now(),
+						timestamp: now(),
+						endTimestamp: now(),
 					},
 				],
 				tools,
@@ -100,7 +102,8 @@ describe("openai-completions tool_choice", () => {
 					{
 						role: "user",
 						content: "Call ping with ok=true",
-						timestamp: Date.now(),
+						timestamp: now(),
+						endTimestamp: now(),
 					},
 				],
 				tools,

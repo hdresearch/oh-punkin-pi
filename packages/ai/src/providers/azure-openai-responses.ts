@@ -11,6 +11,7 @@ import type {
 	StreamFunction,
 	StreamOptions,
 } from "../types.js";
+import { now } from "../types.js";
 import { AssistantMessageEventStream } from "../utils/event-stream.js";
 import { convertResponsesMessages, convertResponsesTools, processResponsesStream } from "./openai-responses-shared.js";
 import { buildBaseOptions, clampReasoning } from "./simple-options.js";
@@ -78,7 +79,8 @@ export const streamAzureOpenAIResponses: StreamFunction<"azure-openai-responses"
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 			},
 			stopReason: "stop",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		try {

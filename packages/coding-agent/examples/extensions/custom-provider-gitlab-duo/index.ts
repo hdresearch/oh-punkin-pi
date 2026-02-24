@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * GitLab Duo Provider Extension
  *
@@ -310,7 +311,8 @@ export function streamGitLabDuo(
 					},
 					stopReason: "error",
 					errorMessage: error instanceof Error ? error.message : String(error),
-					timestamp: Date.now(),
+					timestamp: now(),
+					endTimestamp: now(),
 				},
 			});
 			stream.end();

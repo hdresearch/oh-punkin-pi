@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 /**
  * AgentSession - Core abstraction for agent lifecycle and session management.
  *
@@ -446,7 +447,7 @@ export class AgentSession {
 			const extensionEvent: TurnStartEvent = {
 				type: "turn_start",
 				turnIndex: this._turnIndex,
-				timestamp: Date.now(),
+				timestamp: now(),
 			};
 			await this._extensionRunner.emit(extensionEvent);
 		} else if (event.type === "turn_end") {
@@ -818,7 +819,8 @@ export class AgentSession {
 		messages.push({
 			role: "user",
 			content: userContent,
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		});
 
 		// Inject any pending "nextTurn" messages as context alongside the user message
@@ -843,7 +845,8 @@ export class AgentSession {
 						content: msg.content,
 						display: msg.display,
 						details: msg.details,
-						timestamp: Date.now(),
+						timestamp: now(),
+						endTimestamp: now(),
 					});
 				}
 			}
@@ -974,7 +977,8 @@ export class AgentSession {
 		this.agent.steer({
 			role: "user",
 			content,
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		});
 	}
 
@@ -990,7 +994,8 @@ export class AgentSession {
 		this.agent.followUp({
 			role: "user",
 			content,
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		});
 	}
 
@@ -1033,7 +1038,8 @@ export class AgentSession {
 			content: message.content,
 			display: message.display,
 			details: message.details,
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		} satisfies CustomMessage<T>;
 		if (options?.deliverAs === "nextTurn") {
 			this._pendingNextTurnMessages.push(appMessage);
@@ -1601,7 +1607,8 @@ export class AgentSession {
 		// is still in context but shouldn't trigger compaction again.
 		const compactionEntry = getLatestCompactionEntry(this.sessionManager.getBranch());
 		const errorIsFromBeforeCompaction =
-			compactionEntry !== null && assistantMessage.timestamp < new Date(compactionEntry.timestamp).getTime();
+			compactionEntry !== null &&
+			new Date(assistantMessage.timestamp).getTime() < new Date(compactionEntry.timestamp).getTime();
 
 		// Case 1: Overflow - LLM returned context overflow error
 		if (sameModel && !errorIsFromBeforeCompaction && isContextOverflow(assistantMessage, contextWindow)) {
@@ -2345,7 +2352,8 @@ export class AgentSession {
 			cancelled: result.cancelled,
 			truncated: result.truncated,
 			fullOutputPath: result.fullOutputPath,
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 			excludeFromContext: options?.excludeFromContext,
 		};
 

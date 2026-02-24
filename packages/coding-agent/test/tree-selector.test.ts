@@ -1,3 +1,4 @@
+import { now } from "@punkin-pi/ai";
 import { beforeAll, describe, expect, test } from "vitest";
 import type {
 	ModelChangeEntry,
@@ -45,7 +46,8 @@ function assistantMessage(id: string, parentId: string | null, text: string): Se
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 			},
 			stopReason: "stop",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		},
 	};
 }

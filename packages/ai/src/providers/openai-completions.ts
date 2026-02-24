@@ -26,6 +26,7 @@ import type {
 	ToolCall,
 	ToolResultMessage,
 } from "../types.js";
+import { now } from "../types.js";
 import { AssistantMessageEventStream } from "../utils/event-stream.js";
 import { parseStreamingJson } from "../utils/json-parse.js";
 import { sanitizeSurrogates } from "../utils/sanitize-unicode.js";
@@ -98,7 +99,8 @@ export const streamOpenAICompletions: StreamFunction<"openai-completions", OpenA
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 			},
 			stopReason: "stop",
-			timestamp: Date.now(),
+			timestamp: now(),
+			endTimestamp: now(),
 		};
 
 		try {

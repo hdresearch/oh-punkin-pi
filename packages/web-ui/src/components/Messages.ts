@@ -252,7 +252,8 @@ export class ToolMessage extends LitElement {
 					content: [],
 					toolCallId: this.toolCall.id,
 					toolName: this.toolCall.name,
-					timestamp: Date.now(),
+					timestamp: now(),
+					endTimestamp: now(),
 				}
 			: this.result;
 		const renderResult = renderTool(
