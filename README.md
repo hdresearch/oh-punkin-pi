@@ -55,6 +55,20 @@ npm run check        # Lint, format, type check
 ./build-local.sh     # Build standalone binary
 ```
 
+## Testing
+
+### One-shot / fast 1-turn testing
+
+Use `--print` (`-p`) for a non-interactive single-turn run — no TUI, exits immediately after the response. Handy for quick stack verification:
+
+```bash
+node packages/coding-agent/dist/cli.js --print "say hi in exactly 5 words"
+# or after installing:
+punkin --print "say hi in exactly 5 words"
+```
+
+The full stack runs (settings load, prompt templates + hashes.toml, turn brackets, model call) and output goes straight to stdout. Fast feedback loop for testing config changes.
+
 ## License
 
 MIT

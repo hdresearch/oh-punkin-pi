@@ -28,13 +28,7 @@ import { closeStore, getBlobContent, openStore } from "./store.js";
 import type { HandleId } from "./types.js";
 import { pressureLevel } from "./types.js";
 
-// ============================================================================
-// Template hashes - update these when template content changes
-// ============================================================================
-const HANDLE_TOOLS_HASH = "ee345e32ddd8";
-const PRESSURE_MEDIUM_HASH = "e0cb18e0fb89";
-const PRESSURE_HIGH_HASH = "b3c3503d588d";
-const PRESSURE_CRITICAL_HASH = "10f72385b77e";
+// Template hashes now live in prompts/hashes.toml — not here.
 
 // ============================================================================
 // Runtime state
@@ -169,11 +163,11 @@ export function pressureWarning(contextTokens: number, contextWindow: number): s
 		case "Low":
 			return undefined;
 		case "Medium":
-			return loadTemplate("pressure-medium.md", PRESSURE_MEDIUM_HASH).trim();
+			return loadTemplate("pressure-medium.md").trim();
 		case "High":
-			return loadTemplate("pressure-high.md", PRESSURE_HIGH_HASH).trim();
+			return loadTemplate("pressure-high.md").trim();
 		case "Critical":
-			return loadTemplate("pressure-critical.md", PRESSURE_CRITICAL_HASH).trim();
+			return loadTemplate("pressure-critical.md").trim();
 	}
 }
 
@@ -185,8 +179,15 @@ export function pressureWarning(contextTokens: number, contextWindow: number): s
  * The DCP system prompt block. Injected once on session start.
  * Teaches the model about handles and the push-down DSL.
  */
-// Loaded from prompts/handle-tools.md with hash verification
-export const HANDLE_TOOLS_PROMPT = loadTemplate("handle-tools.md", HANDLE_TOOLS_HASH).trim();
+// Loaded from prompts/handle-tools.md — hash verified against prompts/hashes.toml
+export const HANDLE_TOOLS_PROMPT = loadTemplate("handle-tools.md").trim();
+
+/**
+ * Boot sequence instructions. Tells the model to paraphrase AGENTS.md
+ * and loaded skills on first turn before responding.
+ */
+// Loaded from prompts/boot-sequence.md — hash verified against prompts/hashes.toml
+export const BOOT_SEQUENCE_PROMPT = loadTemplate("boot-sequence.md").trim();
 
 // ============================================================================
 // Push-down DSL tool definitions

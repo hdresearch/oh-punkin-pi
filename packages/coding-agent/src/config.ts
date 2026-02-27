@@ -209,9 +209,9 @@ export function getAuthPath(): string {
 	return join(getAgentDir(), "auth.json");
 }
 
-/** Get path to settings.json */
+/** Get path to settings.toml */
 export function getSettingsPath(): string {
-	return join(getAgentDir(), "settings.json");
+	return join(getAgentDir(), "settings.toml");
 }
 
 /** Get path to tools directory */
