@@ -43,6 +43,7 @@ export interface SettingsConfig {
 	autocompleteMaxVisible: number;
 	quietStartup: boolean;
 	clearOnShrink: boolean;
+	enableTurnBrackets: boolean;
 }
 
 export interface SettingsCallbacks {
@@ -65,6 +66,7 @@ export interface SettingsCallbacks {
 	onAutocompleteMaxVisibleChange: (maxVisible: number) => void;
 	onQuietStartupChange: (enabled: boolean) => void;
 	onClearOnShrinkChange: (enabled: boolean) => void;
+	onEnableTurnBracketsChange: (enabled: boolean) => void;
 	onCancel: () => void;
 }
 
@@ -334,6 +336,16 @@ export class SettingsSelectorComponent extends Container {
 			values: ["true", "false"],
 		});
 
+		// Turn brackets toggle (insert after clear-on-shrink)
+		const clearOnShrinkIndex = items.findIndex((item) => item.id === "clear-on-shrink");
+		items.splice(clearOnShrinkIndex + 1, 0, {
+			id: "turn-brackets",
+			label: "Rich turn brackets",
+			description: "Add sigil/nonce/timestamp/hash metadata to [assistant]{…} wrappers (plain wrapper always present)",
+			currentValue: config.enableTurnBrackets ? "true" : "false",
+			values: ["true", "false"],
+		});
+
 		// Add borders
 		this.addChild(new DynamicBorder());
 
@@ -390,6 +402,9 @@ export class SettingsSelectorComponent extends Container {
 						break;
 					case "clear-on-shrink":
 						callbacks.onClearOnShrinkChange(newValue === "true");
+						break;
+					case "turn-brackets":
+						callbacks.onEnableTurnBracketsChange(newValue === "true");
 						break;
 				}
 			},

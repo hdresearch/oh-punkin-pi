@@ -35,7 +35,7 @@ import {
 	shutdownRuntime,
 } from "./runtime.js";
 import type { HandleId } from "./types.js";
-import { type TurnBracketState, mkOpenBracket, wrapContent } from "./turn-bracket.js";
+import { type TurnBracketState, mkOpenBracket, wrapContent, wrapSimple, SIMPLE_OPEN_TAG } from "./turn-bracket.js";
 
 // ============================================================================
 // Hook state
@@ -109,10 +109,19 @@ export interface CarterKitHook {
 	readonly currentBracket: TurnBracketState;
 
 	/**
-	 * Wrap assistant message content with brackets.
-	 * Call on message_end for assistant messages.
+	 * Wrap assistant message content with rich brackets (sigil + nonce + timestamp + hash).
+	 * Call on message_end for assistant messages when enableTurnBrackets = true.
 	 */
 	wrapAssistantContent(content: string): string;
+
+	/**
+	 * Wrap assistant message content with plain structural brackets only.
+	 * Used when enableTurnBrackets = false (default).
+	 */
+	wrapAssistantContentSimple(content: string): string;
+
+	/** The plain open tag — prefill text for simple bracket mode. */
+	readonly simpleOpenTag: string;
 }
 
 // ============================================================================
@@ -140,6 +149,14 @@ export function createCarterKitHook(storePath: string | undefined, sessionId: st
 
 		wrapAssistantContent(content: string): string {
 			return wrapContent(_currentBracket, content);
+		},
+
+		wrapAssistantContentSimple(content: string): string {
+			return wrapSimple(content);
+		},
+
+		get simpleOpenTag(): string {
+			return SIMPLE_OPEN_TAG;
 		},
 
 		beforeToolCall(toolName: string, args: unknown) {

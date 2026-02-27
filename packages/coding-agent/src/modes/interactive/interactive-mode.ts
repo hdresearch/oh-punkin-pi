@@ -3049,6 +3049,7 @@ export class InteractiveMode {
 					autocompleteMaxVisible: this.settingsManager.getAutocompleteMaxVisible(),
 					quietStartup: this.settingsManager.getQuietStartup(),
 					clearOnShrink: this.settingsManager.getClearOnShrink(),
+				enableTurnBrackets: this.settingsManager.getEnableTurnBrackets(),
 				},
 				{
 					onAutoCompactChange: (enabled) => {
@@ -3144,6 +3145,9 @@ export class InteractiveMode {
 					onClearOnShrinkChange: (enabled) => {
 						this.settingsManager.setClearOnShrink(enabled);
 						this.ui.setClearOnShrink(enabled);
+					},
+					onEnableTurnBracketsChange: (enabled) => {
+						this.settingsManager.setEnableTurnBrackets(enabled);
 					},
 					onCancel: () => {
 						done();
