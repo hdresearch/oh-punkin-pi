@@ -3,18 +3,18 @@
 # Scheme: sha3-256-trunc12
 #   SHA3-256 of the UTF-8 file content, first 12 hex characters.
 #
-# When you edit a template, recompute with:
-#   node -e "const {createHash}=require('crypto'),fs=require('fs');
-#     const c=fs.readFileSync('path/to/file','utf-8');
-#     console.log(createHash('sha3-256').update(c).digest('hex').slice(0,12));"
-# or just run: npm run check-prompt-hashes (updates this file in-place)
+# Update after editing prompt templates:
+#   npm run update-prompt-hashes --workspace @punkin-pi/coding-agent
+#
+# Validate hashes without writing:
+#   npm run check-prompt-hashes --workspace @punkin-pi/coding-agent
 # ============================================================
 
 scheme = "sha3-256-trunc12"
 
 [templates]
-"boot-sequence.md"    = "af4a132b47ff"
-"handle-tools.md"     = "ee345e32ddd8"
-"pressure-medium.md"  = "e0cb18e0fb89"
-"pressure-high.md"    = "b3c3503d588d"
+"boot-sequence.md"     = "649610e15161"
+"handle-tools.md"      = "ee345e32ddd8"
 "pressure-critical.md" = "10f72385b77e"
+"pressure-high.md"     = "b3c3503d588d"
+"pressure-medium.md"   = "e0cb18e0fb89"

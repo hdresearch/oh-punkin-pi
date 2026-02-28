@@ -10,6 +10,7 @@ import type { AgentMessage } from "@punkin-pi/agent-core";
 import type { AssistantMessage, BracketId, ImageContent, Message, TextContent } from "@punkin-pi/ai";
 import { wrapUser, type WrapParams } from "@punkin-pi/ai";
 import { createHash } from "node:crypto";
+import { wrapWithBracket } from "./carter_kit/turn-bracket.js";
 
 export const COMPACTION_SUMMARY_PREFIX = `The conversation history before this point was compacted into the following summary:
 
@@ -255,16 +256,19 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 		const isUser = m.role !== "assistant" && m.role !== "toolResult";
 		// For assistant messages with bracketId: render brackets from stored metadata.
 		// bracketId is the single source of truth — content is stored raw, rendered here.
-		// Without bracketId: assistant content passes through raw (no wrapping without prefill).
+		// Without bracketId: wrap with simple post-hoc brackets.
 		const asst = m.role === "assistant" ? m as AssistantMessage : undefined;
 		let wrapped: string | null;
 		if (asst?.bracketId && rawText !== null) {
 			wrapped = renderFromBracketId(rawText, asst, turn, delta);
+		} else if (asst && rawText !== null) {
+			// Assistant without bracketId: simple post-hoc wrapping
+			wrapped = wrapWithBracket(rawText, turn);
 		} else if (isUser && rawText !== null && params) {
 			// User messages get full sigil wrapping
 			wrapped = wrapUser(rawText, params);
 		} else {
-			// Assistant without bracketId, toolResult, or no params — pass through raw
+			// toolResult, or no params — pass through raw
 			wrapped = rawText;
 		}
 

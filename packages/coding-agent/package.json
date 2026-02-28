@@ -31,8 +31,10 @@
 	"scripts": {
 		"clean": "shx rm -rf dist",
 		"dev": "tsgo -p tsconfig.build.json --watch --preserveWatchOutput",
+		"update-prompt-hashes": "node scripts/update-prompt-hashes.mjs",
+		"check-prompt-hashes": "node scripts/update-prompt-hashes.mjs --check",
 		"generate-build-info": "node scripts/generate-build-info.js",
-		"build": "npm run generate-build-info && tsgo -p tsconfig.build.json && shx chmod +x dist/cli.js && npm run copy-assets",
+		"build": "npm run check-prompt-hashes && npm run generate-build-info && tsgo -p tsconfig.build.json && shx chmod +x dist/cli.js && npm run copy-assets",
 		"build:binary": "npm run build && bun build --compile ./dist/cli.js --outfile dist/punkin && npm run copy-binary-assets",
 		"copy-assets": "shx mkdir -p dist/modes/interactive/theme && shx cp src/modes/interactive/theme/*.json dist/modes/interactive/theme/ && shx mkdir -p dist/core/export-html/vendor && shx cp src/core/export-html/template.html src/core/export-html/template.css src/core/export-html/template.js dist/core/export-html/ && shx cp src/core/export-html/vendor/*.js dist/core/export-html/vendor/ && shx mkdir -p dist/core/carter_kit/prompts && shx cp src/core/carter_kit/prompts/*.md dist/core/carter_kit/prompts/ && shx cp src/core/carter_kit/prompts/hashes.toml dist/core/carter_kit/prompts/",
 		"copy-binary-assets": "shx cp package.json dist/ && shx cp README.md dist/ && shx cp CHANGELOG.md dist/ && shx mkdir -p dist/theme && shx cp src/modes/interactive/theme/*.json dist/theme/ && shx mkdir -p dist/export-html/vendor && shx cp src/core/export-html/template.html dist/export-html/ && shx cp src/core/export-html/vendor/*.js dist/export-html/vendor/ && shx mkdir -p dist/prompts && shx cp src/core/carter_kit/prompts/*.md dist/prompts/ && shx cp src/core/carter_kit/prompts/hashes.toml dist/prompts/ && shx cp -r docs dist/ && shx cp -r examples dist/ && shx cp ../../node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm dist/",

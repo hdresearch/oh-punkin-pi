@@ -1,31 +1,27 @@
 /**
- * Turn Bracket — wraps assistant turns with structured boundaries.
+ * Turn Bracket — simple boundaries for assistant turns.
  *
- * Format mirrors user message brackets for continuity.
- * Open tag is prefilled (model sees it), close tag appended by system.
+ * Simplified format: no hash, minimal metadata.
+ * Used for post-hoc wrapping in convertToLlm (not prefill).
  *
- * data TurnBracketState = TurnBracketState
- *   { tbSigils :: (Sigil, Sigil)      -- (user, squiggle)
- *   , tbNonces :: (Nonce, Nonce)      -- (user, squiggle)  
- *   , tbTurn   :: Int
- *   , tbStart  :: UTCTime
- *   , tbOpen   :: Text
+ * data TurnBracket = TurnBracket
+ *   { tbSigil :: Sigil
+ *   , tbNonce :: Nonce
+ *   , tbTurn  :: Int
  *   }
  */
 
-import { createHash, randomBytes } from "node:crypto";
-import { USER_CODEBOOK, SQUIGGLE_CODEBOOK } from "@punkin-pi/ai";
+import { randomBytes } from "node:crypto";
+import { SQUIGGLE_CODEBOOK } from "@punkin-pi/ai";
 
 // ============================================================================
 // Types
 // ============================================================================
 
-export interface TurnBracketState {
-	readonly sigils: { user: string; squiggle: string };
-	readonly nonces: { user: string; squiggle: string };
+export interface TurnBracket {
+	readonly sigil: string;
+	readonly nonce: string;
 	readonly turn: number;
-	readonly startTime: number;
-	readonly openTag: string;
 }
 
 // ============================================================================
@@ -41,81 +37,64 @@ function nonce(words: readonly string[]): string {
 	return `${pick(words)}-${pick(words)}-${pick(words)}`;
 }
 
-function nycTimestamp(): { iso: string; short: string } {
-	const now = new Date();
-	const formatter = new Intl.DateTimeFormat("en-US", {
-		timeZone: "America/New_York",
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit",
-		hour: "2-digit",
-		minute: "2-digit",
-		second: "2-digit",
-		hour12: false,
-	});
-	const parts = formatter.formatToParts(now);
-	const get = (type: string) => parts.find((p) => p.type === type)?.value || "";
-
-	const iso = `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}:${get("second")}-05:00`;
-	const short = `${get("hour")}:${get("minute")}:${get("second")}`;
-
-	return { iso, short };
-}
-
-function sha3Trunc(content: string): string {
-	return createHash("sha3-256").update(content).digest("hex").slice(0, 12);
-}
-
-function formatDuration(ms: number): string {
-	const seconds = Math.floor(ms / 1000);
-	if (seconds < 60) return `${seconds}s`;
-	const minutes = Math.floor(seconds / 60);
-	const remainingSeconds = seconds % 60;
-	if (seconds < 300) return `${minutes}m${remainingSeconds}s`;
-	if (minutes < 60) return `${minutes}m`;
-	const hours = Math.floor(minutes / 60);
-	const remainingMinutes = minutes % 60;
-	if (remainingMinutes === 0) return `${hours}h`;
-	return `${hours}h${remainingMinutes}m`;
-}
-
 // ============================================================================
 // Bracket generation (pure)
 // ============================================================================
 
 /**
- * mkOpenBracket :: Int -> TurnBracketState
- * 
- * Generates bracket state with open tag.
- * Format: [assistant]{sigil nonce T=timestamp turn:N {
+ * mkBracket :: Int -> TurnBracket
+ *
+ * Generates bracket identity for a turn.
  */
-export function mkOpenBracket(turn: number): TurnBracketState {
-	const sigils = {
-		user: pick(USER_CODEBOOK.sigils),
-		squiggle: pick(SQUIGGLE_CODEBOOK.sigils),
+export function mkBracket(turn: number): TurnBracket {
+	return {
+		sigil: pick(SQUIGGLE_CODEBOOK.sigils),
+		nonce: nonce(SQUIGGLE_CODEBOOK.words),
+		turn,
 	};
-	const nonces = {
-		user: nonce(USER_CODEBOOK.words),
-		squiggle: nonce(SQUIGGLE_CODEBOOK.words),
-	};
-	const ts = nycTimestamp();
-	const startTime = Date.now();
-
-	const openTag = `[assistant]{${sigils.user} ${nonces.user} T=${ts.iso} turn:${turn} {`;
-
-	return { sigils, nonces, turn, startTime, openTag };
 }
 
 /**
- * mkCloseTag :: TurnBracketState -> Text -> Text
- * 
- * Generates close tag with content hash.
- * Format: } T=HH:MM:SS H=hash nonce sigil}
+ * formatBracketOpen :: TurnBracket -> String
+ *
+ * Format: [assistant]{sigil nonce turn:N {
  */
-export function mkCloseTag(state: TurnBracketState, content: string): string {
-	const ts = nycTimestamp();
-	const hash = sha3Trunc(content);
-	const duration = formatDuration(Date.now() - state.startTime);
+export function formatBracketOpen(bracket: TurnBracket): string {
+	return `[assistant]{${bracket.sigil} ${bracket.nonce} turn:${bracket.turn} {`;
+}
 
-	return `} T=${ts.short} H=${hash} Δ${duration} ${state.nonces.user} ${state.sigils.user}}`;
+/**
+ * formatBracketClose :: TurnBracket -> String
+ *
+ * Format: } nonce sigil}
+ */
+export function formatBracketClose(bracket: TurnBracket): string {
+	return `} ${bracket.nonce} ${bracket.sigil}}`;
+}
+
+/**
+ * wrapWithBracket :: String -> Int -> String
+ *
+ * Wrap content with vanilla turn bracket (no sigil/nonce).
+ */
+export function wrapWithBracket(content: string, _turn: number): string {
+	return `[assistant]{\n${content}\n}`;
+}
+
+// ============================================================================
+// Legacy compatibility (deprecated)
+// ============================================================================
+
+/** @deprecated Use TurnBracket instead */
+export type TurnBracketState = TurnBracket;
+
+/** @deprecated Use mkBracket instead */
+export function mkOpenBracket(turn: number): TurnBracketState {
+	return mkBracket(turn);
+}
+
+/** @deprecated Use formatBracketClose instead */
+export function mkCloseTag(_state: TurnBracketState, _content: string): string {
+	// Simplified close tag without hash/timestamp
+	return "}";
 }

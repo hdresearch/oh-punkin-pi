@@ -175,10 +175,10 @@ ${BOOT_SEQUENCE}`;
 		prompt += appendSection;
 	}
 
-	// Append project context files
+	// Append user preferences (AGENTS.md)
 	if (contextFiles.length > 0) {
-		prompt += "\n\n# Project Context\n\n";
-		prompt += "Project-specific instructions and guidelines:\n\n";
+		prompt += "\n\n# User Preferences and Context\n\n";
+		prompt += "**Pay special attention to the following user preferences and guidelines:**\n\n";
 		for (const { path: filePath, content } of contextFiles) {
 			prompt += `## ${filePath}\n\n${content}\n\n`;
 		}

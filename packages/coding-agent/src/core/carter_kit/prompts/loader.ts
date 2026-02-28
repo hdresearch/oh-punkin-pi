@@ -9,27 +9,35 @@
  */
 
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml } from "smol-toml";
 import { isBunBinary } from "../../../config.js";
+import { EMBEDDED_HASH_REGISTRY, EMBEDDED_PROMPT_TEMPLATES } from "./embedded.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
- * Get prompts directory.
- * - Bun binary: prompts/ next to executable
- * - Node.js: __dirname (dist/core/carter_kit/prompts/ or src/core/carter_kit/prompts/)
+ * Get optional prompts directory override.
+ * - Bun binary: defaults to embedded templates (no filesystem dependency)
+ * - Bun binary + PI_PROMPTS_DIR/PUNKIN_PROMPTS_DIR: use that directory
+ * - Node.js: use __dirname (dist/core/carter_kit/prompts/ or src/core/carter_kit/prompts/)
  */
-function getPromptsDir(): string {
+function getPromptsDir(): string | undefined {
+	const envDir = process.env.PUNKIN_PROMPTS_DIR || process.env.PI_PROMPTS_DIR;
+	if (envDir) {
+		return envDir;
+	}
 	if (isBunBinary) {
-		return join(dirname(process.execPath), "prompts");
+		return undefined;
 	}
 	return __dirname;
 }
 
 const PROMPTS_DIR = getPromptsDir();
+const EMBEDDED_HASHES: Record<string, string> = EMBEDDED_HASH_REGISTRY.templates as Record<string, string>;
+const EMBEDDED_TEMPLATES: Record<string, string> = EMBEDDED_PROMPT_TEMPLATES as Record<string, string>;
 
 // ============================================================================
 // Hash registry — loaded once from hashes.toml at module init
@@ -41,7 +49,13 @@ interface HashRegistry {
 }
 
 function loadHashRegistry(): HashRegistry {
+	if (!PROMPTS_DIR) {
+		return EMBEDDED_HASH_REGISTRY as HashRegistry;
+	}
 	const tomlPath = join(PROMPTS_DIR, "hashes.toml");
+	if (!existsSync(tomlPath)) {
+		return EMBEDDED_HASH_REGISTRY as HashRegistry;
+	}
 	const raw = readFileSync(tomlPath, "utf-8");
 	return parseToml(raw) as unknown as HashRegistry;
 }
@@ -73,7 +87,7 @@ export function hashContent(content: string): string {
  * @throws If filename not found in registry
  */
 export function loadTemplate(filename: string): string {
-	const expectedHash = HASH_REGISTRY.templates[filename];
+	const expectedHash = HASH_REGISTRY.templates[filename] ?? EMBEDDED_HASHES[filename];
 	if (!expectedHash) {
 		throw new Error(
 			`Template "${filename}" not found in hashes.toml.\n` +
@@ -82,12 +96,19 @@ export function loadTemplate(filename: string): string {
 		);
 	}
 
-	const filepath = join(PROMPTS_DIR, filename);
-	const content = readFileSync(filepath, "utf-8");
+	const filepath = PROMPTS_DIR ? join(PROMPTS_DIR, filename) : undefined;
+	const content =
+		filepath && existsSync(filepath)
+			? readFileSync(filepath, "utf-8")
+			: EMBEDDED_TEMPLATES[filename];
+	if (content === undefined) {
+		throw new Error(`Template "${filename}" missing from both filesystem and embedded bundle.`);
+	}
+
 	const actualHash = hashContent(content);
 
 	if (actualHash !== expectedHash) {
-		const tomlPath = join(PROMPTS_DIR, "hashes.toml");
+		const tomlPath = PROMPTS_DIR ? join(PROMPTS_DIR, "hashes.toml") : "(embedded)";
 		throw new Error(
 			`Template hash mismatch for ${filename}:\n` +
 			`  Expected : ${expectedHash}\n` +
@@ -111,8 +132,14 @@ export function loadTemplate(filename: string): string {
  * Prints the hash so you can add it to hashes.toml.
  */
 export function loadTemplateUnchecked(filename: string): { content: string; hash: string } {
-	const filepath = join(PROMPTS_DIR, filename);
-	const content = readFileSync(filepath, "utf-8");
+	const filepath = PROMPTS_DIR ? join(PROMPTS_DIR, filename) : undefined;
+	const content =
+		filepath && existsSync(filepath)
+			? readFileSync(filepath, "utf-8")
+			: EMBEDDED_TEMPLATES[filename];
+	if (content === undefined) {
+		throw new Error(`Template "${filename}" missing from both filesystem and embedded bundle.`);
+	}
 	const hash = hashContent(content);
 	console.log(`Template ${filename} hash: ${hash}`);
 	return { content, hash };

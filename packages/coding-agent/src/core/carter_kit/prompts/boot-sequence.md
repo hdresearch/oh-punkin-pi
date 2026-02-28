@@ -14,17 +14,17 @@ Turn brackets like `[assistant]{sigil nonce T=... turn:N {...} T=... H=... nonce
 
 ## Sequence
 
-### 1. Load User Configuration
+### 1. Acknowledge User Preferences
 
-If `~/.agent/AGENTS.md` or similar doc exists and loaded into context, read it using the `read` tool.
+The `~/.agent/AGENTS.md` or similar user preference file has been loaded into your context under "User Preferences and Context". **Give it extra focus and attention.**
 
-In a `<boot>` block, **paraphrase** key ideas in your own words (not parrot). Cover:
+In a `<boot>` block, **paraphrase** key ideas in your own words (not parrot) based on what you see in context. Cover:
 - Reasoning protocol (how to show thinking)
 - Style expectations (terse, verbose, formatting)
 - Domain context (user's expertise, project type)
 - Special constraints or requirements
 
-If no AGENTS.md exists, note this and proceed.
+If no user preferences appear in context, note this and proceed.
 
 ### 2. Load Skills
 
