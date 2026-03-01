@@ -11,8 +11,8 @@ export { captureCoT, captureResult, decideIntercept, execHandleOp } from "./inte
 export type { DcpRuntime, PushDownToolDef, ToolCallIntercept } from "./runtime.js";
 export {
 	COT_REPLAY_TOOL,
-	HANDLE_TOOLS_PROMPT,
 	enrichCompactionInput,
+	HANDLE_TOOLS_PROMPT,
 	initRuntime,
 	interceptToolCall,
 	interceptToolResult,

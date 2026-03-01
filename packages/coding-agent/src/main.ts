@@ -8,12 +8,12 @@
 import { type ImageContent, modelsAreEqual, supportsXhigh } from "@punkin-pi/ai";
 import chalk from "chalk";
 import { createInterface } from "readline";
+import { BUILD_COMMIT, BUILD_TIME } from "./build-info.js";
 import { type Args, parseArgs, printHelp } from "./cli/args.js";
 import { selectConfig } from "./cli/config-selector.js";
 import { processFileArguments } from "./cli/file-processor.js";
 import { listModels } from "./cli/list-models.js";
 import { selectSession } from "./cli/session-picker.js";
-import { BUILD_COMMIT, BUILD_TIME } from "./build-info.js";
 import { APP_NAME, getAgentDir, getModelsPath, VERSION } from "./config.js";
 import { AuthStorage } from "./core/auth-storage.js";
 import { DEFAULT_THINKING_LEVEL } from "./core/defaults.js";

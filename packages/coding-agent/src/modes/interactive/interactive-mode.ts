@@ -3049,7 +3049,7 @@ export class InteractiveMode {
 					autocompleteMaxVisible: this.settingsManager.getAutocompleteMaxVisible(),
 					quietStartup: this.settingsManager.getQuietStartup(),
 					clearOnShrink: this.settingsManager.getClearOnShrink(),
-				enableTurnBrackets: this.settingsManager.getEnableTurnBrackets(),
+					enableTurnBrackets: this.settingsManager.getEnableTurnBrackets(),
 				},
 				{
 					onAutoCompactChange: (enabled) => {

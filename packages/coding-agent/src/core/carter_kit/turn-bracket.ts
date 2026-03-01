@@ -57,28 +57,30 @@ export function mkBracket(turn: number): TurnBracket {
 /**
  * formatBracketOpen :: TurnBracket -> String
  *
- * Format: [assistant]{sigil nonce turn:N {
+ * Format: <assistant>
+ * Minimal — no metadata to avoid model echoing patterns.
  */
-export function formatBracketOpen(bracket: TurnBracket): string {
-	return `[assistant]{${bracket.sigil} ${bracket.nonce} turn:${bracket.turn} {`;
+export function formatBracketOpen(_bracket: TurnBracket): string {
+	return `<assistant>`;
 }
 
 /**
  * formatBracketClose :: TurnBracket -> String
  *
- * Format: } nonce sigil}
+ * Format: </assistant>
  */
-export function formatBracketClose(bracket: TurnBracket): string {
-	return `} ${bracket.nonce} ${bracket.sigil}}`;
+export function formatBracketClose(_bracket: TurnBracket): string {
+	return `</assistant>`;
 }
 
 /**
  * wrapWithBracket :: String -> Int -> String
  *
  * Wrap content with vanilla turn bracket (no sigil/nonce).
+ * Minimal format — just role demarcation, no metadata.
  */
 export function wrapWithBracket(content: string, _turn: number): string {
-	return `[assistant]{\n${content}\n}`;
+	return `<assistant>\n${content}\n</assistant>`;
 }
 
 // ============================================================================

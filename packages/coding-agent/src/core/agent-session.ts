@@ -24,6 +24,7 @@ import { theme } from "../modes/interactive/theme/theme.js";
 import { stripFrontmatter } from "../utils/frontmatter.js";
 import { sleep } from "../utils/sleep.js";
 import { type BashResult, executeBash as executeBashCommand, executeBashWithOperations } from "./bash-executor.js";
+import { type CarterKitHook, createCarterKitHook } from "./carter_kit/session-hook.js";
 import {
 	type CompactionResult,
 	calculateContextTokens,
@@ -34,7 +35,6 @@ import {
 	prepareCompaction,
 	shouldCompact,
 } from "./compaction/index.js";
-import { createCarterKitHook, type CarterKitHook } from "./carter_kit/session-hook.js";
 import { DEFAULT_THINKING_LEVEL } from "./defaults.js";
 import { exportSessionToHtml, type ToolHtmlRenderer } from "./export-html/index.js";
 import { createToolHtmlRenderer } from "./export-html/tool-renderer.js";
@@ -2087,10 +2087,10 @@ export class AgentSession {
 			.filter((name) => this._baseToolRegistry.has(name) && !extensionToolNames.has(name))
 			.map((name) => this._baseToolRegistry.get(name) as AgentTool);
 		const activeExtensionTools = wrappedExtensionTools.filter((tool) => activeToolNameSet.has(tool.name));
-		
+
 		// DCP: get push-down tools to include in active tools
 		const carterKitTools = this._carterKit ? this._carterKit.getTools() : [];
-		
+
 		const activeToolsArray: AgentTool[] = [...activeBaseTools, ...activeExtensionTools, ...carterKitTools];
 
 		// DCP: wrap tools with handle-based interception

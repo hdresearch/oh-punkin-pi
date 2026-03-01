@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDocsPath, getExamplesPath, getReadmePath } from "../config.js";
-import { formatSkillsForPrompt, type Skill } from "./skills.js";
 import { BOOT_SEQUENCE_PROMPT } from "./carter_kit/runtime.js";
+import { formatSkillsForPrompt, type Skill } from "./skills.js";
 
 // Boot sequence loaded from prompts/boot-sequence.md via content-addressed loader
 const BOOT_SEQUENCE = BOOT_SEQUENCE_PROMPT;

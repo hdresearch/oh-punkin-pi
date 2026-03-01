@@ -49,6 +49,14 @@ export {
 	readTool,
 } from "./read.js";
 export {
+	createSquiggleTools,
+	type EndSquiggleDetails,
+	endSquiggleTool,
+	type StartSquiggleDetails,
+	squiggleTools,
+	startSquiggleTool,
+} from "./squiggle.js";
+export {
 	DEFAULT_MAX_BYTES,
 	DEFAULT_MAX_LINES,
 	formatSize,
@@ -65,14 +73,6 @@ export {
 	type WriteToolOptions,
 	writeTool,
 } from "./write.js";
-export {
-	createSquiggleTools,
-	type EndSquiggleDetails,
-	endSquiggleTool,
-	type StartSquiggleDetails,
-	startSquiggleTool,
-	squiggleTools,
-} from "./squiggle.js";
 
 import type { AgentTool } from "@punkin-pi/agent-core";
 import { type BashToolOptions, bashTool, createBashTool } from "./bash.js";
@@ -165,11 +165,7 @@ export function createReadOnlyTools(cwd: string, options?: ToolsOptions): Tool[]
 
 /** Create coding tools for a specific working directory (strict superset of readOnly) */
 export function createCodingTools(cwd: string, options?: ToolsOptions): Tool[] {
-	return [
-		...createReadToolset(cwd, options),
-		...createWriteToolset(cwd),
-		...createExecuteToolset(cwd, options),
-	];
+	return [...createReadToolset(cwd, options), ...createWriteToolset(cwd), ...createExecuteToolset(cwd, options)];
 }
 
 /** Create all tools for a specific working directory */

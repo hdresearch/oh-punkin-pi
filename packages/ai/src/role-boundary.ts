@@ -385,27 +385,28 @@ export interface WrapParams {
 
 /**
  * Wrap user content with boundary.
- * Format: [user]{sigil nonce T=... turn:N Δ... { content } T=end H=hash nonce sigil}
+ * Format: <user sigil="..." nonce="..." t="..." turn="N" delta="..." h="...">content</user>
  */
 export function wrapUser(content: string, params: WrapParams): string {
 	const s = pick(USER_SIGILS);
 	const n = nonce(USER_WORDS);
 	const hash = sha3Trunc(content);
-	const delta = params.delta ? ` Δ${params.delta}` : "";
+	const deltaAttr = params.delta ? ` delta="${params.delta}"` : "";
 
-	return `[user]{${s} ${n} T=${params.timestamp} turn:${params.turn}${delta} {\n${content}\n} T=${timeOnly(params.endTimestamp)} H=${hash} ${n} ${s}}`;
+	return `<user sigil="${s}" nonce="${n}" t="${params.timestamp}" turn="${params.turn}"${deltaAttr} h="${hash}">\n${content}\n</user>`;
 }
 
 /**
  * Wrap assistant content with boundary.
+ * Format: <assistant sigil="..." nonce="..." t="..." turn="N" delta="..." h="...">content</assistant>
  */
 export function wrapAssistant(content: string, params: WrapParams): string {
 	const s = pick(ASSISTANT_SIGILS);
 	const n = nonce(ASSISTANT_WORDS);
 	const hash = sha3Trunc(content);
-	const delta = params.delta ? ` Δ${params.delta}` : "";
+	const deltaAttr = params.delta ? ` delta="${params.delta}"` : "";
 
-	return `[assistant]{${s} ${n} T=${params.timestamp} turn:${params.turn}${delta} {\n${content}\n} T=${timeOnly(params.endTimestamp)} H=${hash} ${n} ${s}}`;
+	return `<assistant sigil="${s}" nonce="${n}" t="${params.timestamp}" turn="${params.turn}"${deltaAttr} h="${hash}">\n${content}\n</assistant>`;
 }
 
 // =============================================================================

@@ -24,8 +24,8 @@ import { Type } from "@sinclair/typebox";
 import type { DcpRuntime, PushDownToolDef } from "./runtime.js";
 import {
 	COT_REPLAY_TOOL,
-	HANDLE_TOOLS_PROMPT,
 	enrichCompactionInput,
+	HANDLE_TOOLS_PROMPT,
 	initRuntime,
 	interceptToolCall,
 	interceptToolResult,
@@ -34,8 +34,8 @@ import {
 	pressureWarning,
 	shutdownRuntime,
 } from "./runtime.js";
+import { mkOpenBracket, type TurnBracketState } from "./turn-bracket.js";
 import type { HandleId } from "./types.js";
-import { type TurnBracketState, mkOpenBracket } from "./turn-bracket.js";
 
 // ============================================================================
 // Hook state

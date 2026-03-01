@@ -30,7 +30,14 @@ function assistantMsg(text: string, offset: number): AssistantMessage {
 		model: "test",
 		provider: "test",
 		stopReason: "stop",
-		usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } },
+		usage: {
+			input: 0,
+			output: 0,
+			cacheRead: 0,
+			cacheWrite: 0,
+			totalTokens: 0,
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+		},
 		timestamp: ts(offset),
 		endTimestamp: ts(offset + 2),
 	};
@@ -65,10 +72,7 @@ describe("convertToLlm", () => {
 		});
 
 		it("wraps assistant messages with boundary markers", () => {
-			const messages: AgentMessage[] = [
-				userMsg("hello", 0),
-				assistantMsg("hi there", 5),
-			];
+			const messages: AgentMessage[] = [userMsg("hello", 0), assistantMsg("hi there", 5)];
 			const result = convertToLlm(messages);
 
 			expect(result).toHaveLength(2);
@@ -98,10 +102,11 @@ describe("convertToLlm", () => {
 			const result = convertToLlm(messages);
 
 			// Extract turn numbers from wrapped content
-			const getTurn = (m: typeof result[number]): number | null => {
-				const content = m.role === "assistant" 
-					? ((m as AssistantMessage).content[0] as { type: "text"; text: string }).text
-					: m.content as string;
+			const getTurn = (m: (typeof result)[number]): number | null => {
+				const content =
+					m.role === "assistant"
+						? ((m as AssistantMessage).content[0] as { type: "text"; text: string }).text
+						: (m.content as string);
 				const match = content.match(/turn:(\d+)/);
 				return match ? parseInt(match[1], 10) : null;
 			};
@@ -132,15 +137,17 @@ describe("convertToLlm", () => {
 
 	describe("message type handling", () => {
 		it("preserves images in user messages", () => {
-			const messages: AgentMessage[] = [{
-				role: "user",
-				content: [
-					{ type: "text", text: "look at this" },
-					{ type: "image", source: { type: "base64", mediaType: "image/png", data: "abc123" } },
-				],
-				timestamp: ts(0),
-				endTimestamp: ts(1),
-			}];
+			const messages: AgentMessage[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "look at this" },
+						{ type: "image", source: { type: "base64", mediaType: "image/png", data: "abc123" } },
+					],
+					timestamp: ts(0),
+					endTimestamp: ts(1),
+				},
+			];
 			const result = convertToLlm(messages);
 
 			expect(result).toHaveLength(1);
@@ -155,14 +162,16 @@ describe("convertToLlm", () => {
 		});
 
 		it("does not wrap toolResult messages", () => {
-			const messages: AgentMessage[] = [{
-				role: "toolResult",
-				toolCallId: "call_123",
-				content: [{ type: "text", text: "tool output" }],
-				isError: false,
-				timestamp: ts(0),
-				endTimestamp: ts(1),
-			}];
+			const messages: AgentMessage[] = [
+				{
+					role: "toolResult",
+					toolCallId: "call_123",
+					content: [{ type: "text", text: "tool output" }],
+					isError: false,
+					timestamp: ts(0),
+					endTimestamp: ts(1),
+				},
+			];
 			const result = convertToLlm(messages);
 
 			expect(result).toHaveLength(1);
@@ -174,20 +183,29 @@ describe("convertToLlm", () => {
 		});
 
 		it("preserves toolCalls in assistant messages", () => {
-			const messages: AgentMessage[] = [{
-				role: "assistant",
-				content: [
-					{ type: "text", text: "Let me help" },
-					{ type: "toolCall", toolCallId: "call_1", toolName: "read", args: { path: "/foo" } },
-				],
-				api: "messages",
-				model: "test",
-				provider: "test",
-				stopReason: "toolUse",
-				usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } },
-				timestamp: ts(0),
-				endTimestamp: ts(2),
-			}];
+			const messages: AgentMessage[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "Let me help" },
+						{ type: "toolCall", toolCallId: "call_1", toolName: "read", args: { path: "/foo" } },
+					],
+					api: "messages",
+					model: "test",
+					provider: "test",
+					stopReason: "toolUse",
+					usage: {
+						input: 0,
+						output: 0,
+						cacheRead: 0,
+						cacheWrite: 0,
+						totalTokens: 0,
+						cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+					},
+					timestamp: ts(0),
+					endTimestamp: ts(2),
+				},
+			];
 			const result = convertToLlm(messages);
 
 			expect(result).toHaveLength(1);
@@ -202,16 +220,18 @@ describe("convertToLlm", () => {
 		});
 
 		it("handles bashExecution messages", () => {
-			const messages: AgentMessage[] = [{
-				role: "bashExecution",
-				command: "ls -la",
-				output: "file1.txt\nfile2.txt",
-				exitCode: 0,
-				cancelled: false,
-				truncated: false,
-				timestamp: ts(0),
-				endTimestamp: ts(1),
-			}];
+			const messages: AgentMessage[] = [
+				{
+					role: "bashExecution",
+					command: "ls -la",
+					output: "file1.txt\nfile2.txt",
+					exitCode: 0,
+					cancelled: false,
+					truncated: false,
+					timestamp: ts(0),
+					endTimestamp: ts(1),
+				},
+			];
 			const result = convertToLlm(messages);
 
 			expect(result).toHaveLength(1);
@@ -223,17 +243,19 @@ describe("convertToLlm", () => {
 		});
 
 		it("skips bashExecution with excludeFromContext", () => {
-			const messages: AgentMessage[] = [{
-				role: "bashExecution",
-				command: "secret-command",
-				output: "secret output",
-				exitCode: 0,
-				cancelled: false,
-				truncated: false,
-				excludeFromContext: true,
-				timestamp: ts(0),
-				endTimestamp: ts(1),
-			}];
+			const messages: AgentMessage[] = [
+				{
+					role: "bashExecution",
+					command: "secret-command",
+					output: "secret output",
+					exitCode: 0,
+					cancelled: false,
+					truncated: false,
+					excludeFromContext: true,
+					timestamp: ts(0),
+					endTimestamp: ts(1),
+				},
+			];
 			const result = convertToLlm(messages);
 
 			expect(result).toHaveLength(0);

@@ -341,7 +341,8 @@ export class SettingsSelectorComponent extends Container {
 		items.splice(clearOnShrinkIndex + 1, 0, {
 			id: "turn-brackets",
 			label: "Rich turn brackets",
-			description: "Add sigil/nonce/timestamp/hash metadata to [assistant]{…} wrappers (plain wrapper always present)",
+			description:
+				"Add sigil/nonce/timestamp/hash metadata to [assistant]{…} wrappers (plain wrapper always present)",
 			currentValue: config.enableTurnBrackets ? "true" : "false",
 			values: ["true", "false"],
 		});

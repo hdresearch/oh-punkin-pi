@@ -260,7 +260,7 @@ async function streamAssistantResponse(
 				if (firstContentMs === undefined) {
 					firstContentMs = Date.now();
 				}
-				// falls through
+			// falls through
 			case "text_delta":
 			case "text_end":
 			case "thinking_delta":

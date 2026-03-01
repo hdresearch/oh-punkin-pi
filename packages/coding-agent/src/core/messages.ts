@@ -1,4 +1,5 @@
 import type { Timestamp } from "@punkin-pi/ai";
+
 /**
  * Custom message types and transformers for the coding agent.
  *
@@ -6,10 +7,10 @@ import type { Timestamp } from "@punkin-pi/ai";
  * and provides a transformer to convert them to LLM-compatible messages.
  */
 
+import { createHash } from "node:crypto";
 import type { AgentMessage } from "@punkin-pi/agent-core";
 import type { AssistantMessage, BracketId, ImageContent, Message, TextContent } from "@punkin-pi/ai";
-import { wrapUser, type WrapParams } from "@punkin-pi/ai";
-import { createHash } from "node:crypto";
+import { type WrapParams, wrapUser } from "@punkin-pi/ai";
 import { wrapWithBracket } from "./carter_kit/turn-bracket.js";
 
 export const COMPACTION_SUMMARY_PREFIX = `The conversation history before this point was compacted into the following summary:
@@ -166,15 +167,23 @@ function computeDelta(prevEndTs: Timestamp | undefined, currentTs: Timestamp): s
  */
 function extractText(content: string | (TextContent | ImageContent)[]): string {
 	if (typeof content === "string") return content;
-	return content.filter((c): c is TextContent => c.type === "text").map((c) => c.text).join("\n");
+	return content
+		.filter((c): c is TextContent => c.type === "text")
+		.map((c) => c.text)
+		.join("\n");
 }
 
 /**
  * Check if role increments turn (user-like messages).
  */
 function isTurnIncrementing(role: string): boolean {
-	return role === "user" || role === "bashExecution" || role === "custom" || 
-	       role === "branchSummary" || role === "compactionSummary";
+	return (
+		role === "user" ||
+		role === "bashExecution" ||
+		role === "custom" ||
+		role === "branchSummary" ||
+		role === "compactionSummary"
+	);
 }
 
 /**
@@ -194,8 +203,12 @@ function messageToRawText(m: AgentMessage): string | null {
 			return extractText(m.content);
 		case "assistant": {
 			// Always return content for wrapping - even tool-only turns get boundary markers
-			const thinking = m.content.filter((c): c is { type: "thinking"; thinking: string } => c.type === "thinking").map((c) => c.thinking);
-			const text = m.content.filter((c): c is { type: "text"; text: string } => c.type === "text").map((c) => c.text);
+			const thinking = m.content
+				.filter((c): c is { type: "thinking"; thinking: string } => c.type === "thinking")
+				.map((c) => c.thinking);
+			const text = m.content
+				.filter((c): c is { type: "text"; text: string } => c.type === "text")
+				.map((c) => c.text);
 			const combined = [...thinking, ...text].join("\n");
 			// Return empty string (not null) so wrapper is always added
 			return combined || "";
@@ -211,18 +224,11 @@ function messageToRawText(m: AgentMessage): string | null {
  * Render bracket-wrapped text from stored BracketId + message metadata.
  *
  * BracketId stores identity (sigil/nonce). Everything else derived from message fields.
- * Falls back to wrapAssistant (random sigil/nonce) when no bracketId.
+ * For assistant, we use minimal wrapper — just role demarcation.
  */
-function renderFromBracketId(content: string, msg: AssistantMessage, turn: number, delta?: string): string {
-	const bid = msg.bracketId!;
-	const hash = createHash("sha3-256").update(content).digest("hex").slice(0, 12);
-	const ts = msg.timestamp;
-	const endTs = msg.endTimestamp || ts;
-	const timeOnly = typeof endTs === "string" && endTs.includes("T") 
-		? endTs.split("T")[1]?.replace(/-\d{2}:\d{2}$/, "") ?? endTs 
-		: endTs;
-	const deltaStr = delta ? ` Δ${delta}` : "";
-	return `[assistant]{${bid.sigil} ${bid.nonce} T=${ts} turn:${turn}${deltaStr} {\n${content}\n} T=${timeOnly} H=${hash} ${bid.nonce} ${bid.sigil}}`;
+function renderFromBracketId(content: string, _msg: AssistantMessage, _turn: number, _delta?: string): string {
+	// Minimal assistant wrapper — no metadata to avoid model echoing
+	return `<assistant>\n${content}\n</assistant>`;
 }
 
 /**
@@ -246,7 +252,8 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 
 		// Build wrap params
 		const delta = ts && prevEndTs ? computeDelta(prevEndTs, ts) : undefined;
-		const params: WrapParams | undefined = ts && endTs ? { timestamp: ts, endTimestamp: endTs, turn, delta } : undefined;
+		const params: WrapParams | undefined =
+			ts && endTs ? { timestamp: ts, endTimestamp: endTs, turn, delta } : undefined;
 
 		// Update for next iteration
 		if (endTs) prevEndTs = endTs;
@@ -257,7 +264,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 		// For assistant messages with bracketId: render brackets from stored metadata.
 		// bracketId is the single source of truth — content is stored raw, rendered here.
 		// Without bracketId: wrap with simple post-hoc brackets.
-		const asst = m.role === "assistant" ? m as AssistantMessage : undefined;
+		const asst = m.role === "assistant" ? (m as AssistantMessage) : undefined;
 		let wrapped: string | null;
 		if (asst?.bracketId && rawText !== null) {
 			wrapped = renderFromBracketId(rawText, asst, turn, delta);
@@ -308,9 +315,13 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 			case "assistant": {
 				// Replace all text/thinking with single wrapped text block, keep toolCalls
 				const toolCalls = m.content.filter((c) => c.type === "toolCall");
-				const newContent = wrapped 
+				const newContent = wrapped
 					? [{ type: "text" as const, text: wrapped }, ...toolCalls]
-					: [...m.content.map((c) => c.type === "thinking" ? { type: "thinking" as const, thinking: c.thinking } : c)];
+					: [
+							...m.content.map((c) =>
+								c.type === "thinking" ? { type: "thinking" as const, thinking: c.thinking } : c,
+							),
+						];
 				result.push({ ...m, content: newContent });
 				break;
 			}

@@ -877,8 +877,13 @@ export class SessionManager {
 		details?: T,
 		fromHook?: boolean,
 	): string {
-		return this._createEntry<CompactionEntry<T>>({ 
-			type: "compaction", summary, firstKeptEntryId, tokensBefore, details, fromHook 
+		return this._createEntry<CompactionEntry<T>>({
+			type: "compaction",
+			summary,
+			firstKeptEntryId,
+			tokensBefore,
+			details,
+			fromHook,
 		});
 	}
 
@@ -919,8 +924,12 @@ export class SessionManager {
 		display: boolean,
 		details?: T,
 	): string {
-		return this._createEntry<CustomMessageEntry<T>>({ 
-			type: "custom_message", customType, content, display, details 
+		return this._createEntry<CustomMessageEntry<T>>({
+			type: "custom_message",
+			customType,
+			content,
+			display,
+			details,
 		});
 	}
 

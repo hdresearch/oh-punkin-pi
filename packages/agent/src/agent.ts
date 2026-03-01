@@ -205,7 +205,9 @@ export class Agent {
 		this._maxRetryDelayMs = value;
 	}
 
-	setPrefill(fn: (() => { prefillText: string; bracketId: import("@punkin-pi/ai").BracketId } | undefined) | undefined) {
+	setPrefill(
+		fn: (() => { prefillText: string; bracketId: import("@punkin-pi/ai").BracketId } | undefined) | undefined,
+	) {
 		this._getPrefill = fn;
 	}
 
