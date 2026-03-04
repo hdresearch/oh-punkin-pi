@@ -13,7 +13,7 @@
 scheme = "sha3-256-trunc12"
 
 [templates]
-"boot-sequence.md"     = "649610e15161"
+"boot-sequence.md"     = "ac833f3ac5e1"
 "ethos.md"             = "40324520911e"
 "handle-tools.md"      = "ee345e32ddd8"
 "pressure-critical.md" = "10f72385b77e"

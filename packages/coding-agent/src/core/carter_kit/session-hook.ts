@@ -257,8 +257,10 @@ export function createCarterKitHook(storePath: string | undefined, sessionId: st
 		getTools() {
 			const allToolDefs = [...PUSHDOWN_TOOLS, COT_REPLAY_TOOL];
 			const pushDownTools = allToolDefs.map((def) => pushDownToolToAgentTool(def, rt));
-			const squiggleTools = createSquiggleTools(_squiggleState);
-			return [...pushDownTools, ...squiggleTools];
+			// DISABLED: squiggle tools not enabled yet
+			// const squiggleTools = createSquiggleTools(_squiggleState);
+			// return [...pushDownTools, ...squiggleTools];
+			return pushDownTools;
 		},
 
 		shutdown() {

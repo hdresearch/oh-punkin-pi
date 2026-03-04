@@ -97,6 +97,7 @@ import { SettingsSelectorComponent } from "./components/settings-selector.js";
 import { SkillInvocationMessageComponent } from "./components/skill-invocation-message.js";
 import { ToolExecutionComponent } from "./components/tool-execution.js";
 import { TreeSelectorComponent } from "./components/tree-selector.js";
+import { TurnBoundaryComponent } from "./components/turn-boundary.js";
 import { UserMessageComponent } from "./components/user-message.js";
 import { UserMessageSelectorComponent } from "./components/user-message-selector.js";
 import {
@@ -2323,6 +2324,17 @@ export class InteractiveMode {
 				this.ui.requestRender();
 				break;
 			}
+
+			case "turn_boundary": {
+				// Render turn start boundary before the turn content
+				const startComponent = new TurnBoundaryComponent(event.turnStart);
+				this.chatContainer.addChild(startComponent);
+				// Render turn end boundary after the turn content
+				const endComponent = new TurnBoundaryComponent(event.turnEnd);
+				this.chatContainer.addChild(endComponent);
+				this.ui.requestRender();
+				break;
+			}
 		}
 	}
 
@@ -2446,11 +2458,13 @@ export class InteractiveMode {
 				break;
 			}
 			case "turnStart": {
-				// TODO: render turn boundary start
+				const boundaryComponent = new TurnBoundaryComponent(message);
+				this.chatContainer.addChild(boundaryComponent);
 				break;
 			}
 			case "turnEnd": {
-				// TODO: render turn boundary end
+				const boundaryComponent = new TurnBoundaryComponent(message);
+				this.chatContainer.addChild(boundaryComponent);
 				break;
 			}
 			default: {

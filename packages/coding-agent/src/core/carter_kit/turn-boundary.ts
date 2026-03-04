@@ -6,7 +6,7 @@
  * for historical turns.
  */
 
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { now, type Timestamp, type TurnStartMessage, type TurnEndMessage, type Message } from "@punkin-pi/ai";
 
 // ============================================================================
@@ -31,13 +31,15 @@ const NONCE_WORDS = [
 ];
 
 function randomSigil(): string {
-	return SIGILS[Math.floor(Math.random() * SIGILS.length)];
+	const bytes = randomBytes(1);
+	return SIGILS[bytes[0] % SIGILS.length];
 }
 
 function randomNonce(): string {
+	const bytes = randomBytes(3);
 	const words: string[] = [];
 	for (let i = 0; i < 3; i++) {
-		words.push(NONCE_WORDS[Math.floor(Math.random() * NONCE_WORDS.length)]);
+		words.push(NONCE_WORDS[bytes[i] % NONCE_WORDS.length]);
 	}
 	return words.join("-");
 }

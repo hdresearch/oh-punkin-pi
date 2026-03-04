@@ -103,6 +103,8 @@ export function parseSkillBlock(text: string): ParsedSkillBlock | null {
 	};
 }
 
+import type { TurnStartMessage, TurnEndMessage } from "@punkin-pi/ai";
+
 /** Session-specific events that extend the core AgentEvent */
 export type AgentSessionEvent =
 	| AgentEvent
@@ -115,7 +117,8 @@ export type AgentSessionEvent =
 			errorMessage?: string;
 	  }
 	| { type: "auto_retry_start"; attempt: number; maxAttempts: number; delayMs: number; errorMessage: string }
-	| { type: "auto_retry_end"; success: boolean; attempt: number; finalError?: string };
+	| { type: "auto_retry_end"; success: boolean; attempt: number; finalError?: string }
+	| { type: "turn_boundary"; turnStart: TurnStartMessage; turnEnd: TurnEndMessage };
 
 /** Listener function for agent session events */
 export type AgentSessionEventListener = (event: AgentSessionEvent) => void;
@@ -473,6 +476,16 @@ export class AgentSession {
 			};
 			await this._extensionRunner.emit(extensionEvent);
 		} else if (event.type === "turn_end") {
+			// CarterKit: generate turn boundary messages and emit for TUI rendering
+			if (this._carterKit) {
+				// Collect messages from this turn (assistant + tool results)
+				// Cast is safe: AgentMessage = Message | CustomMessages, we're using base Message types
+				const turnMessages = [event.message, ...event.toolResults] as unknown as import("@punkin-pi/ai").Message[];
+				const [turnStart, turnEnd] = this._carterKit.onAssistantTurnEnd(turnMessages);
+				// Emit turn boundary event for TUI rendering
+				this._emit({ type: "turn_boundary", turnStart, turnEnd });
+			}
+
 			const extensionEvent: TurnEndEvent = {
 				type: "turn_end",
 				turnIndex: this._turnIndex,
@@ -488,6 +501,12 @@ export class AgentSession {
 			};
 			await this._extensionRunner.emit(extensionEvent);
 		} else if (event.type === "message_update") {
+			// CarterKit: capture text deltas for squiggle content hashing
+			// DISABLED: squiggle tools not enabled yet
+			// if (event.assistantMessageEvent?.type === "text_delta") {
+			// 	this._carterKit?.appendSquiggleContent(event.assistantMessageEvent.delta);
+			// }
+
 			const extensionEvent: MessageUpdateEvent = {
 				type: "message_update",
 				message: event.message,
