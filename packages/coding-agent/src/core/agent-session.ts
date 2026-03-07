@@ -392,7 +392,15 @@ export class AgentSession {
 				event.message.role === "toolResult"
 			) {
 				// Regular LLM message - persist as SessionMessageEntry
-				this.sessionManager.appendMessage(event.message);
+				// Skip empty aborted assistant messages — they produce ghost entries in transcript
+				// with no content and cause visual cutoffs on replay/display.
+				const isEmptyAbort =
+					event.message.role === "assistant" &&
+					(event.message as AssistantMessage).stopReason === "aborted" &&
+					(event.message as AssistantMessage).content.length === 0;
+				if (!isEmptyAbort) {
+					this.sessionManager.appendMessage(event.message);
+				}
 			}
 			// Other message types (bashExecution, compactionSummary, branchSummary) are persisted elsewhere
 
@@ -473,15 +481,11 @@ export class AgentSession {
 		// Find the assistant message in the array (should be near the end)
 		const messages = this.agent.state.messages;
 		const assistantIdx = messages.findIndex((m) => m === event.message);
-		console.error(`[TURN-BOUNDARY-DEBUG] assistantIdx=${assistantIdx}, messages.length=${messages.length}, event.message.role=${event.message?.role}`);
 		if (assistantIdx !== -1) {
 			// Insert turnStart before the assistant message
 			messages.splice(assistantIdx, 0, turnStart as unknown as AgentMessage);
 			// Append turnEnd at the end (after tool results which are already there)
 			messages.push(turnEnd as unknown as AgentMessage);
-			console.error(`[TURN-BOUNDARY-DEBUG] Injected! new messages.length=${messages.length}`);
-		} else {
-			console.error(`[TURN-BOUNDARY-DEBUG] FAILED: could not find assistant message in state.messages`);
 		}
 
 		// Persist turn boundaries to session JSONL with turn number

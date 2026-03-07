@@ -54,8 +54,17 @@ export class AssistantMessageComponent extends Container {
 		// Clear content container
 		this.contentContainer.clear();
 
+		// Squiggle-wins policy: if any text block already contains <squiggle> markup,
+		// skip rendering thinking blocks to avoid duplicate CoT display.
+		// Provider thinking blocks and user-authored squiggle carry the same information.
+		const textHasSquiggle = message.content.some(
+			(c) => c.type === "text" && c.text.includes("<squiggle>"),
+		);
+
 		const hasVisibleContent = message.content.some(
-			(c) => (c.type === "text" && c.text.trim()) || (c.type === "thinking" && c.thinking.trim()),
+			(c) =>
+				(c.type === "text" && c.text.trim()) ||
+				(!textHasSquiggle && c.type === "thinking" && c.thinking.trim()),
 		);
 
 		if (hasVisibleContent) {
@@ -69,12 +78,16 @@ export class AssistantMessageComponent extends Container {
 				// Assistant text messages with no background - trim the text
 				// Set paddingY=0 to avoid extra spacing before tool executions
 				this.contentContainer.addChild(new Markdown(content.text.trim(), 1, 0, this.markdownTheme));
-			} else if (content.type === "thinking" && content.thinking.trim()) {
+			} else if (!textHasSquiggle && content.type === "thinking" && content.thinking.trim()) {
 				// Add spacing only when another visible assistant content block follows.
 				// This avoids a superfluous blank line before separately-rendered tool execution blocks.
 				const hasVisibleContentAfter = message.content
 					.slice(i + 1)
-					.some((c) => (c.type === "text" && c.text.trim()) || (c.type === "thinking" && c.thinking.trim()));
+					.some(
+						(c) =>
+							(c.type === "text" && c.text.trim()) ||
+							(!textHasSquiggle && c.type === "thinking" && c.thinking.trim()),
+					);
 
 				// Collapsible thinking block — never hidden, expanded by default
 				const THINKING_EXPANDED_BY_DEFAULT = true;

@@ -2138,6 +2138,19 @@ export class InteractiveMode {
 				if (event.message.role === "user") break;
 				if (this.streamingComponent && event.message.role === "assistant") {
 					this.streamingMessage = event.message;
+
+					// Abort debounce: if the message is aborted with zero content, skip
+					// display update — these are ghost events from rapid key input / context
+					// switches that produce no visible output and cause visual thrash.
+					if (this.streamingMessage.stopReason === "aborted" && this.streamingMessage.content.length === 0) {
+						this.streamingComponent = undefined;
+						this.streamingMessage = undefined;
+						this.pendingTools.clear();
+						this.footer.invalidate();
+						this.ui.requestRender();
+						break;
+					}
+
 					let errorMessage: string | undefined;
 					if (this.streamingMessage.stopReason === "aborted") {
 						const retryAttempt = this.session.retryAttempt;
