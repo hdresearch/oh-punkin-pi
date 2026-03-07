@@ -86,13 +86,15 @@ async function fetchOpenRouterModels(): Promise<Model<any>[]> {
 			const cacheReadCost = parseFloat(model.pricing?.input_cache_read || "0") * 1_000_000;
 			const cacheWriteCost = parseFloat(model.pricing?.input_cache_write || "0") * 1_000_000;
 
+			const hasReasoning = model.supported_parameters?.includes("reasoning") || false;
+
 			const normalizedModel: Model<any> = {
 				id: modelKey,
 				name: model.name,
 				api: "openai-completions",
 				baseUrl: "https://openrouter.ai/api/v1",
 				provider,
-				reasoning: model.supported_parameters?.includes("reasoning") || false,
+				reasoning: hasReasoning,
 				input,
 				cost: {
 					input: inputCost,
@@ -102,6 +104,11 @@ async function fetchOpenRouterModels(): Promise<Model<any>[]> {
 				},
 				contextWindow: model.context_length || 4096,
 				maxTokens: model.top_provider?.max_completion_tokens || 4096,
+				...(hasReasoning && {
+					compat: {
+						thinkingFormat: "openrouter" as const,
+					},
+				}),
 			};
 			models.push(normalizedModel);
 		}
