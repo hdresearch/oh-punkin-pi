@@ -682,11 +682,15 @@ function createClient(
 					accept: "application/json",
 					"anthropic-dangerous-direct-browser-access": "true",
 					...(resolvedBetas.length > 0 ? { "anthropic-beta": resolvedBetas.join(",") } : {}),
+					// Force fresh connection to avoid connection reuse bugs
+					"Connection": "close",
 				},
 				model.headers,
 				dynamicHeaders,
 				optionsHeaders,
 			),
+			// Disable connection pooling - force fresh TCP connection per request
+			fetchOptions: { keepalive: false },
 		});
 
 		return { client, isOAuthToken: false };
@@ -719,10 +723,14 @@ function createClient(
 					"anthropic-beta": `claude-code-20250219,oauth-2025-04-20,${resolvedBetas.join(",")}`,
 					"user-agent": `claude-cli/${claudeCodeVersion} (external, cli)`,
 					"x-app": "cli",
+					// Force fresh connection to avoid connection reuse bugs
+					"Connection": "close",
 				},
 				model.headers,
 				optionsHeaders,
 			),
+			// Disable connection pooling - force fresh TCP connection per request
+			fetchOptions: { keepalive: false },
 		});
 
 		return { client, isOAuthToken: true };
@@ -744,6 +752,8 @@ function createClient(
 			model.headers,
 			optionsHeaders,
 		),
+		// Disable connection pooling - force fresh TCP connection per request
+		fetchOptions: { keepalive: false },
 	});
 
 	return { client, isOAuthToken: false };
