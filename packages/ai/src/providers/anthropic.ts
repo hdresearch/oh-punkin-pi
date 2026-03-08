@@ -738,6 +738,8 @@ function createClient(
 				accept: "application/json",
 				"anthropic-dangerous-direct-browser-access": "true",
 				"anthropic-beta": resolvedBetas.join(","),
+				// Force fresh connection to avoid connection reuse bugs
+				"Connection": "close",
 			},
 			model.headers,
 			optionsHeaders,
