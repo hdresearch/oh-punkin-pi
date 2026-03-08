@@ -263,12 +263,27 @@ function isRetryableAnthropicError(error: unknown): boolean {
 	return /rate.?limit|overloaded|temporar(?:y|ily)|service.?unavailable|timeout|try again|upstream/i.test(errorText);
 }
 
+// Stream debugging - enable with PI_DEBUG_STREAM=1
+const DEBUG_STREAM = process.env.PI_DEBUG_STREAM === "1";
+function debugStream(msg: string, data?: any) {
+	if (!DEBUG_STREAM) return;
+	const ts = new Date().toISOString();
+	if (data !== undefined) {
+		console.error(`[STREAM ${ts}] ${msg}`, JSON.stringify(data));
+	} else {
+		console.error(`[STREAM ${ts}] ${msg}`);
+	}
+}
+
 export const streamAnthropic: StreamFunction<"anthropic-messages", AnthropicOptions> = (
 	model: Model<"anthropic-messages">,
 	context: Context,
 	options?: AnthropicOptions,
 ): AssistantMessageEventStream => {
 	const stream = new AssistantMessageEventStream();
+	const streamId = Math.random().toString(36).slice(2, 8);
+
+	debugStream(`[${streamId}] START model=${model.id} provider=${model.provider}`);
 
 	(async () => {
 		const output: AssistantMessage = {
@@ -315,9 +330,11 @@ export const streamAnthropic: StreamFunction<"anthropic-messages", AnthropicOpti
 			options?.onPayload?.(params);
 
 			stream.push({ type: "start", partial: output });
+			debugStream(`[${streamId}] pushed start event`);
 
 			for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
 				if (options?.signal?.aborted) {
+					debugStream(`[${streamId}] aborted before attempt ${attempt}`);
 					throw new Error("Request was aborted");
 				}
 
@@ -338,13 +355,19 @@ export const streamAnthropic: StreamFunction<"anthropic-messages", AnthropicOpti
 				let sawContentEvent = false;
 
 				try {
+					debugStream(`[${streamId}] attempt ${attempt} starting stream request`);
 					const anthropicStream = client.messages.stream({ ...params, stream: true }, { signal: options?.signal });
 
 					type Block = (ThinkingContent | TextContent | (ToolCall & { partialJson: string })) & { index: number };
 					const blocks = output.content as Block[];
+					let eventCount = 0;
+					let lastEventType = "";
 
 					for await (const event of anthropicStream) {
+						eventCount++;
+						lastEventType = event.type;
 						if (event.type === "message_start") {
+							debugStream(`[${streamId}] message_start`);
 							// Capture initial token usage from message_start event
 							// This ensures we have input token counts even if the stream is aborted early
 							output.usage.input = event.message.usage.input_tokens || 0;
@@ -466,6 +489,7 @@ export const streamAnthropic: StreamFunction<"anthropic-messages", AnthropicOpti
 								}
 							}
 						} else if (event.type === "message_delta") {
+							debugStream(`[${streamId}] message_delta stop_reason=${event.delta.stop_reason}`);
 							if (event.delta.stop_reason) {
 								output.stopReason = mapStopReason(event.delta.stop_reason);
 							}
@@ -490,41 +514,54 @@ export const streamAnthropic: StreamFunction<"anthropic-messages", AnthropicOpti
 						}
 					}
 
+					debugStream(`[${streamId}] for-await exited, eventCount=${eventCount} lastEvent=${lastEventType} stopReason=${output.stopReason}`);
+
 					if (options?.signal?.aborted) {
+						debugStream(`[${streamId}] aborted after stream loop`);
 						throw new Error("Request was aborted");
 					}
 
 					if (output.stopReason === "aborted" || output.stopReason === "error") {
+						debugStream(`[${streamId}] stopReason indicates error: ${output.stopReason}`);
 						throw new Error("An unknown error occurred");
 					}
 
+					debugStream(`[${streamId}] pushing done event, stopReason=${output.stopReason} contentBlocks=${output.content.length}`);
 					stream.push({ type: "done", reason: output.stopReason, message: output });
 					stream.end();
+					debugStream(`[${streamId}] stream.end() called, SUCCESS`);
 					return;
 				} catch (error) {
+					debugStream(`[${streamId}] catch block, error=${error instanceof Error ? error.message : String(error)}`);
 					const isAborted = options?.signal?.aborted || getAnthropicErrorText(error) === "Request was aborted";
 					if (isAborted) {
+						debugStream(`[${streamId}] detected abort in catch`);
 						throw new Error("Request was aborted");
 					}
 
 					if (attempt < MAX_RETRIES && !sawContentEvent && isRetryableAnthropicError(error)) {
 						const maxRetryDelayMs = options?.maxRetryDelayMs ?? 60000;
 						const delayMs = computeRetryDelayMs(attempt, maxRetryDelayMs);
+						debugStream(`[${streamId}] retrying in ${delayMs}ms, sawContentEvent=${sawContentEvent}`);
 						await sleep(delayMs, options?.signal);
 						continue;
 					}
 
+					debugStream(`[${streamId}] throwing error, no retry`);
 					throw error;
 				}
 			}
 
 			throw new Error("Failed after retries");
 		} catch (error) {
+			debugStream(`[${streamId}] outer catch, error=${error instanceof Error ? error.message : String(error)}`);
 			for (const block of output.content) delete (block as any).index;
 			output.stopReason = options?.signal?.aborted ? "aborted" : "error";
 			output.errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+			debugStream(`[${streamId}] pushing error event, stopReason=${output.stopReason}`);
 			stream.push({ type: "error", reason: output.stopReason, error: output });
 			stream.end();
+			debugStream(`[${streamId}] stream.end() called after ERROR`);
 		}
 	})();
 
