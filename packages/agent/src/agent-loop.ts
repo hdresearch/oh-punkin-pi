@@ -250,6 +250,7 @@ async function streamAssistantResponse(
 	streamFn?: StreamFn,
 	emptyRetryCount: number = 0,
 	emptyRetryStartMs?: number,
+	forcedReconnectAttempted: boolean = false,
 ): Promise<AssistantMessage> {
 	const maxRetries = config.maxEmptyRetries ?? DEFAULT_MAX_EMPTY_RETRIES;
 	const maxTimeMs = config.maxEmptyRetryTimeMs ?? DEFAULT_MAX_EMPTY_RETRY_TIME_MS;
@@ -375,7 +376,33 @@ async function streamAssistantResponse(
 							// Aborted during sleep
 						}
 						// Retry
-						return streamAssistantResponse(context, config, signal, stream, streamFn, emptyRetryCount + 1, retryStartMs);
+						return streamAssistantResponse(
+							context,
+							config,
+							signal,
+							stream,
+							streamFn,
+							emptyRetryCount + 1,
+							retryStartMs,
+							forcedReconnectAttempted,
+						);
+					} else if (!forcedReconnectAttempted) {
+						const reconnectToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+						const reconnectConfig: AgentLoopConfig = {
+							...config,
+							headers: {
+								...(config.headers ?? {}),
+								"x-punkin-force-reconnect": reconnectToken,
+								Connection: "close",
+							},
+						};
+						if (DEBUG_EMPTY_RETRY) {
+							console.error(
+								`[EMPTY-RETRY-FORCE-RECONNECT] model=${config.model.provider}/${config.model.id} ` +
+									`token=${reconnectToken}`,
+							);
+						}
+						return streamAssistantResponse(context, reconnectConfig, signal, stream, streamFn, 0, undefined, true);
 					} else {
 						if (DEBUG_EMPTY_RETRY) {
 							console.error(
@@ -391,7 +418,7 @@ async function streamAssistantResponse(
 								`Model returned empty response after ${emptyRetryCount + 1} retries (${elapsedMs}ms). ` +
 								`maxRetries=${maxRetries}, maxEmptyRetryTimeMs=${maxTimeMs}, includeEmptyMsgInNextRequest=${
 									config.includeEmptyMsgInNextRequest ?? true
-								}`,
+								}, forcedReconnectAttempted=${forcedReconnectAttempted}`,
 						};
 					}
 				}
