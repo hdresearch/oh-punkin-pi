@@ -374,11 +374,13 @@ async function streamAssistantResponse(
 				if (isEmpty && !signal?.aborted) {
 					const includeEmptyInNextRequest = config.includeEmptyMsgInNextRequest ?? true;
 
-					const retryReplayMessage: AssistantMessage =
+					const retryReplayMessage: AgentMessage =
 						USE_VIRTUAL_EMPTY_RETRY_MESSAGE && includeEmptyInNextRequest
 							? {
-									...finalMessage,
-									content: [{ type: "text" as const, text: EMPTY_RETRY_VIRTUAL_TEXT }],
+									role: "user",
+									content: [{ type: "text", text: EMPTY_RETRY_VIRTUAL_TEXT }],
+									timestamp: now(),
+									endTimestamp: now(),
 							  }
 							: finalMessage;
 
@@ -391,9 +393,15 @@ async function streamAssistantResponse(
 					} else if (includeEmptyInNextRequest) {
 						context.messages.push(retryReplayMessage);
 					}
-					// Keep trailing empty assistant retries canonical:
-					// either exactly one (include=true) or none (include=false).
-					collapseTrailingEmptyAssistantRetries(context.messages, includeEmptyInNextRequest);
+					if (USE_VIRTUAL_EMPTY_RETRY_MESSAGE && includeEmptyInNextRequest) {
+						// Virtual mode replaces empty assistant replay with a faux user message.
+						// Ensure no trailing empty assistant retry placeholders remain.
+						collapseTrailingEmptyAssistantRetries(context.messages, false);
+					} else {
+						// Keep trailing empty assistant retries canonical:
+						// either exactly one (include=true) or none (include=false).
+						collapseTrailingEmptyAssistantRetries(context.messages, includeEmptyInNextRequest);
+					}
 
 					const elapsedMs = Date.now() - retryStartMs;
 					const withinTimeLimit = elapsedMs < maxTimeMs;
