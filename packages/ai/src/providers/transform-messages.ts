@@ -170,5 +170,24 @@ export function transformMessages<TApi extends Api>(
 		}
 	}
 
+	// Flush trailing orphaned tool calls at end-of-history.
+	// Without this, an assistant tool_use at the tail can be dropped without
+	// a synthetic tool_result, violating replay/tool sequencing invariants.
+	if (pendingToolCalls.length > 0) {
+		for (const tc of pendingToolCalls) {
+			if (!existingToolResultIds.has(tc.id)) {
+				result.push({
+					role: "toolResult",
+					toolCallId: tc.id,
+					toolName: tc.name,
+					content: [{ type: "text", text: "No result provided" }],
+					isError: true,
+					timestamp: now(),
+					endTimestamp: now(),
+				} as ToolResultMessage);
+			}
+		}
+	}
+
 	return result;
 }

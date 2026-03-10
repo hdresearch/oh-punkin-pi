@@ -220,6 +220,8 @@ async function runLoop(
 const DEFAULT_MAX_EMPTY_RETRIES = 3;
 const DEFAULT_MAX_EMPTY_RETRY_TIME_MS = 30000;
 const EMPTY_RETRY_JITTER_MS = 1000; // max random delay before retry
+const EMPTY_RETRY_VIRTUAL_TEXT = "[virtual-empty-assistant-retry]";
+const USE_VIRTUAL_EMPTY_RETRY_MESSAGE = process.env.PUNKIN_EMPTY_RETRY_VIRTUAL === "1";
 const DEBUG_EMPTY_RETRY = process.env.PUNKIN_DEBUG_EMPTY_RETRY === "1";
 
 /** Sleep with optional abort signal */
@@ -237,6 +239,32 @@ function sleepWithSignal(ms: number, signal?: AbortSignal): Promise<void> {
 	});
 }
 
+function isEmptyAssistantRetryMessage(message: AgentMessage): message is AssistantMessage {
+	return (
+		message.role === "assistant" &&
+		message.content.length === 0 &&
+		message.stopReason !== "aborted" &&
+		message.stopReason !== "error"
+	);
+}
+
+function collapseTrailingEmptyAssistantRetries(messages: AgentMessage[], keepOne: boolean): void {
+	let idx = messages.length - 1;
+	while (idx >= 0 && isEmptyAssistantRetryMessage(messages[idx])) {
+		idx--;
+	}
+	const trailingStart = idx + 1;
+	const trailingCount = messages.length - trailingStart;
+	if (trailingCount <= 0) return;
+	if (keepOne) {
+		if (trailingCount > 1) {
+			messages.splice(trailingStart, trailingCount - 1);
+		}
+		return;
+	}
+	messages.splice(trailingStart, trailingCount);
+}
+
 /**
  * Stream an assistant response from the LLM.
  * This is where AgentMessage[] gets transformed to Message[] for the LLM.
@@ -251,10 +279,12 @@ async function streamAssistantResponse(
 	emptyRetryCount: number = 0,
 	emptyRetryStartMs?: number,
 	forcedReconnectAttempted: boolean = false,
+	emptyRetryEpisodeId?: string,
 ): Promise<AssistantMessage> {
 	const maxRetries = config.maxEmptyRetries ?? DEFAULT_MAX_EMPTY_RETRIES;
 	const maxTimeMs = config.maxEmptyRetryTimeMs ?? DEFAULT_MAX_EMPTY_RETRY_TIME_MS;
 	const retryStartMs = emptyRetryStartMs ?? Date.now();
+	const retryEpisodeId = emptyRetryEpisodeId ?? `${retryStartMs}-${Math.random().toString(36).slice(2, 8)}`;
 	// Apply context transform if configured (AgentMessage[] → AgentMessage[])
 	let messages = context.messages;
 	if (config.transformContext) {
@@ -344,15 +374,26 @@ async function streamAssistantResponse(
 				if (isEmpty && !signal?.aborted) {
 					const includeEmptyInNextRequest = config.includeEmptyMsgInNextRequest ?? true;
 
+					const retryReplayMessage: AssistantMessage =
+						USE_VIRTUAL_EMPTY_RETRY_MESSAGE && includeEmptyInNextRequest
+							? {
+									...finalMessage,
+									content: [{ type: "text" as const, text: EMPTY_RETRY_VIRTUAL_TEXT }],
+							  }
+							: finalMessage;
+
 					if (addedPartial) {
 						if (includeEmptyInNextRequest) {
-							context.messages[context.messages.length - 1] = finalMessage;
+							context.messages[context.messages.length - 1] = retryReplayMessage;
 						} else {
 							context.messages.pop();
 						}
 					} else if (includeEmptyInNextRequest) {
-						context.messages.push(finalMessage);
+						context.messages.push(retryReplayMessage);
 					}
+					// Keep trailing empty assistant retries canonical:
+					// either exactly one (include=true) or none (include=false).
+					collapseTrailingEmptyAssistantRetries(context.messages, includeEmptyInNextRequest);
 
 					const elapsedMs = Date.now() - retryStartMs;
 					const withinTimeLimit = elapsedMs < maxTimeMs;
@@ -360,7 +401,7 @@ async function streamAssistantResponse(
 
 					if (DEBUG_EMPTY_RETRY) {
 						console.error(
-							`[EMPTY-RETRY] model=${config.model.provider}/${config.model.id} ` +
+							`[EMPTY-RETRY] id=${retryEpisodeId} model=${config.model.provider}/${config.model.id} ` +
 								`attempt=${emptyRetryCount + 1}/${maxRetries + 1} elapsedMs=${elapsedMs} ` +
 								`maxTimeMs=${maxTimeMs} includeEmptyInNextRequest=${includeEmptyInNextRequest} ` +
 								`addedPartial=${addedPartial}`,
@@ -385,6 +426,7 @@ async function streamAssistantResponse(
 							emptyRetryCount + 1,
 							retryStartMs,
 							forcedReconnectAttempted,
+							retryEpisodeId,
 						);
 					} else if (!forcedReconnectAttempted) {
 						const reconnectToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -398,15 +440,15 @@ async function streamAssistantResponse(
 						};
 						if (DEBUG_EMPTY_RETRY) {
 							console.error(
-								`[EMPTY-RETRY-FORCE-RECONNECT] model=${config.model.provider}/${config.model.id} ` +
+								`[EMPTY-RETRY-FORCE-RECONNECT] id=${retryEpisodeId} model=${config.model.provider}/${config.model.id} ` +
 									`token=${reconnectToken}`,
 							);
 						}
-						return streamAssistantResponse(context, reconnectConfig, signal, stream, streamFn, 0, undefined, true);
+						return streamAssistantResponse(context, reconnectConfig, signal, stream, streamFn, 0, undefined, true, retryEpisodeId);
 					} else {
 						if (DEBUG_EMPTY_RETRY) {
 							console.error(
-								`[EMPTY-RETRY-EXHAUSTED] model=${config.model.provider}/${config.model.id} ` +
+								`[EMPTY-RETRY-EXHAUSTED] id=${retryEpisodeId} model=${config.model.provider}/${config.model.id} ` +
 									`retries=${emptyRetryCount + 1} elapsedMs=${elapsedMs} maxTimeMs=${maxTimeMs}`,
 							);
 						}
