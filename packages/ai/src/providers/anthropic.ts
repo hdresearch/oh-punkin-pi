@@ -991,7 +991,16 @@ function convertMessages(
 					});
 				}
 			}
-			if (blocks.length === 0) continue;
+			if (blocks.length === 0) {
+				// Preserve explicit empty assistant turns instead of dropping them.
+				// Anthropic accepts assistant content: [] and this keeps turn boundaries
+				// for empty-response retry flows.
+				params.push({
+					role: "assistant",
+					content: [],
+				});
+				continue;
+			}
 			params.push({
 				role: "assistant",
 				content: blocks,
