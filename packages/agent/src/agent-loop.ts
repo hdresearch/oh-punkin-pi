@@ -342,7 +342,7 @@ async function streamAssistantResponse(
 				// This happens occasionally with Anthropic/OpenRouter after tool results
 				const isEmpty = finalMessage.content.length === 0 && finalMessage.stopReason !== "aborted" && finalMessage.stopReason !== "error";
 				if (isEmpty && !signal?.aborted) {
-					const includeEmptyInNextRequest = (config.includeEmptyMsgInNextRequest ?? true) && emptyRetryCount === 0;
+					const includeEmptyInNextRequest = config.includeEmptyMsgInNextRequest ?? true;
 
 					if (addedPartial) {
 						if (includeEmptyInNextRequest) {
