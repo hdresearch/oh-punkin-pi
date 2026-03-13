@@ -221,7 +221,7 @@ const DEFAULT_MAX_EMPTY_RETRIES = 3;
 const DEFAULT_MAX_EMPTY_RETRY_TIME_MS = 30000;
 const EMPTY_RETRY_JITTER_MS = 1000; // max random delay before retry
 const EMPTY_RETRY_VIRTUAL_TEXT = "[virtual-empty-assistant-retry]";
-const USE_VIRTUAL_EMPTY_RETRY_MESSAGE = process.env.PUNKIN_EMPTY_RETRY_VIRTUAL === "1";
+const USE_VIRTUAL_EMPTY_RETRY_MESSAGE = process.env.PUNKIN_EMPTY_RETRY_VIRTUAL !== "0";
 const DEBUG_EMPTY_RETRY = process.env.PUNKIN_DEBUG_EMPTY_RETRY === "1";
 
 /** Sleep with optional abort signal */
@@ -499,6 +499,9 @@ async function streamAssistantResponse(
 					}
 				}
 
+				// Clean up any trailing empty assistant messages from retry attempts before adding the real response
+				collapseTrailingEmptyAssistantRetries(context.messages, false);
+				
 				if (addedPartial) {
 					context.messages[context.messages.length - 1] = finalMessage;
 				} else {

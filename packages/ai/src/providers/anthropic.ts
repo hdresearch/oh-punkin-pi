@@ -747,7 +747,7 @@ function createClient(
 		return { client, isOAuthToken: false };
 	}
 
-	const betaFeatures = ["fine-grained-tool-streaming-2025-05-14"];
+	const betaFeatures: string[] = [];
 	if (interleavedThinking) {
 		betaFeatures.push("interleaved-thinking-2025-05-14");
 	}
