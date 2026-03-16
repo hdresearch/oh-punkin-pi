@@ -15,7 +15,7 @@ import {
 	visibleWidth,
 } from "@punkin-pi/tui";
 import { KeybindingsManager } from "../../../core/keybindings.js";
-import type { SessionInfo, SessionListProgress } from "../../../core/session-manager.js";
+import type { SessionInfo, SessionListItem, SessionListProgress } from "../../../core/session-manager.js";
 import { theme } from "../theme/theme.js";
 import { DynamicBorder } from "./dynamic-border.js";
 import { appKey, appKeyHint, keyHint } from "./keybinding-hints.js";
@@ -619,7 +619,7 @@ class SessionList implements Component, Focusable {
 	}
 }
 
-type SessionsLoader = (onProgress?: SessionListProgress) => Promise<SessionInfo[]>;
+type SessionsLoader = (onProgress?: SessionListProgress, onSession?: SessionListItem) => Promise<SessionInfo[]>;
 
 /**
  * Delete a session file, trying the `trash` CLI first, then falling back to unlink
@@ -918,6 +918,8 @@ export class SessionSelectorComponent extends Container implements Focusable {
 		this.header.setLoading(true);
 		this.requestRender();
 
+		const incrementalByPath = new Map<string, SessionInfo>();
+
 		const onProgress = (loaded: number, total: number) => {
 			if (scope !== this.scope) return;
 			if (seq !== undefined && seq !== this.allLoadSeq) return;
@@ -925,10 +927,22 @@ export class SessionSelectorComponent extends Container implements Focusable {
 			this.requestRender();
 		};
 
+		const onSession = (session: SessionInfo) => {
+			incrementalByPath.set(session.path, session);
+			if (scope !== this.scope) return;
+			if (seq !== undefined && seq !== this.allLoadSeq) return;
+
+			const incrementalSessions = [...incrementalByPath.values()].sort(
+				(a, b) => b.modified.getTime() - a.modified.getTime(),
+			);
+			this.sessionList.setSessions(incrementalSessions, showCwd);
+			this.requestRender();
+		};
+
 		try {
 			const sessions = await (scope === "current"
-				? this.currentSessionsLoader(onProgress)
-				: this.allSessionsLoader(onProgress));
+				? this.currentSessionsLoader(onProgress, onSession)
+				: this.allSessionsLoader(onProgress, onSession));
 
 			if (scope === "current") {
 				this.currentSessions = sessions;
@@ -992,13 +1006,9 @@ export class SessionSelectorComponent extends Container implements Focusable {
 		if (this.scope === "current") {
 			this.scope = "all";
 			this.header.setScope(this.scope);
-
-			if (this.allSessions !== null) {
-				this.header.setLoading(false);
-				this.sessionList.setSessions(this.allSessions, true);
-				this.requestRender();
-				return;
-			}
+			this.header.setLoading(this.allLoading);
+			this.sessionList.setSessions(this.allSessions ?? [], true);
+			this.requestRender();
 
 			if (!this.allLoading) {
 				void this.loadScope("all", "toggle");
@@ -1011,6 +1021,10 @@ export class SessionSelectorComponent extends Container implements Focusable {
 		this.header.setLoading(this.currentLoading);
 		this.sessionList.setSessions(this.currentSessions ?? [], false);
 		this.requestRender();
+
+		if (!this.currentLoading) {
+			void this.loadScope("current", "toggle");
+		}
 	}
 
 	getSessionList(): SessionList {

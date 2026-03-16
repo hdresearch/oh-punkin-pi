@@ -196,4 +196,96 @@ describe("session selector path/delete interactions", () => {
 		allDeferred.resolve([makeSession({ id: "all" })]);
 		await flushPromises();
 	});
+
+	it("reloads All sessions every time All scope is selected", async () => {
+		const currentSessions = [makeSession({ id: "current" })];
+		let allLoadCalls = 0;
+
+		const selector = new SessionSelectorComponent(
+			async () => currentSessions,
+			async () => {
+				allLoadCalls++;
+				return [makeSession({ id: `all-${allLoadCalls}` })];
+			},
+			() => {},
+			() => {},
+			() => {},
+			() => {},
+			{ keybindings },
+		);
+		await flushPromises();
+
+		const list = selector.getSessionList();
+		list.handleInput("\t"); // current -> all
+		await flushPromises();
+		list.handleInput("\t"); // all -> current
+		await flushPromises();
+		list.handleInput("\t"); // current -> all again
+		await flushPromises();
+
+		expect(allLoadCalls).toBe(2);
+	});
+
+	it("reloads Current sessions when toggling back from All", async () => {
+		let currentLoadCalls = 0;
+		const currentSessions = [makeSession({ id: "current" })];
+
+		const selector = new SessionSelectorComponent(
+			async () => {
+				currentLoadCalls++;
+				return currentSessions;
+			},
+			async () => [makeSession({ id: "all" })],
+			() => {},
+			() => {},
+			() => {},
+			() => {},
+			{ keybindings },
+		);
+		await flushPromises();
+		expect(currentLoadCalls).toBe(1);
+
+		const list = selector.getSessionList();
+		list.handleInput("\t"); // current -> all
+		await flushPromises();
+		list.handleInput("\t"); // all -> current
+		await flushPromises();
+
+		expect(currentLoadCalls).toBe(2);
+	});
+
+	it("shows loading marker and incremental sessions before load completes", async () => {
+		const currentDeferred = createDeferred<SessionInfo[]>();
+		let emitSession: ((session: SessionInfo, loaded: number, total: number) => void) | undefined;
+
+		const selector = new SessionSelectorComponent(
+			async (_onProgress, onSession) => {
+				emitSession = onSession;
+				return currentDeferred.promise;
+			},
+			async () => [],
+			() => {},
+			() => {},
+			() => {},
+			() => {},
+			{ keybindings },
+		);
+		await flushPromises();
+
+		expect(selector.render(120).join("\n")).toContain("Loading");
+
+		emitSession?.(makeSession({ id: "inc", firstMessage: "incremental item" }), 1, 2);
+		await flushPromises();
+
+		const duringLoad = selector.render(120).join("\n");
+		expect(duringLoad).toContain("incremental item");
+		expect(duringLoad).toContain("Loading");
+
+		currentDeferred.resolve([makeSession({ id: "done", firstMessage: "final item" })]);
+		await flushPromises();
+
+		const afterLoad = selector.render(120).join("\n");
+		expect(afterLoad).toContain("final item");
+		expect(afterLoad).not.toContain("Loading");
+	});
 });

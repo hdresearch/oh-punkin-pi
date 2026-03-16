@@ -693,12 +693,14 @@ async function buildSessionInfo(filePath: string): Promise<SessionInfo | null> {
 }
 
 export type SessionListProgress = (loaded: number, total: number) => void;
+export type SessionListItem = (session: SessionInfo, loaded: number, total: number) => void;
 
 async function listSessionsFromDir(
 	dir: string,
 	onProgress?: SessionListProgress,
 	progressOffset = 0,
 	progressTotal?: number,
+	onSession?: SessionListItem,
 ): Promise<SessionInfo[]> {
 	const sessions: SessionInfo[] = [];
 	if (!existsSync(dir)) {
@@ -715,7 +717,11 @@ async function listSessionsFromDir(
 			files.map(async (file) => {
 				const info = await buildSessionInfo(file);
 				loaded++;
-				onProgress?.(progressOffset + loaded, total);
+				const loadedNow = progressOffset + loaded;
+				onProgress?.(loadedNow, total);
+				if (info) {
+					onSession?.(info, loadedNow, total);
+				}
 				return info;
 			}),
 		);
@@ -1396,9 +1402,14 @@ export class SessionManager {
 	 * @param sessionDir Optional session directory. If omitted, uses default (~/.pi/agent/sessions/<encoded-cwd>/).
 	 * @param onProgress Optional callback for progress updates (loaded, total)
 	 */
-	static async list(cwd: string, sessionDir?: string, onProgress?: SessionListProgress): Promise<SessionInfo[]> {
+	static async list(
+		cwd: string,
+		sessionDir?: string,
+		onProgress?: SessionListProgress,
+		onSession?: SessionListItem,
+	): Promise<SessionInfo[]> {
 		const dir = sessionDir ?? getDefaultSessionDir(cwd);
-		const sessions = await listSessionsFromDir(dir, onProgress);
+		const sessions = await listSessionsFromDir(dir, onProgress, 0, undefined, onSession);
 		sessions.sort((a, b) => b.modified.getTime() - a.modified.getTime());
 		return sessions;
 	}
@@ -1407,7 +1418,7 @@ export class SessionManager {
 	 * List all sessions across all project directories.
 	 * @param onProgress Optional callback for progress updates (loaded, total)
 	 */
-	static async listAll(onProgress?: SessionListProgress): Promise<SessionInfo[]> {
+	static async listAll(onProgress?: SessionListProgress, onSession?: SessionListItem): Promise<SessionInfo[]> {
 		const sessionsDir = getSessionsDir();
 
 		try {
@@ -1440,6 +1451,9 @@ export class SessionManager {
 					const info = await buildSessionInfo(file);
 					loaded++;
 					onProgress?.(loaded, totalFiles);
+					if (info) {
+						onSession?.(info, loaded, totalFiles);
+					}
 					return info;
 				}),
 			);

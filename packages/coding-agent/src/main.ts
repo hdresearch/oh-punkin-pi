@@ -709,8 +709,8 @@ export async function main(args: string[]) {
 		KeybindingsManager.create();
 
 		const selectedPath = await selectSession(
-			(onProgress) => SessionManager.list(cwd, parsed.sessionDir, onProgress),
-			SessionManager.listAll,
+			(onProgress, onSession) => SessionManager.list(cwd, parsed.sessionDir, onProgress, onSession),
+			(onProgress, onSession) => SessionManager.listAll(onProgress, onSession),
 		);
 		if (!selectedPath) {
 			console.log(chalk.dim("No session selected"));
