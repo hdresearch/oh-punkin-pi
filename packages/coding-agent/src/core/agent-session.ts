@@ -18,7 +18,7 @@ import { readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import type { Agent, AgentEvent, AgentMessage, AgentState, AgentTool, ThinkingLevel } from "@punkin-pi/agent-core";
 import type { AssistantMessage, ImageContent, Message, Model, TextContent } from "@punkin-pi/ai";
-import { isContextOverflow, modelsAreEqual, resetApiProviders, supportsContext1M, supportsXhigh } from "@punkin-pi/ai";
+import { alwaysHas1MContext, isContextOverflow, modelsAreEqual, resetApiProviders, supportsContext1M, supportsXhigh } from "@punkin-pi/ai";
 import { getDocsPath } from "../config.js";
 import { theme } from "../modes/interactive/theme/theme.js";
 import { stripFrontmatter } from "../utils/frontmatter.js";
@@ -1499,10 +1499,16 @@ export class AgentSession {
 	/**
 	 * Get the effective context window for the current model, accounting for
 	 * the 1M context beta flag when enabled for supported Anthropic models.
+	 * Claude 4.6 models always have 1M context (not a beta feature).
 	 */
 	effectiveContextWindow(): number {
 		const model = this.model;
 		if (!model) return 0;
+		// 4.6 models always have 1M context - no flag needed
+		if (alwaysHas1MContext(model.id)) {
+			return 1_000_000;
+		}
+		// Older models: 1M is opt-in via settings flag
 		const base = model.contextWindow ?? 0;
 		if (this.settingsManager.getEnableContext1M() && supportsContext1M(model.id)) {
 			return 1_000_000;

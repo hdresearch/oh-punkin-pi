@@ -703,6 +703,17 @@ export function supportsContext1M(modelId: string): boolean {
 	return /^claude-(opus-4[.-]6|sonnet-4([.-]6|[.-]5|[.-]0|-20250514)?)\b/.test(id);
 }
 
+/**
+ * Models that always have 1M context window (not a beta feature).
+ * Claude 4.6 models (opus-4-6, sonnet-4-6) ship with 1M context by default.
+ */
+export function alwaysHas1MContext(modelId: string): boolean {
+	// Normalize: strip provider prefixes (anthropic., eu.anthropic., us.anthropic., etc.)
+	const id = modelId.replace(/^(?:eu\.|us\.)?anthropic\./, "");
+	// Only 4.6 models have 1M always
+	return /^claude-(opus|sonnet)-4[.-]6\b/.test(id);
+}
+
 function createClient(
 	model: Model<"anthropic-messages">,
 	apiKey: string,
