@@ -255,9 +255,12 @@ export class FooterComponent implements Component {
 			if (extLeftWidth + 2 + buildInfoWidth <= width) {
 				const padding = " ".repeat(width - extLeftWidth - buildInfoWidth);
 				line4 = extLeft + padding + buildInfo;
-			} else if (buildInfo && !extLeft) {
-				// Just build info, right-aligned
+			} else if (buildInfo && !extLeft && buildInfoWidth <= width) {
+				// Just build info, right-aligned (only if it fits)
 				line4 = " ".repeat(width - buildInfoWidth) + buildInfo;
+			} else if (buildInfo && !extLeft) {
+				// Build info doesn't fit, truncate
+				line4 = truncateToWidth(buildInfo, width, "...");
 			} else {
 				// Just extension statuses
 				line4 = truncateToWidth(extLeft, width, "...");
