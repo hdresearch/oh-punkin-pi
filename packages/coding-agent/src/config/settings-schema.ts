@@ -640,7 +640,7 @@ export const SETTINGS_SCHEMA = {
 
 	"startup.checkUpdate": {
 		type: "boolean",
-		default: true,
+		default: false, // Disabled for oh-punkin-pi fork
 		ui: {
 			tab: "interaction",
 			label: "Check for Updates",

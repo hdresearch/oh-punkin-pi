@@ -18,8 +18,26 @@
 </p>
 
 <p align="center">
-  Fork of <a href="https://github.com/badlogic/pi-mono">badlogic/pi-mono</a> by <a href="https://github.com/mariozechner">@mariozechner</a>
+  <strong>oh-punkin-pi</strong> — Carter's fork of <a href="https://github.com/can1357/oh-my-pi">can1357/oh-my-pi</a>
 </p>
+
+<p align="center">
+  <em>Lineage:</em> <a href="https://github.com/badlogic/pi-mono">badlogic/pi-mono</a> → <a href="https://github.com/can1357/oh-my-pi">can1357/oh-my-pi</a> → here
+</p>
+
+---
+
+### What's different in oh-punkin-pi?
+
+| Feature | Description |
+|---------|-------------|
+| **CarterKit** | Handle system for large tool results, CoT capture/replay, turn boundary sigils |
+| **Visible reasoning** | Squiggle-based thinking blocks the model can reference across turns |
+| **Hardened user prefs** | `~/.agent/AGENTS.md` as sole behavioral authority when present |
+| **Boot sequence** | Model paraphrases prefs/skills on first turn (proves comprehension) |
+| **Binary: `ohp`** | "oh punkin" — the OP one |
+
+---
 
 ## Table of Contents
 
