@@ -48,8 +48,10 @@ export class OpenSquiggleTool implements AgentTool<typeof openSquiggleSchema, Op
 		_context?: AgentToolContext,
 	): Promise<AgentToolResult<OpenSquiggleDetails>> {
 		const { marker, bracketId } = openSquiggleBracket();
+		// Model sees only the structural open — sigil+nonce stay in details for harness/renderer.
+		// This prevents the model from learning the codebook on the same turn.
 		return {
-			content: [{ type: "text", text: marker }],
+			content: [{ type: "text", text: "{" }],
 			details: { marker, bracketId },
 		};
 	}
@@ -75,8 +77,9 @@ export class CloseSquiggleTool implements AgentTool<typeof closeSquiggleSchema, 
 	): Promise<AgentToolResult<CloseSquiggleDetails>> {
 		const bracketId: BracketId = { sigil: params.sigil, nonce: params.nonce };
 		const marker = closeSquiggleBracket(bracketId);
+		// Model sees only the structural close — sigil+nonce stay in details.
 		return {
-			content: [{ type: "text", text: marker }],
+			content: [{ type: "text", text: "}" }],
 			details: { marker },
 		};
 	}
