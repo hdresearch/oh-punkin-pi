@@ -4229,18 +4229,16 @@ export class AgentSession {
 
 		this.#todoReminderCount++;
 
-		// Compact HUD: phase counts only
-		const phaseSummaries = incompleteByPhase
+		// Compact HUD with full item list — fires once, no demand
+		const todoList = incompleteByPhase
 			.map(phase => {
-				const inProgress = phase.tasks.filter(t => t.status === "in_progress").length;
-				const pending = phase.tasks.filter(t => t.status === "pending").length;
-				const parts: string[] = [];
-				if (inProgress > 0) parts.push(`${inProgress} active`);
-				if (pending > 0) parts.push(`${pending} pending`);
-				return `${phase.name}: ${parts.join(", ")}`;
+				const items = phase.tasks
+					.map(t => `  ${t.status === "in_progress" ? "→" : "○"} ${t.content}`)
+					.join("\n");
+				return `- ${phase.name}\n${items}`;
 			})
-			.join("; ");
-		const hud = `<open-items>${incomplete.length} todo(s) — ${phaseSummaries}</open-items>`;
+			.join("\n");
+		const hud = `<open-items>\n${incomplete.length} incomplete todo(s):\n${todoList}\n</open-items>`;
 
 		logger.debug("Todo completion: injecting HUD", { incomplete: incomplete.length });
 
