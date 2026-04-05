@@ -2,6 +2,7 @@ import { INTENT_FIELD } from "@oh-my-pi/pi-agent-core";
 import type { ImageContent } from "@oh-my-pi/pi-ai";
 import { Loader, TERMINAL, Text } from "@oh-my-pi/pi-tui";
 import { settings } from "../../config/settings";
+import { renderTurnEnd, renderTurnStart } from "../../core/carter_kit/turn-boundary";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";
 import { ReadToolGroupComponent } from "../../modes/components/read-tool-group";
 import { TodoReminderComponent } from "../../modes/components/todo-reminder";
@@ -10,6 +11,7 @@ import { TtsrNotificationComponent } from "../../modes/components/ttsr-notificat
 import { getSymbolTheme, theme } from "../../modes/theme/theme";
 import type { InteractiveModeContext, TodoPhase } from "../../modes/types";
 import type { AgentSessionEvent } from "../../session/agent-session";
+import type { TurnEndMessage, TurnStartMessage } from "../../session/messages";
 import type { ExitPlanModeDetails } from "../../tools";
 
 export class EventController {
@@ -93,6 +95,28 @@ export class EventController {
 		this.ctx.updateEditorTopBorder();
 
 		switch (event.type) {
+			case "turn_start": {
+				// Render turn start bracket in the chat
+				const lastMsg = this.ctx.session.agent.state.messages.at(-1);
+				if (lastMsg && lastMsg.role === "turnStart") {
+					this.ctx.chatContainer.addChild(
+						new Text(theme.fg("dim", renderTurnStart(lastMsg as TurnStartMessage)), 0, 0),
+					);
+					this.ctx.ui.requestRender();
+				}
+				break;
+			}
+			case "turn_end": {
+				// Render turn end bracket in the chat
+				const lastMsg = this.ctx.session.agent.state.messages.at(-1);
+				if (lastMsg && lastMsg.role === "turnEnd") {
+					this.ctx.chatContainer.addChild(
+						new Text(theme.fg("dim", renderTurnEnd(lastMsg as TurnEndMessage)), 0, 0),
+					);
+					this.ctx.ui.requestRender();
+				}
+				break;
+			}
 			case "agent_start":
 				this.#lastIntent = undefined;
 				this.#readToolCallArgs.clear();

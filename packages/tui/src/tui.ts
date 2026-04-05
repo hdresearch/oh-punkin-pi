@@ -991,6 +991,9 @@ export class TUI extends Container {
 
 	#doRender(): void {
 		if (this.#stopped) return;
+		// Capture and consume one-shot flag — must reset before any early return
+		const preserveScrollback = this.#preserveScrollback;
+		this.#preserveScrollback = false;
 		const width = this.terminal.columns;
 		const height = this.terminal.rows;
 		let viewportTop = Math.max(0, this.#maxLinesRendered - height);
@@ -1021,11 +1024,10 @@ export class TUI extends Container {
 		const fullRender = (clear: boolean): void => {
 			this.#fullRedrawCount += 1;
 			let buffer = "\x1b[?2026h"; // Begin synchronized output
-			// Skip clearing scrollback (3J) in multiplexers or when preserveScrollback is set
+			// Skip clearing scrollback (3J) in multiplexers or when preserveScrollback was requested
 			// Users actively navigate scrollback history to review previous content
-			const skipScrollbackClear = isMultiplexer || this.#preserveScrollback;
+			const skipScrollbackClear = isMultiplexer || preserveScrollback;
 			if (clear) buffer += skipScrollbackClear ? "\x1b[2J\x1b[H" : "\x1b[2J\x1b[H\x1b[3J";
-			this.#preserveScrollback = false; // Reset flag after use
 			const reset = SEGMENT_RESET;
 			for (let i = 0; i < newLines.length; i++) {
 				if (i > 0) buffer += "\r\n";
