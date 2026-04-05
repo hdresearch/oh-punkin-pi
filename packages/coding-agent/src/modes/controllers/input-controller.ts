@@ -655,7 +655,8 @@ export class InputController {
 				child.setExpanded(expanded);
 			}
 		}
-		this.ctx.ui.requestRender();
+		// Use preserveScrollback to allow user to scroll up after expansion
+		this.ctx.ui.requestRenderPreserveScrollback();
 	}
 
 	toggleThinkingBlockVisibility(): void {

@@ -230,6 +230,7 @@ export class TUI extends Container {
 	#sixelProbeUnsubscribe?: () => void;
 	#showHardwareCursor = process.env.PI_HARDWARE_CURSOR === "1";
 	#clearOnShrink = process.env.PI_CLEAR_ON_SHRINK === "1"; // Clear empty rows when content shrinks (default: off)
+	#preserveScrollback = false; // If true, skip scrollback clear on next fullRender
 	#maxLinesRendered = 0; // High-water line count used for clear-on-shrink policy
 	#fullRedrawCount = 0;
 	#stopped = false;
@@ -579,6 +580,16 @@ export class TUI extends Container {
 			this.#renderRequested = false;
 			this.#doRender();
 		});
+	}
+
+	/**
+	 * Request a render that preserves terminal scrollback history.
+	 * Use this when content changes dramatically (e.g., tool expansion) but
+	 * you want the user to be able to scroll up to see previous content.
+	 */
+	requestRenderPreserveScrollback(): void {
+		this.#preserveScrollback = true;
+		this.requestRender();
 	}
 
 	#handleInput(data: string): void {
@@ -1010,8 +1021,11 @@ export class TUI extends Container {
 		const fullRender = (clear: boolean): void => {
 			this.#fullRedrawCount += 1;
 			let buffer = "\x1b[?2026h"; // Begin synchronized output
-			// Skip clearing scrollback (3J) in multiplexers — users actively navigate scrollback history
-			if (clear) buffer += isMultiplexer ? "\x1b[2J\x1b[H" : "\x1b[2J\x1b[H\x1b[3J";
+			// Skip clearing scrollback (3J) in multiplexers or when preserveScrollback is set
+			// Users actively navigate scrollback history to review previous content
+			const skipScrollbackClear = isMultiplexer || this.#preserveScrollback;
+			if (clear) buffer += skipScrollbackClear ? "\x1b[2J\x1b[H" : "\x1b[2J\x1b[H\x1b[3J";
+			this.#preserveScrollback = false; // Reset flag after use
 			const reset = SEGMENT_RESET;
 			for (let i = 0; i < newLines.length; i++) {
 				if (i > 0) buffer += "\r\n";
