@@ -1027,7 +1027,21 @@ export class TUI extends Container {
 			// Skip clearing scrollback (3J) in multiplexers or when preserveScrollback was requested
 			// Users actively navigate scrollback history to review previous content
 			const skipScrollbackClear = isMultiplexer || preserveScrollback;
-			if (clear) buffer += skipScrollbackClear ? "\x1b[2J\x1b[H" : "\x1b[2J\x1b[H\x1b[3J";
+			if (clear) {
+				if (skipScrollbackClear) {
+					// Push current visible content into scrollback by scrolling it off-screen,
+					// then clear viewport and home cursor. \x1b[2J alone erases in-place
+					// without adding to scrollback, so we must scroll first.
+					const scrollLines = Math.min(this.#previousLines.length, height);
+					if (scrollLines > 0) {
+						buffer += `\x1b[${height};1H`; // Move cursor to bottom row
+						buffer += "\n".repeat(scrollLines); // Push content into scrollback
+					}
+					buffer += "\x1b[2J\x1b[H"; // Clear viewport and home cursor
+				} else {
+					buffer += "\x1b[2J\x1b[H\x1b[3J"; // Clear viewport + scrollback
+				}
+			}
 			const reset = SEGMENT_RESET;
 			for (let i = 0; i < newLines.length; i++) {
 				if (i > 0) buffer += "\r\n";

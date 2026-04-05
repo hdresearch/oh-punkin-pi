@@ -95,28 +95,6 @@ export class EventController {
 		this.ctx.updateEditorTopBorder();
 
 		switch (event.type) {
-			case "turn_start": {
-				// Render turn start bracket in the chat
-				const lastMsg = this.ctx.session.agent.state.messages.at(-1);
-				if (lastMsg && lastMsg.role === "turnStart") {
-					this.ctx.chatContainer.addChild(
-						new Text(theme.fg("dim", renderTurnStart(lastMsg as TurnStartMessage)), 0, 0),
-					);
-					this.ctx.ui.requestRender();
-				}
-				break;
-			}
-			case "turn_end": {
-				// Render turn end bracket in the chat
-				const lastMsg = this.ctx.session.agent.state.messages.at(-1);
-				if (lastMsg && lastMsg.role === "turnEnd") {
-					this.ctx.chatContainer.addChild(
-						new Text(theme.fg("dim", renderTurnEnd(lastMsg as TurnEndMessage)), 0, 0),
-					);
-					this.ctx.ui.requestRender();
-				}
-				break;
-			}
 			case "agent_start":
 				this.#lastIntent = undefined;
 				this.#readToolCallArgs.clear();
@@ -136,7 +114,17 @@ export class EventController {
 				break;
 
 			case "message_start":
-				if (event.message.role === "hookMessage" || event.message.role === "custom") {
+				if (event.message.role === "turnStart") {
+					this.ctx.chatContainer.addChild(
+						new Text(theme.fg("dim", renderTurnStart(event.message as unknown as TurnStartMessage)), 0, 0),
+					);
+					this.ctx.ui.requestRender();
+				} else if (event.message.role === "turnEnd") {
+					this.ctx.chatContainer.addChild(
+						new Text(theme.fg("dim", renderTurnEnd(event.message as unknown as TurnEndMessage)), 0, 0),
+					);
+					this.ctx.ui.requestRender();
+				} else if (event.message.role === "hookMessage" || event.message.role === "custom") {
 					const signature = `${event.message.role}:${event.message.customType}:${event.message.timestamp}`;
 					if (this.#renderedCustomMessages.has(signature)) {
 						break;

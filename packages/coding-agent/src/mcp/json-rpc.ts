@@ -80,5 +80,14 @@ export async function callMCP<T = unknown>(
 		throw new Error("Failed to parse MCP response");
 	}
 
+	if (result.id !== body.id && !(result.error && result.id == null)) {
+		logger.warn("MCP response ID mismatch", {
+			expected: body.id,
+			received: result.id,
+			url,
+			method,
+		});
+	}
+
 	return result;
 }

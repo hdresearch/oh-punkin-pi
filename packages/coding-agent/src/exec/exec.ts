@@ -47,7 +47,7 @@ export async function execCommand(
 	return {
 		stdout: result.stdout,
 		stderr: result.stderr,
-		code: result.exitCode ?? 0,
+		code: result.exitCode ?? (result.exitError?.aborted ? 1 : 0),
 		killed: Boolean(result.exitError?.aborted),
 	};
 }

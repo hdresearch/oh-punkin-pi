@@ -780,6 +780,8 @@ export class AgentSession {
 			if (turnStart) {
 				this.agent.appendMessage(turnStart as AgentMessage);
 				this.sessionManager.appendMessage(turnStart);
+				// Emit the turnStart message so the UI can render it
+				this.#emit({ type: "message_start", message: turnStart as AgentMessage });
 			}
 			this.#carterKitTurnStartIndex = this.agent.state.messages.length;
 			this.#resetStreamingEditState();
@@ -797,6 +799,8 @@ export class AgentSession {
 					const [, turnEnd] = this.#carterKitHook.onAssistantTurnEnd(turnMessages);
 					this.agent.appendMessage(turnEnd as AgentMessage);
 					this.sessionManager.appendMessage(turnEnd);
+					// Emit the turnEnd message so the UI can render it
+					this.#emit({ type: "message_start", message: turnEnd as AgentMessage });
 				}
 				this.#carterKitHook.turnEnd(event.message);
 				this.#carterKitTurnStartIndex = undefined;

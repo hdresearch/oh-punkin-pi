@@ -1,5 +1,6 @@
 import * as fs from "node:fs/promises";
 import path from "node:path";
+import { isEnoent } from "@oh-my-pi/pi-utils";
 import type { CreateFile, DeleteFile, RenameFile, TextDocumentEdit, TextEdit, WorkspaceEdit } from "./types";
 import { uriToFile } from "./utils";
 
@@ -86,6 +87,14 @@ export async function applyWorkspaceEdit(edit: WorkspaceEdit, cwd: string): Prom
 				if (change.kind === "create") {
 					const createOp = change as CreateFile;
 					const filePath = uriToFile(createOp.uri);
+					const exists = await Bun.file(filePath).exists();
+					if (exists && createOp.options?.ignoreIfExists) {
+						continue;
+					}
+					if (exists && !createOp.options?.overwrite) {
+						applied.push(`Skipped ${path.relative(cwd, filePath)} (already exists)`);
+						continue;
+					}
 					await Bun.write(filePath, "");
 					applied.push(`Created ${path.relative(cwd, filePath)}`);
 				} else if (change.kind === "rename") {
@@ -98,8 +107,15 @@ export async function applyWorkspaceEdit(edit: WorkspaceEdit, cwd: string): Prom
 				} else if (change.kind === "delete") {
 					const deleteOp = change as DeleteFile;
 					const filePath = uriToFile(deleteOp.uri);
-					await fs.rm(filePath, { recursive: true });
-					applied.push(`Deleted ${path.relative(cwd, filePath)}`);
+					try {
+						await fs.rm(filePath, { recursive: deleteOp.options?.recursive ?? false });
+						applied.push(`Deleted ${path.relative(cwd, filePath)}`);
+					} catch (err) {
+						if (deleteOp.options?.ignoreIfNotExists && isEnoent(err)) {
+							continue;
+						}
+						throw err;
+					}
 				}
 			}
 		}

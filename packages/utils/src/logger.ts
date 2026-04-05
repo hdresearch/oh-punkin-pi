@@ -1,14 +1,14 @@
 /**
- * Centralized file logger for omp.
+ * Centralized file logger for ohp.
  *
- * Logs to ~/.omp/logs/ with size-based rotation, supporting concurrent omp instances.
+ * Logs to ~/.omp/logs/ with size-based rotation, supporting concurrent ohp instances.
  * Each log entry includes process.pid for traceability.
  */
 import * as fs from "node:fs";
 import { RingBuffer } from "@oh-my-pi/pi-utils/ring";
 import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
-import { getLogsDir } from "./dirs";
+import { APP_NAME, getLogsDir } from "./dirs";
 
 /** Ensure logs directory exists */
 function ensureLogsDir(): string {
@@ -42,7 +42,7 @@ const logFormat = winston.format.combine(
 /** Size-based rotating file transport */
 const fileTransport = new DailyRotateFile({
 	dirname: ensureLogsDir(),
-	filename: "omp.%DATE%.log",
+	filename: `${APP_NAME}.%DATE%.log`,
 	datePattern: "YYYY-MM-DD",
 	maxSize: "10m",
 	maxFiles: 5,
@@ -59,10 +59,10 @@ const winstonLogger = winston.createLogger({
 });
 
 /**
- * Centralized logger for omp.
+ * Centralized logger for ohp.
  *
- * Logs to ~/.omp/logs/omp.YYYY-MM-DD.log with size-based rotation.
- * Safe for concurrent access from multiple omp instances.
+ * Logs to ~/.omp/logs/ohp.YYYY-MM-DD.log with size-based rotation.
+ * Safe for concurrent access from multiple ohp instances.
  *
  * @example
  * ```typescript

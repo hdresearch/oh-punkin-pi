@@ -191,13 +191,13 @@ export abstract class OAuthCallbackFlow {
 			}
 		});
 
-		return new Response(
-			(templateHtml as unknown as string).replaceAll("__OAUTH_STATE__", JSON.stringify(resultState)),
-			{
-				status: resultState.ok ? 200 : 500,
-				headers: { "Content-Type": "text/html" },
-			},
-		);
+		// Escape </ sequences to prevent script injection in HTML context
+		// (JSON.stringify does not escape </script> which would close the host <script> tag)
+		const safeJson = JSON.stringify(resultState).replaceAll("</", "<\\/");
+		return new Response((templateHtml as unknown as string).replaceAll("__OAUTH_STATE__", safeJson), {
+			status: resultState.ok ? 200 : 500,
+			headers: { "Content-Type": "text/html" },
+		});
 	}
 
 	/**
