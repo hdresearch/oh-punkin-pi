@@ -10,6 +10,7 @@ import {
 	type ToolResultMessage,
 	validateToolArguments,
 } from "@oh-my-pi/pi-ai";
+import { generateToolResultBracketId } from "@oh-my-pi/pi-ai/role-boundary";
 import type {
 	AgentContext,
 	AgentEvent,
@@ -508,6 +509,7 @@ async function executeToolCalls(
 			details: result.details,
 			isError,
 			timestamp: Date.now(),
+			bracketId: generateToolResultBracketId(),
 		};
 		record.result = result;
 		record.isError = isError;
@@ -670,6 +672,7 @@ function createAbortedToolResult(
 		details: {},
 		isError: true,
 		timestamp: Date.now(),
+		bracketId: generateToolResultBracketId(),
 	};
 
 	stream.push({ type: "message_start", message: toolResultMessage });

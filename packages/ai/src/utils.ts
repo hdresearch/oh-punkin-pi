@@ -134,12 +134,15 @@ export function getOpenAIResponsesHistoryItems(
 
 /**
  * Resolve cache retention preference.
- * Defaults to "short" and uses PI_CACHE_RETENTION for backward compatibility.
+ * Defaults to "long" (1h TTL on Anthropic). With deterministic bracket identity,
+ * message content is stable across calls — long cache is always viable.
+ * PI_CACHE_RETENTION env var overrides for backward compatibility.
  */
 export function resolveCacheRetention(cacheRetention?: CacheRetention): CacheRetention {
 	if (cacheRetention) return cacheRetention;
-	if ($env.PI_CACHE_RETENTION === "long") return "long";
-	return "short";
+	const env = $env.PI_CACHE_RETENTION;
+	if (env === "short" || env === "long" || env === "none") return env;
+	return "long";
 }
 
 export function isAnthropicOAuthToken(key: string): boolean {

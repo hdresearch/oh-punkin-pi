@@ -6,6 +6,11 @@ import { hasPendingMermaid, prerenderMermaid } from "../../modes/theme/mermaid-c
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import { resolveImageOptions } from "../../tools/render-utils";
 
+/** Left-gutter box drawing chars for assistant block visual */
+const GUTTER_TOP = "┌";
+const GUTTER_MID = "│";
+const GUTTER_BOT = "└";
+
 /**
  * Component that renders a complete assistant message
  */
@@ -202,5 +207,22 @@ export class AssistantMessageComponent extends Container {
 			this.#contentContainer.addChild(new Spacer(1));
 			this.#contentContainer.addChild(new Text(theme.fg("dim", parts.join("  ")), 1, 0));
 		}
+	}
+
+	override render(width: number): string[] {
+		// Gutter takes 2 visible chars ("│ "), reduce content width accordingly
+		const GUTTER_WIDTH = 2;
+		const lines = super.render(width - GUTTER_WIDTH);
+		if (lines.length === 0) {
+			return lines;
+		}
+
+		const dim = (s: string) => theme.fg("dim", s);
+		const gutterPrefix = dim(`${GUTTER_MID} `);
+		const topLine = dim(GUTTER_TOP);
+		const botLine = dim(GUTTER_BOT);
+
+		const guttered = lines.map(line => gutterPrefix + line);
+		return [topLine, ...guttered, botLine];
 	}
 }

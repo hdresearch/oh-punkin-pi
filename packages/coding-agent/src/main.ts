@@ -100,7 +100,7 @@ export async function submitInteractiveInput(
 		if (!input.started && !mode.markPendingSubmissionStarted(input)) {
 			return;
 		}
-		await session.prompt(input.text, { images: input.images });
+		await session.prompt(input.text, { images: input.images, bracketId: input.bracketId });
 	} catch (error: unknown) {
 		const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
 		mode.showError(errorMessage);

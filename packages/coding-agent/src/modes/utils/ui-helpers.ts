@@ -34,7 +34,14 @@ type QueuedMessages = {
 };
 
 export class UiHelpers {
-	constructor(private ctx: InteractiveModeContext) {}
+	#turnIndex = 0;
+	#prevMessageEndTimestamp: number | undefined = undefined;
+
+	constructor(private ctx: InteractiveModeContext) {
+		// Initialize with current time so first user message has a start timestamp
+		// TODO: ideally use actual session start time when available
+		this.#prevMessageEndTimestamp = Date.now();
+	}
 
 	/** Extract text content from a user message */
 	getUserMessageText(message: Message): string {
@@ -193,17 +200,29 @@ export class UiHelpers {
 				const textContent = this.ctx.getUserMessageText(message);
 				if (textContent) {
 					const isSynthetic = message.role === "developer" ? true : (message.synthetic ?? false);
-					const userComponent = new UserMessageComponent(textContent, isSynthetic);
+					const bracketId = message.role === "user" ? message.bracketId : undefined;
+					if (message.role === "user" && !isSynthetic) {
+						this.#turnIndex++;
+					}
+					const userComponent = new UserMessageComponent(textContent, {
+						synthetic: isSynthetic,
+						bracketId,
+						timestamp: bracketId ? (this.#prevMessageEndTimestamp ?? message.timestamp) : undefined,
+						endTimestamp: bracketId ? message.timestamp : undefined,
+						turn: bracketId ? this.#turnIndex : undefined,
+					});
 					this.ctx.chatContainer.addChild(userComponent);
 					if (options?.populateHistory && message.role === "user" && !isSynthetic) {
 						this.ctx.editor.addToHistory(textContent);
 					}
+					this.#prevMessageEndTimestamp = message.timestamp;
 				}
 				break;
 			}
 			case "assistant": {
 				const assistantComponent = new AssistantMessageComponent(message, this.ctx.hideThinkingBlock);
 				this.ctx.chatContainer.addChild(assistantComponent);
+				this.#prevMessageEndTimestamp = message.timestamp;
 				break;
 			}
 			case "toolResult": {

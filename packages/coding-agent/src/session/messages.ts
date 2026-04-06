@@ -7,6 +7,7 @@
 import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
 import type {
 	AssistantMessage,
+	BracketId,
 	ImageContent,
 	Message,
 	MessageAttribution,
@@ -17,6 +18,8 @@ import type {
 } from "@oh-my-pi/pi-ai";
 import {
 	closeSquiggleBracket,
+	generateSystemBracketId,
+	generateUserBracketId,
 	openSquiggleBracket,
 	type ToolResultWrapParams,
 	type WrapParams,
@@ -96,6 +99,7 @@ export interface BashExecutionMessage {
 	timestamp: number;
 	/** If true, this message is excluded from LLM context (!! prefix) */
 	excludeFromContext?: boolean;
+	bracketId?: BracketId;
 }
 
 /**
@@ -113,6 +117,7 @@ export interface PythonExecutionMessage {
 	timestamp: number;
 	/** If true, this message is excluded from LLM context ($$ prefix) */
 	excludeFromContext?: boolean;
+	bracketId?: BracketId;
 }
 
 /**
@@ -127,6 +132,7 @@ export interface CustomMessage<T = unknown> {
 	/** Who initiated this message for billing/attribution semantics. */
 	attribution?: MessageAttribution;
 	timestamp: number;
+	bracketId?: BracketId;
 }
 
 /**
@@ -141,6 +147,7 @@ export interface HookMessage<T = unknown> {
 	/** Who initiated this message for billing/attribution semantics. */
 	attribution?: MessageAttribution;
 	timestamp: number;
+	bracketId?: BracketId;
 }
 
 /**
@@ -173,6 +180,7 @@ export interface BranchSummaryMessage {
 	summary: string;
 	fromId: string;
 	timestamp: number;
+	bracketId?: BracketId;
 }
 
 export interface CompactionSummaryMessage {
@@ -182,6 +190,7 @@ export interface CompactionSummaryMessage {
 	tokensBefore: number;
 	providerPayload?: ProviderPayload;
 	timestamp: number;
+	bracketId?: BracketId;
 }
 
 /**
@@ -200,6 +209,7 @@ export interface FileMentionMessage {
 		image?: ImageContent;
 	}>;
 	timestamp: number;
+	bracketId?: BracketId;
 }
 
 // Extend CustomAgentMessages via declaration merging
@@ -262,6 +272,7 @@ export function createBranchSummaryMessage(summary: string, fromId: string, time
 		summary,
 		fromId,
 		timestamp: new Date(timestamp).getTime(),
+		bracketId: generateSystemBracketId(),
 	};
 }
 
@@ -279,6 +290,7 @@ export function createCompactionSummaryMessage(
 		tokensBefore,
 		providerPayload,
 		timestamp: new Date(timestamp).getTime(),
+		bracketId: generateSystemBracketId(),
 	};
 }
 
@@ -325,6 +337,7 @@ export function createCustomMessage(
 		details,
 		attribution,
 		timestamp: new Date(timestamp).getTime(),
+		bracketId: generateUserBracketId(),
 	};
 }
 
@@ -358,7 +371,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 					};
 					converted = {
 						role: "user",
-						content: [{ type: "text", text: wrapUser(text, params) }],
+						content: [{ type: "text", text: wrapUser(text, params, m.bracketId) }],
 						attribution: "user",
 						timestamp: m.timestamp,
 					};
@@ -377,7 +390,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 					};
 					converted = {
 						role: "user",
-						content: [{ type: "text", text: wrapUser(text, params) }],
+						content: [{ type: "text", text: wrapUser(text, params, m.bracketId) }],
 						attribution: "user",
 						timestamp: m.timestamp,
 					};
@@ -395,7 +408,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 					endTimestamp: m.timestamp,
 					turn: turnIndex,
 				};
-				const wrappedText = wrapUser(rawContent, params);
+				const wrappedText = wrapUser(rawContent, params, m.bracketId);
 				const content: (TextContent | ImageContent)[] = [{ type: "text", text: wrappedText }];
 				if (typeof m.content !== "string") {
 					for (const c of m.content) {
@@ -420,7 +433,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 				};
 				converted = {
 					role: "user",
-					content: [{ type: "text", text: wrapSystem(text, params) }],
+					content: [{ type: "text", text: wrapSystem(text, params, m.bracketId) }],
 					attribution: "agent",
 					timestamp: m.timestamp,
 				};
@@ -436,7 +449,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 				};
 				converted = {
 					role: "user",
-					content: [{ type: "text", text: wrapSystem(text, params) }],
+					content: [{ type: "text", text: wrapSystem(text, params, m.bracketId) }],
 					attribution: "agent",
 					providerPayload: m.providerPayload,
 					timestamp: m.timestamp,
@@ -457,7 +470,9 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 					endTimestamp: m.timestamp,
 					turn: turnIndex,
 				};
-				const content: (TextContent | ImageContent)[] = [{ type: "text", text: wrapSystem(text, params) }];
+				const content: (TextContent | ImageContent)[] = [
+					{ type: "text", text: wrapSystem(text, params, m.bracketId) },
+				];
 				for (const file of m.files) {
 					if (file.image) content.push(file.image);
 				}
@@ -480,7 +495,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 					endTimestamp: m.timestamp,
 					turn: turnIndex,
 				};
-				const wrappedText = wrapUser(rawContent, params);
+				const wrappedText = wrapUser(rawContent, params, m.bracketId);
 				const content: (TextContent | ImageContent)[] = [{ type: "text", text: wrappedText }];
 				if (typeof m.content !== "string") {
 					for (const c of m.content) {
@@ -516,7 +531,7 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 					turn: turnIndex,
 					toolName: trm.toolName,
 				};
-				const wrappedText = rawText ? wrapToolResult(rawText, trParams) : "";
+				const wrappedText = rawText ? wrapToolResult(rawText, trParams, trm.bracketId) : "";
 				const content: (TextContent | ImageContent)[] = [];
 				if (wrappedText) content.push({ type: "text", text: wrappedText });
 				content.push(...imageParts);

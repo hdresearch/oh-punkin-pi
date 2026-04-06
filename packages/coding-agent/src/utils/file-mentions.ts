@@ -8,6 +8,7 @@
 import * as fs from "node:fs/promises";
 import path from "node:path";
 import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
+import { generateSystemBracketId } from "@oh-my-pi/pi-ai/role-boundary";
 import { glob } from "@oh-my-pi/pi-natives";
 import { formatHashLines } from "../patch/hashline";
 import type { FileMentionMessage } from "../session/messages";
@@ -369,6 +370,7 @@ export async function generateFileMentionMessages(
 		role: "fileMention",
 		files,
 		timestamp: Date.now(),
+		bracketId: generateSystemBracketId(),
 	};
 
 	return [message];

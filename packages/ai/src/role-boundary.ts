@@ -535,7 +535,7 @@ function generateNonce(words: readonly string[]): string {
 	return `${pick(words)}-${pick(words)}-${pick(words)}`;
 }
 
-function sha3Trunc(content: string): string {
+export function sha3Trunc(content: string): string {
 	return createHash("sha3-256").update(content).digest("hex").slice(0, 12);
 }
 
@@ -552,7 +552,7 @@ const NYC_FORMAT = new Intl.DateTimeFormat("en-US", {
 });
 
 /** Format ms-since-epoch as full ISO 8601 in America/New_York. */
-function formatTimestamp(ms: number): string {
+export function formatTimestamp(ms: number): string {
 	const parts = NYC_FORMAT.formatToParts(new Date(ms));
 	const get = (type: Intl.DateTimeFormatPartTypes) => parts.find(p => p.type === type)?.value ?? "";
 
@@ -577,6 +577,28 @@ function formatTimestamp(ms: number): string {
 	return `${year}-${month}-${day}T${hour}:${minute}:${second}.${frac}${offsetSign}${offsetH}:${offsetM}`;
 }
 
+/** Format ms-since-epoch as short timestamp with NYC suffix for TUI display. */
+export function formatTimestampNYC(ms: number): string {
+	const parts = NYC_FORMAT.formatToParts(new Date(ms));
+	const get = (type: Intl.DateTimeFormatPartTypes) => parts.find(p => p.type === type)?.value ?? "";
+	return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}:${get("second")} NYC`;
+}
+
+/** Format a duration in ms as a human-readable delta string. */
+export function formatDeltaMs(ms: number): string {
+	const sec = Math.floor(ms / 1000);
+	if (sec < 60) return `${sec}s`;
+	if (sec < 300) {
+		const m = Math.floor(sec / 60);
+		const s = sec % 60;
+		return `${m}m${s}s`;
+	}
+	if (sec < 3600) return `${Math.floor(sec / 60)}m`;
+	const h = Math.floor(sec / 3600);
+	const m = Math.floor((sec % 3600) / 60);
+	return m > 0 ? `${h}h${m}m` : `${h}h`;
+}
+
 // =============================================================================
 // Wrap Functions
 // =============================================================================
@@ -596,9 +618,9 @@ export interface WrapParams {
  * Wrap user content with role boundary.
  * Format: [user]{sigil nonce T=... turn:N Δ... { content } T=end H=hash nonce sigil}
  */
-export function wrapUser(content: string, params: WrapParams): string {
-	const s = pick(USER_SIGILS);
-	const n = generateNonce(USER_WORDS);
+export function wrapUser(content: string, params: WrapParams, bracketId?: BracketId): string {
+	const s = bracketId?.sigil ?? pick(USER_SIGILS);
+	const n = bracketId?.nonce ?? generateNonce(USER_WORDS);
 	const hash = sha3Trunc(content);
 	const delta = params.delta ? ` Δ${params.delta}` : "";
 	const tStart = formatTimestamp(params.timestamp);
@@ -626,9 +648,9 @@ export function wrapAssistant(content: string, params: WrapParams): string {
  * Wrap system-injected content (file mentions, summaries, etc.) with role boundary.
  * Format: [system]{sigil nonce T=... turn:N { content } T=end H=hash nonce sigil}
  */
-export function wrapSystem(content: string, params: WrapParams): string {
-	const s = pick(SYSTEM_SIGILS);
-	const n = generateNonce(SYSTEM_WORDS);
+export function wrapSystem(content: string, params: WrapParams, bracketId?: BracketId): string {
+	const s = bracketId?.sigil ?? pick(SYSTEM_SIGILS);
+	const n = bracketId?.nonce ?? generateNonce(SYSTEM_WORDS);
 	const hash = sha3Trunc(content);
 	const delta = params.delta ? ` Δ${params.delta}` : "";
 	const tStart = formatTimestamp(params.timestamp);
@@ -646,15 +668,34 @@ export interface ToolResultWrapParams extends WrapParams {
 	toolName: string;
 }
 
-export function wrapToolResult(content: string, params: ToolResultWrapParams): string {
-	const s = pick(TOOL_RESULT_SIGILS);
-	const n = generateNonce(TOOL_RESULT_WORDS);
+export function wrapToolResult(content: string, params: ToolResultWrapParams, bracketId?: BracketId): string {
+	const s = bracketId?.sigil ?? pick(TOOL_RESULT_SIGILS);
+	const n = bracketId?.nonce ?? generateNonce(TOOL_RESULT_WORDS);
 	const hash = sha3Trunc(content);
 	const delta = params.delta ? ` Δ${params.delta}` : "";
 	const tStart = formatTimestamp(params.timestamp);
 	const tEnd = formatTimestamp(params.endTimestamp);
 
 	return `[tool-result]{${s} ${n} T=${tStart} turn:${params.turn} tool:${params.toolName}${delta} {\n${content}\n} T=${tEnd} H=${hash} ${n} ${s}}`;
+}
+
+// =============================================================================
+// Bracket ID Generators
+// =============================================================================
+
+/** Generate a BracketId for a user message. */
+export function generateUserBracketId(): BracketId {
+	return { sigil: pick(USER_SIGILS), nonce: generateNonce(USER_WORDS) };
+}
+
+/** Generate a BracketId for a tool result message. */
+export function generateToolResultBracketId(): BracketId {
+	return { sigil: pick(TOOL_RESULT_SIGILS), nonce: generateNonce(TOOL_RESULT_WORDS) };
+}
+
+/** Generate a BracketId for a system message. */
+export function generateSystemBracketId(): BracketId {
+	return { sigil: pick(SYSTEM_SIGILS), nonce: generateNonce(SYSTEM_WORDS) };
 }
 
 // =============================================================================
@@ -674,6 +715,25 @@ export function openSquiggleBracket(): { marker: string; bracketId: BracketId } 
 /** Generate a closing squiggle marker matching a given bracketId. */
 export function closeSquiggleBracket(bracketId: BracketId): string {
 	return `} ${bracketId.nonce} ${bracketId.sigil}`;
+}
+
+/**
+ * Generate a deterministic opening squiggle marker seeded from content hash.
+ * Same content always produces the same sigil + nonce, avoiding cache busting
+ * when convertToLlm reifies thinking blocks on every call.
+ */
+export function openSquiggleBracketDeterministic(content: string): { marker: string; bracketId: BracketId } {
+	const hash = createHash("sha3-256").update(content).digest();
+	// Use different byte ranges to avoid correlated indices
+	const sigil = SQUIGGLE_SIGILS[hash.readUInt16BE(0) % SQUIGGLE_SIGILS.length];
+	const w1 = SQUIGGLE_WORDS[hash.readUInt16BE(2) % SQUIGGLE_WORDS.length];
+	const w2 = SQUIGGLE_WORDS[hash.readUInt16BE(4) % SQUIGGLE_WORDS.length];
+	const w3 = SQUIGGLE_WORDS[hash.readUInt16BE(6) % SQUIGGLE_WORDS.length];
+	const n = `${w1}-${w2}-${w3}`;
+	return {
+		marker: `${sigil} ${n} {`,
+		bracketId: { sigil, nonce: n },
+	};
 }
 
 // =============================================================================

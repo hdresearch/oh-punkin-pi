@@ -29,6 +29,7 @@ import {
 } from "@oh-my-pi/pi-agent-core";
 import type {
 	AssistantMessage,
+	BracketId,
 	Effort,
 	ImageContent,
 	Message,
@@ -51,6 +52,7 @@ import {
 	modelsAreEqual,
 	parseRateLimitReason,
 } from "@oh-my-pi/pi-ai";
+import { generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
 import type { SearchDb } from "@oh-my-pi/pi-natives";
 import { abortableSleep, getAgentDbPath, isEnoent, logger } from "@oh-my-pi/pi-utils";
 import type { AsyncJob, AsyncJobManager } from "../async";
@@ -268,6 +270,8 @@ export interface PromptOptions {
 	attribution?: MessageAttribution;
 	/** Skip pre-send compaction checks for this prompt (internal use for maintenance flows). */
 	skipCompactionCheck?: boolean;
+	/** Pre-generated bracket identity from the TUI layer — avoids re-rolling on prompt(). */
+	bracketId?: BracketId;
 }
 
 /** Result from cycleModel() */
@@ -643,6 +647,18 @@ export class AgentSession {
 			this.#toolRegistry.set(finalTool.name, finalTool);
 		}
 		this.#carterKitTurnStartIndex = undefined;
+		// Initialize turn counter from existing messages so it doesn't reset on session resume
+		const messages = this.agent.state.messages;
+		let maxTurn = 0;
+		for (const m of messages) {
+			if (m.role === "turnStart" || m.role === "turnEnd") {
+				const turn = (m as { turn?: number }).turn;
+				if (turn != null && turn > maxTurn) maxTurn = turn;
+			}
+		}
+		if (maxTurn > 0) {
+			this.#carterKitHook.initializeTurnCounterFromEntries([{ type: "turn_boundary", turnNumber: maxTurn }]);
+		}
 		this.#syncActiveToolsFromRegistry();
 	}
 
@@ -2404,7 +2420,13 @@ export class AgentSession {
 		const promptAttribution = options?.attribution ?? (options?.synthetic ? "agent" : "user");
 		const message = options?.synthetic
 			? { role: "developer" as const, content: userContent, attribution: promptAttribution, timestamp: Date.now() }
-			: { role: "user" as const, content: userContent, attribution: promptAttribution, timestamp: Date.now() };
+			: {
+					role: "user" as const,
+					content: userContent,
+					attribution: promptAttribution,
+					timestamp: Date.now(),
+					bracketId: options?.bracketId ?? generateUserBracketId(),
+				};
 
 		if (eagerTodoPrelude) {
 			this.#nextToolChoiceOverride = eagerTodoPrelude.toolChoice;
@@ -5436,6 +5458,7 @@ export class AgentSession {
 			exitCode: result.exitCode,
 			cancelled: result.cancelled,
 			truncated: result.truncated,
+			bracketId: generateUserBracketId(),
 			meta,
 			timestamp: Date.now(),
 			excludeFromContext: options?.excludeFromContext,
@@ -5556,6 +5579,7 @@ export class AgentSession {
 			exitCode: result.exitCode,
 			cancelled: result.cancelled,
 			truncated: result.truncated,
+			bracketId: generateUserBracketId(),
 			meta,
 			timestamp: Date.now(),
 			excludeFromContext: options?.excludeFromContext,

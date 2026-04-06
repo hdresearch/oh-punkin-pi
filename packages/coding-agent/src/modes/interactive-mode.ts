@@ -6,6 +6,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { type Agent, type AgentMessage, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
 import type { AssistantMessage, ImageContent, Message, Model, UsageReport } from "@oh-my-pi/pi-ai";
+import { generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
 import type { Component, SlashCommand } from "@oh-my-pi/pi-tui";
 import { Container, Loader, Markdown, ProcessTerminal, Spacer, Text, TUI, visibleWidth } from "@oh-my-pi/pi-tui";
 import { APP_NAME, getProjectDir, hsvToRgb, isEnoent, logger, postmortem } from "@oh-my-pi/pi-utils";
@@ -426,11 +427,13 @@ export class InteractiveMode implements InteractiveModeContext {
 	}
 
 	startPendingSubmission(input: { text: string; images?: ImageContent[] }): SubmittedUserInput {
+		const bracketId = generateUserBracketId();
 		const submission: SubmittedUserInput = {
 			text: input.text,
 			images: input.images,
 			cancelled: false,
 			started: false,
+			bracketId,
 		};
 		this.#pendingSubmittedInput = submission;
 		this.optimisticUserMessageSignature = `${submission.text}\u0000${submission.images?.length ?? 0}`;
@@ -439,6 +442,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			content: [{ type: "text", text: submission.text }, ...(submission.images ?? [])],
 			attribution: "user",
 			timestamp: Date.now(),
+			bracketId,
 		});
 		this.editor.setText("");
 		this.ensureLoadingAnimation();

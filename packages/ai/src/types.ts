@@ -368,6 +368,7 @@ export interface ToolResultMessage<TDetails = any> {
 	/** Timestamp when output was pruned (ms since epoch). Undefined if unpruned. */
 	prunedAt?: number;
 	timestamp: number; // Unix timestamp in milliseconds
+	bracketId?: BracketId;
 }
 
 export type Message = UserMessage | DeveloperMessage | AssistantMessage | ToolResultMessage;
