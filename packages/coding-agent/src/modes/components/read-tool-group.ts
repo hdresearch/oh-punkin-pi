@@ -4,6 +4,11 @@ import { theme } from "../../modes/theme/theme";
 import { shortenPath } from "../../tools/render-utils";
 import type { ToolExecutionHandle } from "./tool-execution";
 
+/** Left-gutter box drawing chars for tool result block visual */
+const GUTTER_TOP = "┌";
+const GUTTER_MID = "│";
+const GUTTER_BOT = "└";
+
 type ReadRenderArgs = {
 	path?: string;
 	file_path?: string;
@@ -154,5 +159,21 @@ export class ReadToolGroupComponent extends Container implements ToolExecutionHa
 			return theme.fg("error", theme.status.error);
 		}
 		return theme.fg("dim", theme.status.pending);
+	}
+
+	override render(width: number): string[] {
+		const GUTTER_WIDTH = 2;
+		const lines = super.render(width - GUTTER_WIDTH);
+		if (lines.length === 0) return lines;
+
+		// Tool results: accent (faded sky blue) color for gutter
+		const style = (s: string) => theme.fg("accent", s);
+		const gutterPrefix = style(`${GUTTER_MID} `);
+		const dashLen = Math.max(0, width - 1);
+		const topLine = style(`${GUTTER_TOP}${"─".repeat(dashLen)}`);
+		const botLine = style(`${GUTTER_BOT}${"─".repeat(dashLen)}`);
+
+		const guttered = lines.map(line => gutterPrefix + line);
+		return [topLine, ...guttered, botLine];
 	}
 }

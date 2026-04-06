@@ -217,10 +217,12 @@ export class AssistantMessageComponent extends Container {
 			return lines;
 		}
 
-		const dim = (s: string) => theme.fg("dim", s);
-		const gutterPrefix = dim(`${GUTTER_MID} `);
-		const topLine = dim(GUTTER_TOP);
-		const botLine = dim(GUTTER_BOT);
+		// Assistant messages: dim gutter with dashes
+		const style = (s: string) => theme.fg("dim", s);
+		const gutterPrefix = style(`${GUTTER_MID} `);
+		const dashLen = Math.max(0, width - 1);
+		const topLine = style(`${GUTTER_TOP}${"─".repeat(dashLen)}`);
+		const botLine = style(`${GUTTER_BOT}${"─".repeat(dashLen)}`);
 
 		const guttered = lines.map(line => gutterPrefix + line);
 		return [topLine, ...guttered, botLine];

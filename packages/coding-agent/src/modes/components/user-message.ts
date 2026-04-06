@@ -1,6 +1,6 @@
 import type { BracketId } from "@oh-my-pi/pi-ai";
 import { formatDeltaMs, formatTimestampNYC, generateUserBracketId, sha3Trunc } from "@oh-my-pi/pi-ai/role-boundary";
-import { Container, Markdown, Spacer } from "@oh-my-pi/pi-tui";
+import { Container, Markdown, Spacer, visibleWidth } from "@oh-my-pi/pi-tui";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 
 // OSC 133 shell integration: marks prompt zones for terminal multiplexers
@@ -80,19 +80,24 @@ export class UserMessageComponent extends Container {
 
 		const { sigil, nonce } = this.#bracketId;
 		const hash = sha3Trunc(this.#text);
-		const dim = (s: string) => theme.fg("dim", s);
+		// User messages: green (success) color
+		const style = (s: string) => theme.fg("success", s);
 
 		const startTs = this.#timestamp != null ? ` T=${formatTimestampNYC(this.#timestamp)}` : "";
 		const turnLabel = this.#turn != null ? ` turn:${this.#turn}` : "";
-		const topLine = dim(`${BRACKET_TOP} ${sigil} ${nonce}${startTs}${turnLabel}`);
+		const topMeta = `${BRACKET_TOP} ${sigil} ${nonce}${startTs}${turnLabel} `;
+		const topDashLen = Math.max(0, width - visibleWidth(topMeta));
+		const topLine = style(`${topMeta}${"─".repeat(topDashLen)}`);
 
 		const endTs = this.#endTimestamp != null ? `T=${formatTimestampNYC(this.#endTimestamp)} ` : "";
 		const deltaStr =
 			this.#timestamp != null && this.#endTimestamp != null && this.#endTimestamp > this.#timestamp
 				? `Δ${formatDeltaMs(this.#endTimestamp - this.#timestamp)} `
 				: "";
-		const botLine = dim(`${BRACKET_BOT} ${endTs}${deltaStr}H=${hash} ${nonce} ${sigil}`);
-		const gutterPrefix = dim(`${BRACKET_MID} `);
+		const botMeta = `${BRACKET_BOT} ${endTs}${deltaStr}H=${hash} ${nonce} ${sigil} `;
+		const botDashLen = Math.max(0, width - visibleWidth(botMeta));
+		const botLine = style(`${botMeta}${"─".repeat(botDashLen)}`);
+		const gutterPrefix = style(`${BRACKET_MID} `);
 
 		const guttered = lines.map(line => gutterPrefix + line);
 
