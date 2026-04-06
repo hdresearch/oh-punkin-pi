@@ -50,7 +50,7 @@ export async function runShellCommand(cmd: ShellCommandArgs): Promise<void> {
 	const cwd = cmd.cwd ? path.resolve(cmd.cwd) : getProjectDir();
 	const settings = await Settings.init({ cwd });
 	const { shell, env: shellEnv } = settings.getShellConfig();
-	const snapshotPath = cmd.noSnapshot || !shell.includes("bash") ? null : await getOrCreateSnapshot(shell, shellEnv);
+	const snapshotPath = cmd.noSnapshot ? null : await getOrCreateSnapshot(shell, shellEnv);
 	const shellSession = new Shell({ sessionEnv: shellEnv, snapshotPath: snapshotPath ?? undefined });
 
 	let active = false;
