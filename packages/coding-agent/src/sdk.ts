@@ -86,7 +86,7 @@ import asyncResultTemplate from "./prompts/tools/async-result.md" with { type: "
 import { collectEnvSecrets, loadSecrets, obfuscateMessages, SecretObfuscator } from "./secrets";
 import { AgentSession } from "./session/agent-session";
 import { AuthStorage } from "./session/auth-storage";
-import { convertToLlm } from "./session/messages";
+import { CachedMessageConverter } from "./session/messages";
 import { SessionManager } from "./session/session-manager";
 import { closeAllConnections } from "./ssh/connection-manager";
 import { unmountAll } from "./ssh/sshfs-mount";
@@ -1377,9 +1377,12 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 	const slashCommands =
 		options.slashCommands ?? (await logger.timeAsync("discoverSlashCommands", discoverSlashCommands, cwd));
 
+	// Cached converter for the agent loop hot path — avoids re-rendering stable prefix
+	const cachedConverter = new CachedMessageConverter();
+
 	// Create convertToLlm wrapper that filters images if blockImages is enabled (defense-in-depth)
 	const convertToLlmWithBlockImages = (messages: AgentMessage[]): Message[] => {
-		const converted = convertToLlm(messages);
+		const converted = cachedConverter.convert(messages);
 		// Check setting dynamically so mid-session changes take effect
 		if (!settings.get("images.blockImages")) {
 			return converted;

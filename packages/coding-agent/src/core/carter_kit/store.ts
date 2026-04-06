@@ -37,11 +37,11 @@ import { emptyPageTable, mkContentHash, ptInsertChunk, ptInsertHandle } from "./
 /**
  * hash :: ByteString -> ContentHash
  *
- * SHA-256 for TS phase. K12 in Haskell phase.
+ * SHA3-256 throughout. K12 in Haskell phase.
  * The hash function is swappable; the ContentHash newtype stays the same.
  */
 export function hash(content: string): ContentHash {
-	const h = createHash("sha256").update(content).digest("hex");
+	const h = createHash("sha3-256").update(content).digest("hex");
 	return mkContentHash(h);
 }
 

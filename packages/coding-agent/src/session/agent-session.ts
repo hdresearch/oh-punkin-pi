@@ -595,6 +595,7 @@ export class AgentSession {
 				details: { toolName: action.sourceToolName },
 				attribution: "agent",
 				timestamp: Date.now(),
+				bracketId: generateUserBracketId(),
 			});
 		});
 		this.#syncTodoPhasesFromBranch();
@@ -896,6 +897,7 @@ export class AgentSession {
 										customType: "ttsr-injection",
 										content: injection.content,
 										display: false,
+										bracketId: generateUserBracketId(),
 										details,
 										attribution: "agent",
 										timestamp: Date.now(),
@@ -1324,6 +1326,7 @@ export class AgentSession {
 			customType: "ttsr-injection",
 			content: injection.content,
 			display: false,
+			bracketId: generateUserBracketId(),
 			details: { rules: injection.rules.map(rule => rule.name) },
 			attribution: "agent",
 			timestamp: Date.now(),

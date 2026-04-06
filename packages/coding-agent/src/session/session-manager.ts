@@ -3,6 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
 import type {
+	BracketId,
 	ImageContent,
 	Message,
 	MessageAttribution,
@@ -11,6 +12,7 @@ import type {
 	TextContent,
 	Usage,
 } from "@oh-my-pi/pi-ai";
+import { generateToolResultBracketId, generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
 import { getTerminalId } from "@oh-my-pi/pi-tui";
 import {
 	getBlobsDir,
@@ -53,7 +55,7 @@ import {
 import type { SessionStorage, SessionStorageWriter } from "./session-storage";
 import { FileSessionStorage, MemorySessionStorage } from "./session-storage";
 
-export const CURRENT_SESSION_VERSION = 3;
+export const CURRENT_SESSION_VERSION = 5;
 
 export interface SessionHeader {
 	type: "session";
@@ -202,6 +204,8 @@ export interface CustomMessageEntry<T = unknown> extends SessionEntryBase {
 	display: boolean;
 	/** Who initiated this message for billing/attribution semantics. */
 	attribution?: MessageAttribution;
+	/** Persisted bracket identity for stable prompt caching across session resume. */
+	bracketId?: BracketId;
 }
 
 /** Session entry - has id/parentId for tree structure (returned by "read" methods in SessionManager) */
@@ -341,6 +345,45 @@ function migrateV2ToV3(entries: FileEntry[]): void {
 	}
 }
 
+/** Migrate v3 → v4: add bracketId to custom_message entries for cache stability. */
+function migrateV3ToV4(entries: FileEntry[]): void {
+	for (const entry of entries) {
+		if (entry.type === "session") {
+			entry.version = 4;
+			continue;
+		}
+
+		if (entry.type === "custom_message") {
+			const customEntry = entry as unknown as { bracketId?: unknown };
+			if (customEntry.bracketId == null) {
+				customEntry.bracketId = generateUserBracketId();
+			}
+		}
+	}
+}
+
+/** Migrate v4 → v5: add bracketId to message entries (user, toolResult, bashExecution, pythonExecution). */
+function migrateV4ToV5(entries: FileEntry[]): void {
+	for (const entry of entries) {
+		if (entry.type === "session") {
+			entry.version = 5;
+			continue;
+		}
+
+		if (entry.type === "message") {
+			const msg = entry.message as { role?: string; bracketId?: BracketId };
+			if (msg.bracketId != null) continue;
+
+			const role = msg.role;
+			if (role === "user" || role === "bashExecution" || role === "pythonExecution") {
+				msg.bracketId = generateUserBracketId();
+			} else if (role === "toolResult") {
+				msg.bracketId = generateToolResultBracketId();
+			}
+		}
+	}
+}
+
 /**
  * Run all necessary migrations to bring entries to current version.
  * Mutates entries in place. Returns true if any migration was applied.
@@ -353,6 +396,8 @@ function migrateToCurrentVersion(entries: FileEntry[]): boolean {
 
 	if (version < 2) migrateV1ToV2(entries);
 	if (version < 3) migrateV2ToV3(entries);
+	if (version < 4) migrateV3ToV4(entries);
+	if (version < 5) migrateV4ToV5(entries);
 
 	return true;
 }
@@ -610,6 +655,7 @@ export function buildSessionContext(
 					entry.details,
 					entry.timestamp,
 					entry.attribution,
+					entry.bracketId,
 				),
 			);
 		} else if (entry.type === "branch_summary" && entry.summary) {
@@ -2194,6 +2240,7 @@ export class SessionManager {
 			display,
 			details,
 			attribution,
+			bracketId: generateUserBracketId(),
 			id: generateId(this.#byId),
 			parentId: this.#leafId,
 			timestamp: new Date().toISOString(),
