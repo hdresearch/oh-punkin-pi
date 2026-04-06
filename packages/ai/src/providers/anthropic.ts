@@ -248,15 +248,23 @@ const enforcedHeaderKeys = new Set(
 
 const CLAUDE_BILLING_HEADER_PREFIX = "x-anthropic-billing-header:";
 
+// Cache the buildHash per-session to avoid busting prompt cache on every API call
+let cachedBuildHash: string | null = null;
+function getBuildHash(): string {
+	if (cachedBuildHash === null) {
+		const randomBytes = new Uint8Array(2);
+		crypto.getRandomValues(randomBytes);
+		cachedBuildHash = Array.from(randomBytes, byte => byte.toString(16).padStart(2, "0"))
+			.join("")
+			.slice(0, 3);
+	}
+	return cachedBuildHash;
+}
+
 function createClaudeBillingHeader(payload: unknown): string {
 	const payloadJson = JSON.stringify(payload) ?? "";
 	const cch = nodeCrypto.createHash("sha256").update(payloadJson).digest("hex").slice(0, 5);
-	const randomBytes = new Uint8Array(2);
-	crypto.getRandomValues(randomBytes);
-	const buildHash = Array.from(randomBytes, byte => byte.toString(16).padStart(2, "0"))
-		.join("")
-		.slice(0, 3);
-	return `${CLAUDE_BILLING_HEADER_PREFIX} cc_version=${claudeCodeVersion}.${buildHash}; cc_entrypoint=cli; cch=${cch};`;
+	return `${CLAUDE_BILLING_HEADER_PREFIX} cc_version=${claudeCodeVersion}.${getBuildHash()}; cc_entrypoint=cli; cch=${cch};`;
 }
 
 const CLAUDE_CLOAKING_USER_ID_REGEX =
@@ -1116,16 +1124,16 @@ function applyCacheControlToLastTextBlock(
 function applyPromptCaching(params: MessageCreateParamsStreaming, cacheControl?: AnthropicCacheControl): void {
 	if (!cacheControl) return;
 
-	// Skip if cache_control breakpoints were already placed externally on messages.
-	for (const message of params.messages) {
-		if (Array.isArray(message.content)) {
-			if ((message.content as Array<ContentBlockParam & CacheControlBlock>).some(b => b.cache_control != null))
-				return;
-		}
-	}
-
+	// Count existing cache_control breakpoints placed by conversion (e.g. compaction summary)
 	const MAX_CACHE_BREAKPOINTS = 4;
 	let cacheBreakpointsUsed = 0;
+	for (const message of params.messages) {
+		if (Array.isArray(message.content)) {
+			if ((message.content as Array<ContentBlockParam & CacheControlBlock>).some(b => b.cache_control != null)) {
+				cacheBreakpointsUsed++;
+			}
+		}
+	}
 
 	if (params.tools && params.tools.length > 0) {
 		applyCacheControlToLastBlock(params.tools as Array<CacheControlBlock>, cacheControl);
@@ -1145,21 +1153,23 @@ function applyPromptCaching(params: MessageCreateParamsStreaming, cacheControl?:
 		.map((message, index) => (message.role === "user" ? index : -1))
 		.filter(index => index >= 0);
 
-	if (userIndexes.length >= 2) {
-		const penultimateUserIndex = userIndexes[userIndexes.length - 2];
-		const penultimateUser = params.messages[penultimateUserIndex];
-		if (penultimateUser) {
-			if (typeof penultimateUser.content === "string") {
+	// Place cache breakpoint 3 turns back - caches everything up to that point
+	// (including all restored session content on resume)
+	if (userIndexes.length >= 4) {
+		const threeBackIndex = userIndexes[userIndexes.length - 4];
+		const threeBackUser = params.messages[threeBackIndex];
+		if (threeBackUser) {
+			if (typeof threeBackUser.content === "string") {
 				const contentBlock: ContentBlockParam & CacheControlBlock = {
 					type: "text",
-					text: penultimateUser.content,
+					text: threeBackUser.content,
 					cache_control: cacheControl,
 				};
-				penultimateUser.content = [contentBlock];
+				threeBackUser.content = [contentBlock];
 				cacheBreakpointsUsed++;
-			} else if (Array.isArray(penultimateUser.content) && penultimateUser.content.length > 0) {
+			} else if (Array.isArray(threeBackUser.content) && threeBackUser.content.length > 0) {
 				applyCacheControlToLastTextBlock(
-					penultimateUser.content as Array<ContentBlockParam & CacheControlBlock>,
+					threeBackUser.content as Array<ContentBlockParam & CacheControlBlock>,
 					cacheControl,
 				);
 				cacheBreakpointsUsed++;
