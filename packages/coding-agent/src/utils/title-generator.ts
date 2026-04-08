@@ -5,7 +5,7 @@ import * as path from "node:path";
 import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
 import type { Api, Model } from "@oh-my-pi/pi-ai";
 import { completeSimple } from "@oh-my-pi/pi-ai";
-import { logger } from "@oh-my-pi/pi-utils";
+import { $env, logger } from "@oh-my-pi/pi-utils";
 import type { ModelRegistry } from "../config/model-registry";
 import { resolveRoleSelection } from "../config/model-resolver";
 import { renderPromptTemplate } from "../config/prompt-templates";
@@ -163,6 +163,7 @@ export function formatSessionTerminalTitle(sessionName: string | undefined, cwd?
  * Set the terminal title using OSC 2. Unsupported terminals ignore it.
  */
 export function setTerminalTitle(title: string): void {
+	if ($env.PI_NO_TITLE) return;
 	process.stdout.write(`\x1b]2;${sanitizeTerminalTitlePart(title) ?? DEFAULT_TERMINAL_TITLE}\x07`);
 }
 
@@ -174,6 +175,7 @@ export function setSessionTerminalTitle(sessionName: string | undefined, cwd?: s
  * Save the current terminal title on terminals that support xterm window ops.
  */
 export function pushTerminalTitle(): void {
+	if ($env.PI_NO_TITLE) return;
 	process.stdout.write("\x1b[22;2t");
 }
 
@@ -181,5 +183,6 @@ export function pushTerminalTitle(): void {
  * Restore the previously saved terminal title on terminals that support xterm window ops.
  */
 export function popTerminalTitle(): void {
+	if ($env.PI_NO_TITLE) return;
 	process.stdout.write("\x1b[23;2t");
 }

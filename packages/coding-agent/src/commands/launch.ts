@@ -40,10 +40,10 @@ export default class Index extends Command {
 			description: "API key (defaults to env vars)",
 		}),
 		"system-prompt": Flags.string({
-			description: "System prompt (default: coding assistant prompt)",
+			description: "System prompt — inline text or file path (default: coding assistant prompt)",
 		}),
 		"append-system-prompt": Flags.string({
-			description: "Append text or file contents to the system prompt",
+			description: "Append to the system prompt — inline text or file path",
 		}),
 		"allow-home": Flags.boolean({
 			description: "Allow starting in ~ without auto-switching to a temp dir",
@@ -119,6 +119,23 @@ export default class Index extends Command {
 		"no-title": Flags.boolean({
 			description: "Disable title auto-generation",
 		}),
+		fork: Flags.string({
+			description: "Fork from an existing session",
+		}),
+		"provider-session-id": Flags.string({
+			description: "Provider session ID for session continuity",
+		}),
+		"plugin-dir": Flags.string({
+			description: "Additional plugin directory to load",
+			multiple: true,
+		}),
+		"print-thoughts": Flags.boolean({
+			description: "Include thinking/squiggle blocks in print mode output",
+		}),
+		cwd: Flags.string({
+			char: "C",
+			description: "Set working directory",
+		}),
 	};
 
 	static examples = [
@@ -129,7 +146,9 @@ export default class Index extends Command {
 		`# Continue previous session\n  ${APP_NAME} --continue "What did we discuss?"`,
 		`# Use different model (fuzzy matching)\n  ${APP_NAME} --model opus "Help me refactor this code"`,
 		`# Limit model cycling to specific models\n  ${APP_NAME} --models claude-sonnet,claude-haiku,gpt-4o`,
-		`# Export a session file to HTML\n  ${APP_NAME} --export ~/.omp/agent/sessions/--path--/session.jsonl`,
+		`# Pipe prompt via stdin (useful for large prompts)\n  cat prompt.txt | ${APP_NAME} -p --model opus`,
+		`# System prompt from file\n  ${APP_NAME} -p --system-prompt ./my-system.md "What is 2+2?"`,
+		`# Export a session file to HTML\n  ${APP_NAME} --export ~/.ohp/agent/sessions/--path--/session.jsonl`,
 	];
 
 	static strict = false;

@@ -572,6 +572,9 @@ export async function runRootCommand(parsed: Args, rawArgs: string[]): Promise<v
 	if (parsedArgs.noPty) {
 		Bun.env.PI_NO_PTY = "1";
 	}
+	if (parsedArgs.noTitle) {
+		Bun.env.PI_NO_TITLE = "1";
+	}
 	const { pipedInput, fileText, fileImages } = await logger.timeAsync("prepareInitialMessage", async () => {
 		const pipedInput = await readPipedInput();
 		if (parsedArgs.fileArgs.length === 0) {

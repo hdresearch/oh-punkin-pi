@@ -69,6 +69,8 @@ export function parseArgs(args: string[], extensionFlags?: Map<string, { type: "
 			result.version = true;
 		} else if (arg === "--allow-home") {
 			result.allowHome = true;
+		} else if ((arg === "--cwd" || arg === "-C") && i + 1 < args.length) {
+			result.cwd = args[++i];
 		} else if (arg === "--mode" && i + 1 < args.length) {
 			const mode = args[++i];
 			if (mode === "text" || mode === "json" || mode === "rpc" || mode === "acp") {
@@ -272,8 +274,8 @@ ${chalk.bold("Plugin Options:")}
   --plugin-dir <path>        Load plugin from directory (repeatable)
 
 ${chalk.bold("Useful Commands:")}
-  omp agents unpack           - Export bundled subagents to ~/.omp/agent/agents (default)
-  omp agents unpack --project - Export bundled subagents to ./.omp/agents`;
+  ${APP_NAME} agents unpack           - Export bundled subagents to ~/${CONFIG_DIR_NAME}/agent/agents (default)
+  ${APP_NAME} agents unpack --project - Export bundled subagents to ./${CONFIG_DIR_NAME}/agents`;
 }
 
 export function printHelp(): void {
