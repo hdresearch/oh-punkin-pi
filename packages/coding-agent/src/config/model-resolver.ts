@@ -122,6 +122,14 @@ function pickPreferredModel(candidates: Model<Api>[], context: ModelPreferenceCo
 			return aDeprioritized ? 1 : -1;
 		}
 
+		// Deprioritize models with unknown pricing (all zeros) when the competitor has real pricing.
+		// Zero cost usually means the fetcher didn't extract pricing, not that the model is free.
+		const aHasPricing = a.cost.input > 0 || a.cost.output > 0;
+		const bHasPricing = b.cost.input > 0 || b.cost.output > 0;
+		if (aHasPricing !== bHasPricing) {
+			return aHasPricing ? -1 : 1;
+		}
+
 		const aOrder = context.modelOrder.get(aKey) ?? 0;
 		const bOrder = context.modelOrder.get(bKey) ?? 0;
 		return aOrder - bOrder;

@@ -425,6 +425,54 @@ export function cerebrasModelManagerOptions(
 // 4. Hugging Face
 // ---------------------------------------------------------------------------
 
+/**
+ * Pick the best sub-provider from HF's `providers` array.
+ * Prefers: has pricing + supports tools, then cheapest input cost.
+ */
+function pickHuggingFaceProvider(entry: OpenAICompatibleModelRecord): {
+	pricing: { input: number; output: number } | undefined;
+	contextLength: number | undefined;
+	supportsTools: boolean;
+	hasImage: boolean;
+} {
+	const providers = Array.isArray(entry.providers) ? (entry.providers as Record<string, unknown>[]) : [];
+	const modality = String((entry.architecture as Record<string, unknown> | undefined)?.input_modalities ?? "");
+	const hasImage = modality.includes("image");
+
+	if (providers.length === 0) {
+		return { pricing: undefined, contextLength: undefined, supportsTools: false, hasImage };
+	}
+
+	// Filter to providers with actual pricing
+	const withPricing = providers.filter(p => {
+		const pr = p.pricing as Record<string, unknown> | undefined;
+		return pr && typeof pr.input === "number" && typeof pr.output === "number";
+	});
+
+	// Among those with pricing, prefer ones that support tools, then cheapest
+	const candidates = withPricing.length > 0 ? withPricing : providers;
+	candidates.sort((a, b) => {
+		const aTools = a.supports_tools === true ? 0 : 1;
+		const bTools = b.supports_tools === true ? 0 : 1;
+		if (aTools !== bTools) return aTools - bTools;
+		const aPr = (a.pricing as Record<string, number> | undefined)?.input ?? Number.MAX_SAFE_INTEGER;
+		const bPr = (b.pricing as Record<string, number> | undefined)?.input ?? Number.MAX_SAFE_INTEGER;
+		return aPr - bPr;
+	});
+
+	const best = candidates[0];
+	const pricing = best.pricing as { input: number; output: number } | undefined;
+	const contextLength = typeof best.context_length === "number" ? best.context_length : undefined;
+	const supportsTools = best.supports_tools === true;
+
+	return {
+		pricing: pricing && typeof pricing.input === "number" ? pricing : undefined,
+		contextLength,
+		supportsTools,
+		hasImage,
+	};
+}
+
 export interface HuggingfaceModelManagerConfig {
 	apiKey?: string;
 	baseUrl?: string;
@@ -447,7 +495,23 @@ export function huggingfaceModelManagerOptions(
 					apiKey,
 					mapModel: (entry, defaults) => {
 						const reference = references.get(defaults.id);
-						return mapWithBundledReference(entry, defaults, reference);
+						const hf = pickHuggingFaceProvider(entry);
+						const base = mapWithBundledReference(entry, defaults, reference);
+						return {
+							...base,
+							input: hf.hasImage ? (["text", "image"] as const) : (["text"] as const),
+							...(hf.pricing && {
+								cost: {
+									input: hf.pricing.input,
+									output: hf.pricing.output,
+									cacheRead: base.cost.cacheRead,
+									cacheWrite: base.cost.cacheWrite,
+								},
+							}),
+							...(hf.contextLength && {
+								contextWindow: hf.contextLength,
+							}),
+						};
 					},
 				}),
 		}),

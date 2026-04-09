@@ -41,6 +41,8 @@ export async function listModels(modelRegistry: ModelRegistry, searchPattern?: s
 		model: m.id,
 		context: formatNumber(m.contextWindow),
 		maxOut: formatNumber(m.maxTokens),
+		costIn: m.cost.input === 0 ? "free" : `$${m.cost.input.toFixed(2)}`,
+		costOut: m.cost.output === 0 ? "free" : `$${m.cost.output.toFixed(2)}`,
 		thinking: m.thinking ? getSupportedEfforts(m).join(",") : m.reasoning ? "yes" : "-",
 		images: m.input.includes("image") ? "yes" : "no",
 	}));
@@ -50,6 +52,8 @@ export async function listModels(modelRegistry: ModelRegistry, searchPattern?: s
 		model: "model",
 		context: "context",
 		maxOut: "max-out",
+		costIn: "$/M-in",
+		costOut: "$/M-out",
 		thinking: "thinking",
 		images: "images",
 	};
@@ -59,6 +63,8 @@ export async function listModels(modelRegistry: ModelRegistry, searchPattern?: s
 		model: Math.max(headers.model.length, ...rows.map(r => r.model.length)),
 		context: Math.max(headers.context.length, ...rows.map(r => r.context.length)),
 		maxOut: Math.max(headers.maxOut.length, ...rows.map(r => r.maxOut.length)),
+		costIn: Math.max(headers.costIn.length, ...rows.map(r => r.costIn.length)),
+		costOut: Math.max(headers.costOut.length, ...rows.map(r => r.costOut.length)),
 		thinking: Math.max(headers.thinking.length, ...rows.map(r => r.thinking.length)),
 		images: Math.max(headers.images.length, ...rows.map(r => r.images.length)),
 	};
@@ -69,6 +75,8 @@ export async function listModels(modelRegistry: ModelRegistry, searchPattern?: s
 		headers.model.padEnd(widths.model),
 		headers.context.padEnd(widths.context),
 		headers.maxOut.padEnd(widths.maxOut),
+		headers.costIn.padEnd(widths.costIn),
+		headers.costOut.padEnd(widths.costOut),
 		headers.thinking.padEnd(widths.thinking),
 		headers.images.padEnd(widths.images),
 	].join("  ");
@@ -81,6 +89,8 @@ export async function listModels(modelRegistry: ModelRegistry, searchPattern?: s
 			row.model.padEnd(widths.model),
 			row.context.padEnd(widths.context),
 			row.maxOut.padEnd(widths.maxOut),
+			row.costIn.padEnd(widths.costIn),
+			row.costOut.padEnd(widths.costOut),
 			row.thinking.padEnd(widths.thinking),
 			row.images.padEnd(widths.images),
 		].join("  ");

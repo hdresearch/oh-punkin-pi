@@ -392,7 +392,7 @@ export class SelectorController {
 							await this.ctx.session.setModelTemporary(model);
 							this.ctx.statusLine.invalidate();
 							this.ctx.updateEditorBorderColor();
-							this.ctx.showStatus(`Temporary model: ${model.id}`);
+							this.ctx.showStatus(`Temporary model: ${model.provider}/${model.id}`);
 							done();
 							this.ctx.ui.requestRender();
 						} else if (role === "default") {
@@ -403,13 +403,13 @@ export class SelectorController {
 							}
 							this.ctx.statusLine.invalidate();
 							this.ctx.updateEditorBorderColor();
-							this.ctx.showStatus(`Default model: ${model.id}`);
+							this.ctx.showStatus(`Default model: ${model.provider}/${model.id}`);
 							// Don't call done() - selector stays open for role assignment
 						} else {
 							// Other roles (smol, slow): just update settings, not current model
 							const roleInfo = getRoleInfo(role, settings);
 							const roleLabel = roleInfo?.name ?? role;
-							this.ctx.showStatus(`${roleLabel} model: ${model.id}`);
+							this.ctx.showStatus(`${roleLabel} model: ${model.provider}/${model.id}`);
 							// Don't call done() - selector stays open
 						}
 					} catch (error) {

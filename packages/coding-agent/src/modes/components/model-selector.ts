@@ -12,6 +12,7 @@ import {
 	type TUI,
 	visibleWidth,
 } from "@oh-my-pi/pi-tui";
+import { formatNumber } from "@oh-my-pi/pi-utils";
 import type { ModelRegistry } from "../../config/model-registry";
 import { getKnownRoleIds, getRoleInfo, MODEL_ROLE_IDS, MODEL_ROLES } from "../../config/model-registry";
 import { resolveModelRoleValue } from "../../config/model-resolver";
@@ -467,9 +468,6 @@ export class ModelSelectorComponent extends Container {
 		);
 		const endIndex = Math.min(startIndex + maxVisible, this.#filteredModels.length);
 
-		const activeProvider = this.#getActiveProvider();
-		const showProvider = activeProvider === ALL_TAB;
-
 		// Show visible slice of filtered models
 		for (let i = startIndex; i < endIndex; i++) {
 			const item = this.#filteredModels[i];
@@ -499,23 +497,14 @@ export class ModelSelectorComponent extends Container {
 			}
 			const badgeText = roleBadgeTokens.length > 0 ? ` ${roleBadgeTokens.join(" ")}` : "";
 
+			const providerPrefix = theme.fg("dim", `${item.provider}/`);
 			let line = "";
 			if (isSelected) {
 				const prefix = theme.fg("accent", `${theme.nav.cursor} `);
-				if (showProvider) {
-					const providerPrefix = theme.fg("dim", `${item.provider}/`);
-					line = `${prefix}${providerPrefix}${theme.fg("accent", item.id)}${badgeText}`;
-				} else {
-					line = `${prefix}${theme.fg("accent", item.id)}${badgeText}`;
-				}
+				line = `${prefix}${providerPrefix}${theme.fg("accent", item.id)}${badgeText}`;
 			} else {
 				const prefix = "  ";
-				if (showProvider) {
-					const providerPrefix = theme.fg("dim", `${item.provider}/`);
-					line = `${prefix}${providerPrefix}${item.id}${badgeText}`;
-				} else {
-					line = `${prefix}${item.id}${badgeText}`;
-				}
+				line = `${prefix}${providerPrefix}${item.id}${badgeText}`;
 			}
 
 			this.#listContainer.addChild(new Text(line, 0, 0));
@@ -539,7 +528,22 @@ export class ModelSelectorComponent extends Container {
 		} else {
 			const selected = this.#filteredModels[this.#selectedIndex];
 			this.#listContainer.addChild(new Spacer(1));
-			this.#listContainer.addChild(new Text(theme.fg("muted", `  Model Name: ${selected.model.name}`), 0, 0));
+			const m = selected.model;
+			this.#listContainer.addChild(
+				new Text(
+					theme.fg(
+						"muted",
+						`  ${m.name}  ctx:${formatNumber(m.contextWindow)}  max-out:${formatNumber(m.maxTokens)}`,
+					),
+					0,
+					0,
+				),
+			);
+			const priceStr =
+				m.cost.input === 0 && m.cost.output === 0
+					? "free"
+					: `in:$${m.cost.input.toFixed(2)}/M  out:$${m.cost.output.toFixed(2)}/M`;
+			this.#listContainer.addChild(new Text(theme.fg("muted", `  ${priceStr}`), 0, 0));
 		}
 	}
 	#getThinkingLevelsForModel(model: Model): ReadonlyArray<ThinkingLevel> {
@@ -596,8 +600,8 @@ export class ModelSelectorComponent extends Container {
 		const selectedRoleName = this.#menuSelectedRole ? getRoleInfo(this.#menuSelectedRole, this.#settings).name : "";
 		const headerText =
 			showingThinking && this.#menuSelectedRole
-				? `  Thinking for: ${selectedRoleName} (${selectedModel.id})`
-				: `  Action for: ${selectedModel.id}`;
+				? `  Thinking for: ${selectedRoleName} (${selectedModel.provider}/${selectedModel.id})`
+				: `  Action for: ${selectedModel.provider}/${selectedModel.id}`;
 		const hintText = showingThinking ? "  Enter: confirm  Esc: back" : "  Enter: continue  Esc: cancel";
 		const menuWidth = Math.max(
 			visibleWidth(headerText),
@@ -610,14 +614,21 @@ export class ModelSelectorComponent extends Container {
 		if (showingThinking && this.#menuSelectedRole) {
 			this.#menuContainer.addChild(
 				new Text(
-					theme.fg("text", `  Thinking for: ${theme.bold(selectedRoleName)} (${theme.bold(selectedModel.id)})`),
+					theme.fg(
+						"text",
+						`  Thinking for: ${theme.bold(selectedRoleName)} (${theme.bold(`${selectedModel.provider}/${selectedModel.id}`)})`,
+					),
 					0,
 					0,
 				),
 			);
 		} else {
 			this.#menuContainer.addChild(
-				new Text(theme.fg("text", `  Action for: ${theme.bold(selectedModel.id)}`), 0, 0),
+				new Text(
+					theme.fg("text", `  Action for: ${theme.bold(`${selectedModel.provider}/${selectedModel.id}`)}`),
+					0,
+					0,
+				),
 			);
 		}
 		this.#menuContainer.addChild(new Spacer(1));
