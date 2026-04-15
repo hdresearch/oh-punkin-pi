@@ -20,12 +20,13 @@ import {
 import { SETTINGS_SCHEMA } from "../config/settings-schema";
 import { theme } from "../modes/theme/theme";
 import { initXdg } from "./commands/init-xdg";
+import { defaultEmitOptions, emitSettingsToml, type EmitLayout, type PrefixOrder } from "./emit-settings-toml";
 
 // =============================================================================
 // Types
 // =============================================================================
 
-export type ConfigAction = "list" | "get" | "set" | "reset" | "path" | "init-xdg";
+export type ConfigAction = "list" | "get" | "set" | "reset" | "path" | "init-xdg" | "emit-toml";
 
 export interface ConfigCommandArgs {
 	action: ConfigAction;
@@ -33,6 +34,15 @@ export interface ConfigCommandArgs {
 	value?: string;
 	flags: {
 		json?: boolean;
+		layout?: EmitLayout;
+		prefixOrder?: PrefixOrder;
+		includeComments?: boolean;
+		includePriorityHeader?: boolean;
+		groupBulk?: boolean;
+		renameProviders?: boolean;
+		templateDate?: string;
+		outputTemplate?: string;
+		outputActive?: string;
 	};
 }
 // =============================================================================
@@ -73,7 +83,7 @@ function getSettingValues(def: CliSettingDef): readonly string[] | undefined {
 // Argument Parser
 // =============================================================================
 
-const VALID_ACTIONS: ConfigAction[] = ["list", "get", "set", "reset", "path", "init-xdg"];
+const VALID_ACTIONS: ConfigAction[] = ["list", "get", "set", "reset", "path", "init-xdg", "emit-toml"];
 
 /**
  * Parse config subcommand arguments.
@@ -105,6 +115,32 @@ export function parseConfigArgs(args: string[]): ConfigCommandArgs | undefined {
 		const arg = args[i];
 		if (arg === "--json") {
 			result.flags.json = true;
+		} else if (arg === "--include-comments") {
+			result.flags.includeComments = true;
+		} else if (arg === "--no-include-comments") {
+			result.flags.includeComments = false;
+		} else if (arg === "--include-priority-header") {
+			result.flags.includePriorityHeader = true;
+		} else if (arg === "--no-include-priority-header") {
+			result.flags.includePriorityHeader = false;
+		} else if (arg === "--group-bulk") {
+			result.flags.groupBulk = true;
+		} else if (arg === "--no-group-bulk") {
+			result.flags.groupBulk = false;
+		} else if (arg === "--rename-providers") {
+			result.flags.renameProviders = true;
+		} else if (arg === "--no-rename-providers") {
+			result.flags.renameProviders = false;
+		} else if (arg === "--layout") {
+			result.flags.layout = args[++i] as EmitLayout | undefined;
+		} else if (arg === "--prefix-order") {
+			result.flags.prefixOrder = args[++i] as PrefixOrder | undefined;
+		} else if (arg === "--template-date") {
+			result.flags.templateDate = args[++i];
+		} else if (arg === "--output-template") {
+			result.flags.outputTemplate = args[++i];
+		} else if (arg === "--output-active") {
+			result.flags.outputActive = args[++i];
 		} else if (!arg.startsWith("-")) {
 			positionalArgs.push(arg);
 		}
@@ -254,6 +290,9 @@ export async function runConfigCommand(cmd: ConfigCommandArgs): Promise<void> {
 		case "init-xdg":
 			await initXdg();
 			break;
+		case "emit-toml":
+			await handleEmitToml(cmd.flags);
+			break;
 	}
 }
 
@@ -384,6 +423,21 @@ function handlePath(): void {
 	console.log(getAgentDir());
 }
 
+async function handleEmitToml(flags: ConfigCommandArgs["flags"]): Promise<void> {
+	const options = defaultEmitOptions(flags.templateDate ?? new Date().toISOString().slice(0, 10));
+	options.layout = flags.layout ?? options.layout;
+	options.prefixOrder = flags.prefixOrder ?? options.prefixOrder;
+	options.includeComments = flags.includeComments ?? options.includeComments;
+	options.includePriorityHeader = flags.includePriorityHeader ?? options.includePriorityHeader;
+	options.groupBulk = flags.groupBulk ?? options.groupBulk;
+	options.renameProviders = flags.renameProviders ?? options.renameProviders;
+	options.outputTemplate = flags.outputTemplate ?? options.outputTemplate;
+	options.outputActive = flags.outputActive ?? options.outputActive;
+	await emitSettingsToml(options);
+	console.log(chalk.green(`${theme.status.success} Wrote ${options.outputTemplate}`));
+	console.log(chalk.green(`${theme.status.success} Wrote ${options.outputActive}`));
+}
+
 // =============================================================================
 // Help
 // =============================================================================
@@ -398,9 +452,26 @@ ${chalk.bold("Commands:")}
   reset <key>        Reset a setting to its default value
   path               Print the config directory path
   init-xdg           Initialize XDG Base Directory structure
+  emit-toml          Emit ergonomic TOML reference files from live settings
 
 ${chalk.bold("Options:")}
   --json             Output as JSON
+
+${chalk.bold("Where real settings live:")}
+  Native project settings: .ohp/settings.toml
+  Reference artifacts:     ~/.agent/ohp-settings.toml
+                           ~/.agent/ohp-settings-template-YYYY-MM-DD.toml
+
+${chalk.bold("emit-toml options:")}
+  --layout grouped|flat
+  --prefix-order alpha|priority
+  --include-comments / --no-include-comments
+  --include-priority-header / --no-include-priority-header
+  --group-bulk / --no-group-bulk
+  --rename-providers / --no-rename-providers
+  --template-date YYYY-MM-DD
+  --output-template <path>
+  --output-active <path>
 
 ${chalk.bold("Examples:")}
   ${APP_NAME} config list
@@ -411,6 +482,8 @@ ${chalk.bold("Examples:")}
   ${APP_NAME} config reset steeringMode
   ${APP_NAME} config list --json
   ${APP_NAME} config init-xdg
+  ${APP_NAME} config emit-toml
+  ${APP_NAME} config emit-toml --prefix-order priority --output-template ~/.agent/ohp-settings-template-2026-04-13.toml --output-active ~/.agent/ohp-settings.toml
 
 ${chalk.bold("Boolean Values:")}
   true, false, yes, no, on, off, 1, 0
