@@ -1124,91 +1124,35 @@ function applyCacheControlToLastTextBlock(
 function applyPromptCaching(params: MessageCreateParamsStreaming, cacheControl?: AnthropicCacheControl): void {
 	if (!cacheControl) return;
 
-	// Count existing cache_control breakpoints placed by conversion (e.g. compaction summary)
-	const MAX_CACHE_BREAKPOINTS = 4;
-	let cacheBreakpointsUsed = 0;
-	for (const message of params.messages) {
-		if (Array.isArray(message.content)) {
-			if ((message.content as Array<ContentBlockParam & CacheControlBlock>).some(b => b.cache_control != null)) {
-				cacheBreakpointsUsed++;
-			}
-		}
-	}
+	// Two-breakpoint strategy: system prefix (stable) + lag-0 message (advancing).
+	// Tool cap per turn bounds messages-per-round well under the 20-block lookback window,
+	// so a single advancing breakpoint is safe. Fewer breakpoints = fewer independent cache
+	// writes per call. Each advancing breakpoint pays write cost on its delta independently.
 
-	if (params.tools && params.tools.length > 0) {
-		applyCacheControlToLastBlock(params.tools as Array<CacheControlBlock>, cacheControl);
-		cacheBreakpointsUsed++;
-	}
-
-	if (cacheBreakpointsUsed >= MAX_CACHE_BREAKPOINTS) return;
-
+	// Slot 1: system prompt — stable anchor, rarely changes, always a cache hit after first call.
 	if (params.system && Array.isArray(params.system) && params.system.length > 0) {
 		applyCacheControlToLastBlock(params.system, cacheControl);
-		cacheBreakpointsUsed++;
 	}
 
-	if (cacheBreakpointsUsed >= MAX_CACHE_BREAKPOINTS) return;
-
-	// Place cache breakpoint ~4 messages from the tail (counting ALL messages, not just user turns).
-	// This ensures the breakpoint advances on every API call — including intra-turn tool loops —
-	// keeping it within the 20-block lookback window for delta writes.
-	const BLOCK_LAG = 5; // leave ~4 messages uncached after this breakpoint (slot 4 covers the tail)
-	const targetIndex = params.messages.length - BLOCK_LAG;
-	if (targetIndex > 0) {
-		// Walk backward from target to find the nearest user-role message
-		// (cache_control can only be placed on user/tool_result content blocks)
-		let stableIndex = -1;
-		for (let i = targetIndex; i >= 0; i--) {
-			if (params.messages[i].role === "user") {
-				stableIndex = i;
-				break;
-			}
-		}
-		if (stableIndex >= 0) {
-			const stableMsg = params.messages[stableIndex];
-			if (typeof stableMsg.content === "string") {
-				const contentBlock: ContentBlockParam & CacheControlBlock = {
-					type: "text",
-					text: stableMsg.content,
-					cache_control: cacheControl,
-				};
-				stableMsg.content = [contentBlock];
-				cacheBreakpointsUsed++;
-			} else if (Array.isArray(stableMsg.content) && stableMsg.content.length > 0) {
-				applyCacheControlToLastTextBlock(
-					stableMsg.content as Array<ContentBlockParam & CacheControlBlock>,
-					cacheControl,
-				);
-				cacheBreakpointsUsed++;
-			}
-		}
-	}
-
-	if (cacheBreakpointsUsed >= MAX_CACHE_BREAKPOINTS) return;
-
-	// Place final breakpoint on the last user message (the uncached tail boundary)
-	let lastUserIndex = -1;
+	// Slot 2: last user-role message — advances every API call (including intra-turn tool loops).
+	// Maximizes the cached prefix; only the final assistant response is uncached.
 	for (let i = params.messages.length - 1; i >= 0; i--) {
-		if (params.messages[i].role === "user") {
-			lastUserIndex = i;
-			break;
-		}
-	}
-	if (lastUserIndex >= 0) {
-		const lastUser = params.messages[lastUserIndex];
-		if (typeof lastUser.content === "string") {
+		const msg = params.messages[i];
+		if (msg.role !== "user") continue;
+		if (typeof msg.content === "string") {
 			const contentBlock: ContentBlockParam & CacheControlBlock = {
 				type: "text",
-				text: lastUser.content,
+				text: msg.content,
 				cache_control: cacheControl,
 			};
-			lastUser.content = [contentBlock];
-		} else if (Array.isArray(lastUser.content) && lastUser.content.length > 0) {
+			msg.content = [contentBlock];
+		} else if (Array.isArray(msg.content) && msg.content.length > 0) {
 			applyCacheControlToLastTextBlock(
-				lastUser.content as Array<ContentBlockParam & CacheControlBlock>,
+				msg.content as Array<ContentBlockParam & CacheControlBlock>,
 				cacheControl,
 			);
 		}
+		break;
 	}
 }
 

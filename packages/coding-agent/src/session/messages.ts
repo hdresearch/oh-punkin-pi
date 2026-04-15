@@ -579,15 +579,7 @@ function convertOneMessage(m: AgentMessage, s: FoldState): ConvertOneResult {
 			};
 			converted = {
 				role: "user",
-				content: [
-					Object.assign(
-						{ type: "text" as const, text: wrapSystem(text, params, m.bracketId) },
-						{
-							// Mark compaction summary for cache breakpoint — this is the stable restore prefix
-							cache_control: { type: "ephemeral" as const },
-						},
-					),
-				],
+				content: [{ type: "text" as const, text: wrapSystem(text, params, m.bracketId) }],
 				attribution: "agent",
 				providerPayload: m.providerPayload,
 				timestamp: m.timestamp,
