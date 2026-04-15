@@ -1,3 +1,4 @@
+builds/
 # Dependencies
 node_modules/
 .npm/
@@ -56,3 +57,4 @@ pi-*.html
 
 # Generated files
 packages/coding-agent/src/internal-urls/docs-index.generated.ts
+packages/coding-agent/src/build-info.generated.ts

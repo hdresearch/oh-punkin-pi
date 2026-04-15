@@ -7,8 +7,8 @@ resolver = "3"
 version = "13.18.0"
 edition = "2024"
 license = "MIT"
-authors = ["Can Boluk"]
-repository = "https://github.com/can1357/oh-my-pi"
+authors = ["Carter Schonwald"]
+repository = "https://github.com/cartazio/oh-punkin-pi"
 
 [patch.crates-io]
 brush-core = { path = "crates/brush-core-vendored" }

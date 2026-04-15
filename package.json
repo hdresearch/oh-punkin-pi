@@ -7,7 +7,7 @@
 	],
 	"scripts": {
 		"install:dev": "bun install && bun --cwd=packages/coding-agent link && bun --cwd=packages/ai link",
-		"dev": "bun --cwd=packages/coding-agent src/cli.ts",
+		"dev": "bun --cwd=packages/coding-agent run generate-build-info && bun --cwd=packages/coding-agent src/cli.ts",
 		"stats": "bun --cwd=packages/coding-agent src/cli.ts stats",
 		"test": "bun run --workspaces --if-present --parallel test",
 		"check": "bun run --parallel check:ts check:rs",
@@ -27,7 +27,7 @@
 		"bench:gen-fixtures": "bun --cwd=packages/react-edit-benchmark run src/generate.ts --react-dir /tmp/react-source --count-per-type 8",
 		"bench:edit": "bun --cwd=packages/react-edit-benchmark run start",
 		"prepublishOnly": "bun run check",
-		"prepare": "bun --cwd=packages/coding-agent run generate-docs-index",
+		"prepare": "bun --cwd=packages/coding-agent run generate-docs-index && bun --cwd=packages/coding-agent run generate-build-info",
 		"publish": "bun run prepublishOnly && npm publish -ws --access public",
 		"publish:dry": "bun run prepublishOnly && npm publish -ws --access public --dry-run",
 		"release": "bun scripts/release.ts",

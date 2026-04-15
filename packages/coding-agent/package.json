@@ -34,6 +34,7 @@
 		"check": "tsgo -p tsconfig.json",
 		"format-prompts": "bun scripts/format-prompts.ts",
 		"generate-docs-index": "bun scripts/generate-docs-index.ts",
+		"generate-build-info": "bun scripts/generate-build-info.ts",
 		"prepack": "bun scripts/generate-docs-index.ts",
 		"build:binary": "cd ../.. && bun --cwd=packages/stats scripts/generate-client-bundle.ts && bun --cwd=packages/natives run embed:native && bun build --compile --define PI_COMPILED=true --external mupdf --root . ./packages/coding-agent/src/cli.ts --outfile packages/coding-agent/dist/ohp && bun --cwd=packages/natives run embed:native --reset && bun --cwd=packages/stats scripts/generate-client-bundle.ts --reset",
 		"generate-template": "bun scripts/generate-template.ts",
