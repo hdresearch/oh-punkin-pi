@@ -1,5 +1,4 @@
 import type { ExtensionAPI } from "../extensibility/extensions";
-import * as git from "../utils/git";
 import { isAutoresearchLocalStatePath, normalizeAutoresearchPath } from "./helpers";
 
 const AUTORESEARCH_BRANCH_PREFIX = "autoresearch/";
@@ -18,8 +17,8 @@ export interface EnsureAutoresearchBranchSuccess {
 
 export type EnsureAutoresearchBranchResult = EnsureAutoresearchBranchFailure | EnsureAutoresearchBranchSuccess;
 
-export async function getCurrentAutoresearchBranch(_api: ExtensionAPI, workDir: string): Promise<string | null> {
-	const currentBranch = (await git.branch.current(workDir)) ?? "";
+export async function getCurrentAutoresearchBranch(api: ExtensionAPI, workDir: string): Promise<string | null> {
+	const currentBranch = (await readGitCurrentBranch(api, workDir)) ?? "";
 	return currentBranch.startsWith(AUTORESEARCH_BRANCH_PREFIX) ? currentBranch : null;
 }
 
@@ -28,7 +27,7 @@ export async function ensureAutoresearchBranch(
 	workDir: string,
 	goal: string | null,
 ): Promise<EnsureAutoresearchBranchResult> {
-	const repoRoot = await git.repo.root(workDir);
+	const repoRoot = await readGitRepoRoot(api, workDir);
 	if (!repoRoot) {
 		return {
 			error: "Autoresearch requires a git repository so it can isolate experiments and revert failed runs safely.",
@@ -38,11 +37,7 @@ export async function ensureAutoresearchBranch(
 
 	let dirtyPathsOutput: string;
 	try {
-		dirtyPathsOutput = await git.status(repoRoot, {
-			porcelainV1: true,
-			untrackedFiles: "all",
-			z: true,
-		});
+		dirtyPathsOutput = await runGitText(api, repoRoot, ["status", "--porcelain=v1", "--untracked-files=all", "-z"]);
 	} catch (err) {
 		return {
 			error: `Unable to inspect git status before starting autoresearch: ${err instanceof Error ? err.message : String(err)}`,
@@ -69,7 +64,7 @@ export async function ensureAutoresearchBranch(
 
 	const branchName = await allocateBranchName(api, workDir, goal);
 	try {
-		await git.branch.checkoutNew(workDir, branchName);
+		await runGitText(api, workDir, ["checkout", "-b", branchName]);
 	} catch (err) {
 		return {
 			error: `Failed to create autoresearch branch ${branchName}: ${err instanceof Error ? err.message : String(err)}`,
@@ -109,10 +104,27 @@ export function relativizeGitPathToWorkDir(repoRelativePath: string, workDirPref
 	return normalizeAutoresearchPath(normalizedPath.slice(normalizedPrefix.length + 1));
 }
 
-async function readGitWorkDirPrefix(api: ExtensionAPI, workDir: string): Promise<string> {
-	void api;
+async function readGitRepoRoot(api: ExtensionAPI, workDir: string): Promise<string | null> {
 	try {
-		return await git.show.prefix(workDir);
+		const repoRoot = (await runGitText(api, workDir, ["rev-parse", "--show-toplevel"])).trim();
+		return repoRoot.length > 0 ? repoRoot : null;
+	} catch {
+		return null;
+	}
+}
+
+async function readGitCurrentBranch(api: ExtensionAPI, workDir: string): Promise<string | null> {
+	try {
+		const currentBranch = (await runGitText(api, workDir, ["branch", "--show-current"])).trim();
+		return currentBranch.length > 0 ? currentBranch : null;
+	} catch {
+		return null;
+	}
+}
+
+async function readGitWorkDirPrefix(api: ExtensionAPI, workDir: string): Promise<string> {
+	try {
+		return (await runGitText(api, workDir, ["rev-parse", "--show-prefix"])).trim();
 	} catch {
 		return "";
 	}
@@ -182,8 +194,12 @@ async function allocateBranchName(api: ExtensionAPI, workDir: string, goal: stri
 }
 
 async function branchExists(api: ExtensionAPI, workDir: string, branchName: string): Promise<boolean> {
-	void api;
-	return git.ref.exists(workDir, `refs/heads/${branchName}`);
+	try {
+		await runGitText(api, workDir, ["show-ref", "--verify", "--quiet", `refs/heads/${branchName}`]);
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 function slugifyGoal(goal: string | null): string {
@@ -235,4 +251,14 @@ function collectUnsafeDirtyPaths(statusOutput: string, workDirPrefix: string): s
 		unsafeDirtyPaths.push(relativePath ?? normalizeStatusPath(dirtyPath));
 	}
 	return unsafeDirtyPaths;
+}
+
+async function runGitText(api: ExtensionAPI, cwd: string, args: string[]): Promise<string> {
+	const result = await api.exec("git", args, { cwd });
+	if (result.code !== 0) {
+		const message =
+			`${result.stderr}${result.stdout}`.trim() || `git ${args.join(" ")} failed with exit code ${result.code}`;
+		throw new Error(message);
+	}
+	return result.stdout;
 }

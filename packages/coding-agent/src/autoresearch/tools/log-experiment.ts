@@ -640,12 +640,7 @@ async function validateKeepPaths(
 
 	let statusText: string;
 	try {
-		statusText = await git.status(workDir, {
-			pathspecs: ["."],
-			porcelainV1: true,
-			untrackedFiles: "all",
-			z: true,
-		});
+		statusText = await runGitText(options, workDir, ["status", "--porcelain=v1", "--untracked-files=all", "-z", "."]);
 	} catch (err) {
 		return `git status failed: ${err instanceof Error ? err.message : String(err)}`;
 	}
@@ -792,12 +787,21 @@ function buildLogText(
 }
 
 async function readGitWorkDirPrefix(options: AutoresearchToolFactoryOptions, workDir: string): Promise<string> {
-	void options;
 	try {
-		return await git.show.prefix(workDir);
+		return (await runGitText(options, workDir, ["rev-parse", "--show-prefix"])).trim();
 	} catch {
 		return "";
 	}
+}
+
+async function runGitText(options: AutoresearchToolFactoryOptions, cwd: string, args: string[]): Promise<string> {
+	const result = await options.pi.exec("git", args, { cwd });
+	if (result.code !== 0) {
+		const message =
+			`${result.stderr}${result.stdout}`.trim() || `git ${args.join(" ")} failed with exit code ${result.code}`;
+		throw new Error(message);
+	}
+	return result.stdout;
 }
 
 function truncateAsiValue(value: ASIData[string]): string {
