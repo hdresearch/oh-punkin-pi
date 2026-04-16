@@ -1020,13 +1020,18 @@ export class TUI extends Container {
 		const widthChanged = this.#previousWidth !== 0 && this.#previousWidth !== width;
 		const heightChanged = this.#previousHeight !== 0 && this.#previousHeight !== height;
 
-		// Helper to clear scrollback and viewport and render all new lines
-		const fullRender = (clear: boolean): void => {
+		// Helper to clear scrollback and viewport and render all new lines.
+		// `preserveScrollbackOverride` forces the humane path (scroll content into
+		// scrollback then viewport-clear) instead of nuking scrollback with \x1b[3J.
+		// Used for content-driven repaints where the user's scrollback history is
+		// still meaningful — only dimension changes (width/height) justify the nuke.
+		const fullRender = (clear: boolean, opts?: { preserveScrollback?: boolean }): void => {
 			this.#fullRedrawCount += 1;
 			let buffer = "\x1b[?2026h"; // Begin synchronized output
-			// Skip clearing scrollback (3J) in multiplexers or when preserveScrollback was requested
+			// Skip clearing scrollback (3J) in multiplexers, when preserveScrollback was
+			// requested, or when this is a content-driven (non-resize) repaint.
 			// Users actively navigate scrollback history to review previous content
-			const skipScrollbackClear = isMultiplexer || preserveScrollback;
+			const skipScrollbackClear = isMultiplexer || preserveScrollback || opts?.preserveScrollback === true;
 			if (clear) {
 				if (skipScrollbackClear) {
 					// Push current visible content into scrollback by scrolling it off-screen,
@@ -1182,10 +1187,24 @@ export class TUI extends Container {
 		// Use previousLines.length (not maxLinesRendered) to avoid false positives after content shrinks
 		const previousContentViewportTop = Math.max(0, this.#previousLines.length - height);
 		if (firstChanged < previousContentViewportTop) {
-			// First change is above previous viewport - need full re-render
-			logRedraw(`firstChanged < viewportTop (${firstChanged} < ${previousContentViewportTop})`);
-			fullRender(true);
-			return;
+			// Change lies above the current viewport; lines there live in scrollback
+			// and must not be re-emitted (causes duplicates) nor wiped with \x1b[3J
+			// (jumps the terminal viewport to the top of scrollback). Clamp the first
+			// changed line up to viewport top and let the partial-redraw path below
+			// update only the visible portion. Above-viewport state becomes stale in
+			// scrollback, which is strictly better than the prior nuke-and-repaint.
+			logRedraw(`firstChanged clamped to viewport (${firstChanged} -> ${previousContentViewportTop})`);
+			firstChanged = previousContentViewportTop;
+			if (lastChanged < firstChanged) {
+				// Entire diff is above viewport — nothing visible changed.
+				this.#previousLines = newLines;
+				this.#previousWidth = width;
+				this.#previousHeight = height;
+				this.#maxLinesRendered = Math.max(this.#maxLinesRendered, newLines.length);
+				this.#viewportTopRow = Math.max(0, this.#maxLinesRendered - height);
+				this.#positionHardwareCursor(cursorPos, newLines.length);
+				return;
+			}
 		}
 
 		// Render from first changed line to end
