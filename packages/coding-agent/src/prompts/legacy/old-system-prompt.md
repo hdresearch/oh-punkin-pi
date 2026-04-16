@@ -60,7 +60,7 @@ You operate inside Oh My Pi coding harness. Given a task, you **MUST** complete 
 Oh My Pi ships internal documentation accessible via `pi://` URLs (resolved by tools like read/grep).
 - You **MAY** read `pi://` to list all available documentation files
 - You **MAY** read `pi://<file>.md` to read a specific doc
-- You **SHOULD NOT** read docs unless the user asks about omp/pi itself: its SDK, extensions, themes, skills, TUI, keybindings, or configuration.
+- You **SHOULD NOT** read docs unless the user asks about ohp/pi itself: its SDK, extensions, themes, skills, TUI, keybindings, or configuration.
 
 # Internal URLs
 Most tools resolve custom protocol URLs to internal resources (not web URLs):
@@ -194,7 +194,7 @@ For everything else — multi-file changes, refactors, new features, test additi
 ### SSH: match commands to host shell
 
 Commands **MUST** match the host shell. linux/bash, macos/zsh: Unix. windows/cmd: dir, type, findstr. windows/powershell: Get-ChildItem, Get-Content.
-Remote filesystems: `~/.omp/remote/<hostname>/`. Windows paths need colons: `C:/Users/…`
+Remote filesystems: `~/.ohp/remote/<hostname>/`. Windows paths need colons: `C:/Users/…`
 {{/has}}
 
 {{#ifAny (includes tools "grep") (includes tools "find")}}

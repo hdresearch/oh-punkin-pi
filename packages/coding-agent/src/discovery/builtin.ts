@@ -1,7 +1,7 @@
 /**
- * Builtin Provider (.omp)
+ * Builtin Provider (.ohp)
  *
- * Primary provider for OMP native configs. Supports all capabilities.
+ * Primary provider for OHP native configs. Supports all capabilities.
  */
 import * as path from "node:path";
 import { logger, tryParseJson } from "@oh-my-pi/pi-utils";
@@ -35,8 +35,8 @@ import {
 } from "./helpers";
 
 const PROVIDER_ID = "native";
-const DISPLAY_NAME = "OMP";
-const DESCRIPTION = "Native OMP configuration from ~/.omp and .omp/";
+const DISPLAY_NAME = "OHP";
+const DESCRIPTION = "Native OHP configuration from ~/.ohp and .ohp/";
 const PRIORITY = 100;
 
 const PATHS = SOURCE_PATHS.native;
@@ -285,7 +285,7 @@ registerProvider<SystemPrompt>(systemPromptCapability.id, {
 
 // Skills
 async function loadSkills(ctx: LoadContext): Promise<LoadResult<Skill>> {
-	// Walk up from cwd finding .omp/skills/ in ancestors (closest first)
+	// Walk up from cwd finding .ohp/skills/ in ancestors (closest first)
 	const ancestors = getAncestorDirs(ctx.cwd, ctx.repoRoot ?? ctx.home);
 	const projectScans = ancestors.map(({ dir }) =>
 		scanSkillsFromDir(ctx, {
@@ -296,7 +296,7 @@ async function loadSkills(ctx: LoadContext): Promise<LoadResult<Skill>> {
 		}),
 	);
 
-	// User-level scan from ~/.omp/agent/skills/
+	// User-level scan from ~/.ohp/agent/skills/
 	const userScan = scanSkillsFromDir(ctx, {
 		dir: path.join(ctx.home, PATHS.userAgent, "skills"),
 		providerId: PROVIDER_ID,
@@ -859,7 +859,7 @@ async function loadContextFiles(ctx: LoadContext): Promise<LoadResult<ContextFil
 registerProvider<ContextFile>(contextFileCapability.id, {
 	id: PROVIDER_ID,
 	displayName: DISPLAY_NAME,
-	description: "Load AGENTS.md from .omp/ directories",
+	description: "Load AGENTS.md from .ohp/ directories",
 	priority: PRIORITY,
 	load: loadContextFiles,
 });

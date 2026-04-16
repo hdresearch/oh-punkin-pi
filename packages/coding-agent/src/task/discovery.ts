@@ -2,10 +2,10 @@
  * Agent discovery from filesystem.
  *
  * Discovers agent definitions from:
- *   - ~/.omp/agent/agents/*.md (user-level, primary)
+ *   - ~/.ohp/agent/agents/*.md (user-level, primary)
  *   - ~/.pi/agent/agents/*.md (user-level, legacy)
  *   - ~/.claude/agents/*.md (user-level, legacy)
- *   - .omp/agents/*.md (project-level, primary)
+ *   - .ohp/agents/*.md (project-level, primary)
  *   - .pi/agents/*.md (project-level, legacy)
  *   - .claude/agents/*.md (project-level, legacy)
  *
@@ -51,7 +51,7 @@ async function loadAgentsFromDir(dir: string, source: AgentSource): Promise<Agen
 /**
  * Discover agents from filesystem and merge with bundled agents.
  *
- * Precedence (highest wins): .omp > .pi > .claude (project before user), then bundled
+ * Precedence (highest wins): .ohp > .pi > .claude (project before user), then bundled
  *
  * @param cwd - Current working directory for project agent discovery
  */
@@ -59,7 +59,7 @@ export async function discoverAgents(cwd: string, home: string = os.homedir()): 
 	const resolvedCwd = path.resolve(cwd);
 	const agentSources = Array.from(new Set(getConfigDirs("", { project: false }).map(entry => entry.source)));
 
-	// Get user directories (priority order: .omp, .pi, .claude, ...)
+	// Get user directories (priority order: .ohp, .pi, .claude, ...)
 	const userDirs = getConfigDirs("agents", { project: false })
 		.filter(entry => agentSources.includes(entry.source))
 		.map(entry => ({

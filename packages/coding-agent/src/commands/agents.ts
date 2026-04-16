@@ -22,21 +22,21 @@ export default class Agents extends Command {
 		force: Flags.boolean({ char: "f", description: "Overwrite existing agent files" }),
 		json: Flags.boolean({ description: "Output JSON" }),
 		dir: Flags.string({ description: "Output directory (overrides --user/--project)" }),
-		user: Flags.boolean({ description: "Write to ~/.omp/agent/agents (default)" }),
-		project: Flags.boolean({ description: "Write to ./.omp/agents" }),
+		user: Flags.boolean({ description: "Write to ~/.ohp/agent/agents (default)" }),
+		project: Flags.boolean({ description: "Write to ./.ohp/agents" }),
 	};
 
 	static examples = [
-		"# Export bundled agents into user config (default)\n  omp agents unpack",
-		"# Export bundled agents into project config\n  omp agents unpack --project",
-		"# Overwrite existing local agent files\n  omp agents unpack --project --force",
-		"# Export into a custom directory\n  omp agents unpack --dir ./tmp/agents --json",
+		"# Export bundled agents into user config (default)\n  ohp agents unpack",
+		"# Export bundled agents into project config\n  ohp agents unpack --project",
+		"# Overwrite existing local agent files\n  ohp agents unpack --project --force",
+		"# Export into a custom directory\n  ohp agents unpack --dir ./tmp/agents --json",
 	];
 
 	async run(): Promise<void> {
 		const { args, flags } = await this.parse(Agents);
 		if (!args.action) {
-			renderCommandHelp("omp", "agents", Agents);
+			renderCommandHelp("ohp", "agents", Agents);
 			return;
 		}
 

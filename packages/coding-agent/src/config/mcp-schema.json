@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
-  "title": "OMP MCP configuration",
-  "description": "Schema for mcp.json, .mcp.json, .omp/mcp.json, and ~/.omp/mcp.json used by the OMP coding agent.",
+  "title": "OHP MCP configuration",
+  "description": "Schema for mcp.json, .mcp.json, .ohp/mcp.json, and ~/.ohp/mcp.json used by the OHP coding agent.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -45,7 +45,7 @@
         "type": {
           "type": "string",
           "enum": ["oauth", "apikey"],
-          "description": "Auth strategy understood by OMP."
+          "description": "Auth strategy understood by OHP."
         },
         "credentialId": {
           "type": "string",
@@ -94,7 +94,7 @@
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Whether OMP should try to connect this server."
+          "description": "Whether OHP should try to connect this server."
         },
         "timeout": {
           "type": "number",

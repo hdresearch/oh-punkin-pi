@@ -2,16 +2,16 @@ import process from "node:process";
 
 import { $env } from "@oh-my-pi/pi-utils";
 
-interface OmpCommand {
+interface OhpCommand {
 	cmd: string;
 	args: string[];
 	shell: boolean;
 }
 
-const DEFAULT_CMD = process.platform === "win32" ? "omp.cmd" : "omp";
+const DEFAULT_CMD = process.platform === "win32" ? "ohp.cmd" : "ohp";
 const DEFAULT_SHELL = process.platform === "win32";
 
-export function resolveOmpCommand(): OmpCommand {
+export function resolveOhpCommand(): OhpCommand {
 	const envCmd = $env.PI_SUBPROCESS_CMD;
 	if (envCmd?.trim()) {
 		return { cmd: envCmd, args: [], shell: DEFAULT_SHELL };

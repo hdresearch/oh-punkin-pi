@@ -42,7 +42,7 @@ describe("deserializeWebSocketMessage", () => {
 			header: {
 				msg_id: "msg-1",
 				session: "session-1",
-				username: "omp",
+				username: "ohp",
 				date: "2024-01-01T00:00:00Z",
 				msg_type: "stream",
 				version: "5.5",
@@ -86,7 +86,7 @@ describe("serializeWebSocketMessage", () => {
 			header: {
 				msg_id: "msg-2",
 				session: "session-2",
-				username: "omp",
+				username: "ohp",
 				date: "2024-02-01T00:00:00Z",
 				msg_type: "execute_request",
 				version: "5.5",

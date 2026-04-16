@@ -38,7 +38,7 @@ const execDir = path.dirname(process.execPath);
 const versionedDir = path.join(getNativesDir(), packageVersion);
 const userDataDir =
 	process.platform === "win32"
-		? path.join(Bun.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "omp")
+		? path.join(Bun.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "ohp")
 		: path.join(os.homedir(), ".local", "bin");
 const isCompiledBinary =
 	Bun.env.PI_COMPILED ||
