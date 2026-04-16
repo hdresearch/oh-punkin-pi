@@ -88,8 +88,6 @@ async function loadPreferredSettingsFile(
 	}
 
 	return null;
-
-	return null;
 }
 
 function getAncestorDirs(cwd: string, stopAt?: string | null): Array<{ dir: string; depth: number }> {

@@ -24,8 +24,6 @@ describe("CarterKit turn boundary timestamps", () => {
 			delta: "31s",
 		};
 
-		expect(renderTurnStart(msg)).toBe(
-			"🍃 copper-drift-spruce │ turn:3 │ T=2026-04-10T16:57:08.789-04:00 │ Δ31s",
-		);
+		expect(renderTurnStart(msg)).toBe("🍃 copper-drift-spruce │ turn:3 │ T=2026-04-10T16:57:08.789-04:00 │ Δ31s");
 	});
 });

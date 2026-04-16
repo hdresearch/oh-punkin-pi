@@ -1147,10 +1147,7 @@ function applyPromptCaching(params: MessageCreateParamsStreaming, cacheControl?:
 			};
 			msg.content = [contentBlock];
 		} else if (Array.isArray(msg.content) && msg.content.length > 0) {
-			applyCacheControlToLastTextBlock(
-				msg.content as Array<ContentBlockParam & CacheControlBlock>,
-				cacheControl,
-			);
+			applyCacheControlToLastTextBlock(msg.content as Array<ContentBlockParam & CacheControlBlock>, cacheControl);
 		}
 		break;
 	}

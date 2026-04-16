@@ -6,8 +6,9 @@
  */
 
 import { createHash, randomBytes } from "node:crypto";
-import { formatTimestamp } from "@oh-my-pi/pi-ai/role-boundary";
 import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
+import { formatTimestamp } from "@oh-my-pi/pi-ai/role-boundary";
+
 // ============================================================================
 // Local type definitions (avoid circular imports with session/messages.ts)
 // ============================================================================
@@ -189,7 +190,6 @@ function formatDelta(fromTs: Timestamp | undefined, toTs: Timestamp): string | u
 	const m = Math.floor((diffSec % 3600) / 60);
 	return m > 0 ? `${h}h${m}m` : `${h}h`;
 }
-
 
 // ============================================================================
 // Turn Boundary State

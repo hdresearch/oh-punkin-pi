@@ -32,9 +32,15 @@ export default class Config extends Command {
 		layout: Flags.string({ description: "emit-toml layout", options: ["grouped", "flat"] }),
 		"prefix-order": Flags.string({ description: "emit-toml prefix order", options: ["alpha", "priority"] }),
 		"include-comments": Flags.boolean({ description: "Include comments in emitted TOML", allowNo: true }),
-		"include-priority-header": Flags.boolean({ description: "Include priority header in emitted TOML", allowNo: true }),
+		"include-priority-header": Flags.boolean({
+			description: "Include priority header in emitted TOML",
+			allowNo: true,
+		}),
 		"group-bulk": Flags.boolean({ description: "Split hot vs more fields in grouped mode", allowNo: true }),
-		"rename-providers": Flags.boolean({ description: "Relabel providers as toolingProviders in emitted TOML", allowNo: true }),
+		"rename-providers": Flags.boolean({
+			description: "Relabel providers as toolingProviders in emitted TOML",
+			allowNo: true,
+		}),
 		"template-date": Flags.string({ description: "Template date suffix for emitted template artifact" }),
 		"output-template": Flags.string({ description: "Path for emitted template TOML" }),
 		"output-active": Flags.string({ description: "Path for emitted active TOML" }),

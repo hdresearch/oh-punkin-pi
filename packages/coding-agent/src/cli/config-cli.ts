@@ -20,7 +20,7 @@ import {
 import { SETTINGS_SCHEMA } from "../config/settings-schema";
 import { theme } from "../modes/theme/theme";
 import { initXdg } from "./commands/init-xdg";
-import { defaultEmitOptions, emitSettingsToml, type EmitLayout, type PrefixOrder } from "./emit-settings-toml";
+import { defaultEmitOptions, type EmitLayout, emitSettingsToml, type PrefixOrder } from "./emit-settings-toml";
 
 // =============================================================================
 // Types
