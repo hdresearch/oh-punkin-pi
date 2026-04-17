@@ -2,7 +2,7 @@ Launches subagents to parallelize workflows.
 
 {{#if asyncEnabled}}
 - Use `read jobs://` to inspect state; `read jobs://<job_id>` for detail.
-- Use the `await` tool to wait until completion. You **MUST NOT** poll `read jobs://` in a loop.
+- Use the `await_one` tool to park until a job event, a pending user message, or timeout fires. You **MUST NOT** poll `read jobs://` in a loop.
 {{/if}}
 
 Subagents lack your conversation history. Every decision, file content, and user requirement they need **MUST** be explicit in `context` or `assignment`.

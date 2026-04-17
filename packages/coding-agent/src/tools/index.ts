@@ -155,6 +155,8 @@ export interface ToolSession {
 	agentOutputManager?: AgentOutputManager;
 	/** Async background job manager for bash/task async execution */
 	asyncJobManager?: AsyncJobManager;
+	/** Resolve when a user-facing message lands in the session queue (for await_one wake). */
+	waitForQueuedMessage?: (signal?: AbortSignal) => Promise<void>;
 	/** Settings instance for passing to subagents */
 	settings: Settings;
 	/** Shared native search DB for grep/glob/fuzzyFind-backed workflows. */

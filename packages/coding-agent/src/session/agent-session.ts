@@ -425,6 +425,8 @@ export class AgentSession {
 	#followUpMessages: string[] = [];
 	/** Messages queued to be included with the next user prompt as context ("asides"). */
 	#pendingNextTurnMessages: CustomMessage[] = [];
+	/** Pending awaiters registered by await_one; resolved on next queued-message arrival or signal abort. */
+	#queuedMessageWaiters: Set<() => void> = new Set();
 	#scheduledHiddenNextTurnGeneration: number | undefined = undefined;
 	#planModeState: PlanModeState | undefined;
 	#planReferenceSent = false;
@@ -2845,6 +2847,7 @@ export class AgentSession {
 			attribution: "user",
 			timestamp: Date.now(),
 		});
+		this.#notifyQueuedMessageWaiters();
 	}
 
 	/**
@@ -2863,6 +2866,7 @@ export class AgentSession {
 			attribution: "user",
 			timestamp: Date.now(),
 		});
+		this.#notifyQueuedMessageWaiters();
 	}
 
 	#queueHiddenNextTurnMessage(message: CustomMessage, triggerTurn: boolean): void {
@@ -3071,6 +3075,38 @@ export class AgentSession {
 	/** Number of pending messages (includes steering, follow-up, and next-turn messages) */
 	get queuedMessageCount(): number {
 		return this.#steeringMessages.length + this.#followUpMessages.length + this.#pendingNextTurnMessages.length;
+	}
+
+	/**
+	 * Resolve when a user-facing message is queued (steering or follow-up).
+	 * Resolves immediately if a message is already queued. Aborting the signal also resolves
+	 * (await_one treats abort as a wake event; the caller inspects signal.aborted to distinguish).
+	 */
+	waitForQueuedMessage(signal?: AbortSignal): Promise<void> {
+		if (this.queuedMessageCount > 0) return Promise.resolve();
+		if (signal?.aborted) return Promise.resolve();
+		const { promise, resolve } = Promise.withResolvers<void>();
+		const cleanup = () => {
+			this.#queuedMessageWaiters.delete(resolve);
+			signal?.removeEventListener("abort", onAbort);
+		};
+		const onAbort = () => {
+			cleanup();
+			resolve();
+		};
+		this.#queuedMessageWaiters.add(resolve);
+		signal?.addEventListener("abort", onAbort, { once: true });
+		return promise.then(() => {
+			// Remove the abort listener if the waiter was resolved by a queued message rather than abort.
+			signal?.removeEventListener("abort", onAbort);
+		});
+	}
+
+	#notifyQueuedMessageWaiters(): void {
+		if (this.#queuedMessageWaiters.size === 0) return;
+		const waiters = Array.from(this.#queuedMessageWaiters);
+		this.#queuedMessageWaiters.clear();
+		for (const resolve of waiters) resolve();
 	}
 
 	/** Get pending messages (read-only) */

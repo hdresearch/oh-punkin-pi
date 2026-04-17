@@ -4,15 +4,25 @@ import { renderPromptTemplate } from "../config/prompt-templates";
 import awaitDescription from "../prompts/tools/await.md" with { type: "text" };
 import type { ToolSession } from "./index";
 
+const DEFAULT_TIMEOUT_SEC = 600;
+
 const awaitSchema = Type.Object({
 	jobs: Type.Optional(
 		Type.Array(Type.String(), {
 			description: "Specific job IDs to wait for. If omitted, waits for any running job.",
 		}),
 	),
+	timeoutSec: Type.Optional(
+		Type.Number({
+			description: `Wake-ceiling in seconds; the call returns even if no event fires. Default ${DEFAULT_TIMEOUT_SEC} (10min). Not cumulative — each invocation resets.`,
+			minimum: 1,
+		}),
+	),
 });
 
 type AwaitParams = Static<typeof awaitSchema>;
+
+type WakeReason = "job_event" | "pending_message" | "timeout" | "aborted" | "no_running_jobs";
 
 interface AwaitResult {
 	id: string;
@@ -26,11 +36,13 @@ interface AwaitResult {
 
 export interface AwaitToolDetails {
 	jobs: AwaitResult[];
+	wakeReason: WakeReason;
+	timeoutSec: number;
 }
 
 export class AwaitTool implements AgentTool<typeof awaitSchema, AwaitToolDetails> {
-	readonly name = "await";
-	readonly label = "Await";
+	readonly name = "await_one";
+	readonly label = "Await One";
 	readonly description: string;
 	readonly parameters = awaitSchema;
 	readonly strict = true;
@@ -51,11 +63,12 @@ export class AwaitTool implements AgentTool<typeof awaitSchema, AwaitToolDetails
 		_onUpdate?: AgentToolUpdateCallback<AwaitToolDetails>,
 		_context?: AgentToolContext,
 	): Promise<AgentToolResult<AwaitToolDetails>> {
+		const timeoutSec = params.timeoutSec ?? DEFAULT_TIMEOUT_SEC;
 		const manager = this.session.asyncJobManager;
 		if (!manager) {
 			return {
 				content: [{ type: "text", text: "Async execution is disabled; no background jobs to poll." }],
-				details: { jobs: [] },
+				details: { jobs: [], wakeReason: "no_running_jobs", timeoutSec },
 			};
 		}
 
@@ -72,23 +85,46 @@ export class AwaitTool implements AgentTool<typeof awaitSchema, AwaitToolDetails
 				: "No running background jobs to wait for.";
 			return {
 				content: [{ type: "text", text: message }],
-				details: { jobs: [] },
+				details: { jobs: [], wakeReason: "no_running_jobs", timeoutSec },
 			};
 		}
 
 		// If all watched jobs are already done, return immediately
 		const runningJobs = jobsToWatch.filter(j => j.status === "running");
 		if (runningJobs.length === 0) {
-			return this.#buildResult(manager, jobsToWatch);
+			return this.#buildResult(manager, jobsToWatch, "job_event", timeoutSec);
 		}
 
-		// Block until at least one running job finishes or the call is aborted
-		const racePromises: Promise<unknown>[] = runningJobs.map(j => j.promise);
+		// Race: {job_event, pending_message, timeout, aborted}
+		// Jobs are NOT cancelled on any of these outcomes — they keep running.
+		let wakeReason: WakeReason = "timeout";
+		const jobPromise = Promise.race(runningJobs.map(j => j.promise)).then(() => {
+			wakeReason = "job_event";
+		});
+		const messagePromise = (this.session.waitForQueuedMessage?.(signal) ?? new Promise<void>(() => {})).then(() => {
+			if (!signal?.aborted) wakeReason = "pending_message";
+		});
+		const timeoutPromise = new Promise<void>(resolve => {
+			const handle = setTimeout(() => {
+				wakeReason = "timeout";
+				resolve();
+			}, timeoutSec * 1000);
+			handle.unref?.();
+		});
+		const racePromises: Promise<void>[] = [jobPromise, messagePromise, timeoutPromise];
 
 		if (signal) {
 			const { promise: abortPromise, resolve: abortResolve } = Promise.withResolvers<void>();
-			const onAbort = () => abortResolve();
-			signal.addEventListener("abort", onAbort, { once: true });
+			const onAbort = () => {
+				wakeReason = "aborted";
+				abortResolve();
+			};
+			if (signal.aborted) {
+				wakeReason = "aborted";
+				abortResolve();
+			} else {
+				signal.addEventListener("abort", onAbort, { once: true });
+			}
 			racePromises.push(abortPromise);
 			try {
 				await Promise.race(racePromises);
@@ -99,11 +135,7 @@ export class AwaitTool implements AgentTool<typeof awaitSchema, AwaitToolDetails
 			await Promise.race(racePromises);
 		}
 
-		if (signal?.aborted) {
-			return this.#buildResult(manager, jobsToWatch);
-		}
-
-		return this.#buildResult(manager, jobsToWatch);
+		return this.#buildResult(manager, jobsToWatch, wakeReason, timeoutSec);
 	}
 
 	#buildResult(
@@ -117,6 +149,8 @@ export class AwaitTool implements AgentTool<typeof awaitSchema, AwaitToolDetails
 			resultText?: string;
 			errorText?: string;
 		}[],
+		wakeReason: WakeReason,
+		timeoutSec: number,
 	): AgentToolResult<AwaitToolDetails> {
 		const now = Date.now();
 		const jobResults: AwaitResult[] = jobs.map(j => ({
@@ -135,6 +169,8 @@ export class AwaitTool implements AgentTool<typeof awaitSchema, AwaitToolDetails
 		const running = jobResults.filter(j => j.status === "running");
 
 		const lines: string[] = [];
+		lines.push(`Wake reason: ${wakeReason}`);
+		lines.push("");
 		if (completed.length > 0) {
 			lines.push(`## Completed (${completed.length})\n`);
 			for (const j of completed) {
@@ -159,7 +195,7 @@ export class AwaitTool implements AgentTool<typeof awaitSchema, AwaitToolDetails
 
 		return {
 			content: [{ type: "text", text: lines.join("\n") }],
-			details: { jobs: jobResults },
+			details: { jobs: jobResults, wakeReason, timeoutSec },
 		};
 	}
 }

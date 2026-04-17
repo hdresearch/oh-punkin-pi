@@ -916,6 +916,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		authStorage,
 		modelRegistry,
 		asyncJobManager,
+		waitForQueuedMessage: signal => session.waitForQueuedMessage(signal),
 		pendingActionStore,
 		searchDb,
 	};

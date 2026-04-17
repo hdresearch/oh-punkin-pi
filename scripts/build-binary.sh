@@ -47,6 +47,10 @@ cd "$REPO_ROOT"
 echo "==> Installing dependencies..."
 bun install
 
+echo "==> Typechecking..."
+bun check:ts
+
+
 echo "==> Regenerating models.json (dynamic provider catalogs)..."
 bun --cwd=packages/ai scripts/generate-models.ts
 
