@@ -208,13 +208,13 @@ async function promptForkSession(session: SessionInfo): Promise<boolean> {
 	}
 }
 
-const CHANGELOG_STATE_PATH = path.join(getAgentDir(), "changelog-state.json");
+const CHANGELOG_STATE_PATH = path.join(getAgentDir(), "changelog-state.toml");
 
 async function readLastChangelogVersionState(): Promise<string | undefined> {
 	try {
 		const raw = await fs.readFile(CHANGELOG_STATE_PATH, "utf8");
-		const parsed = JSON.parse(raw) as { lastVersion?: unknown };
-		return typeof parsed.lastVersion === "string" ? parsed.lastVersion : undefined;
+		const match = raw.match(/^lastVersion\s*=\s*"([^"]+)"\s*$/m);
+		return match?.[1];
 	} catch (error) {
 		const code = (error as NodeJS.ErrnoException).code;
 		if (code !== "ENOENT") {
@@ -229,7 +229,7 @@ async function writeLastChangelogVersionState(version: string): Promise<void> {
 		await fs.mkdir(path.dirname(CHANGELOG_STATE_PATH), { recursive: true });
 		await fs.writeFile(
 			CHANGELOG_STATE_PATH,
-			`${JSON.stringify({ lastVersion: version, updatedAt: new Date().toISOString() }, null, 2)}\n`,
+			`lastVersion = ${JSON.stringify(version)}\nupdatedAt = ${JSON.stringify(new Date().toISOString())}\n`,
 			"utf8",
 		);
 	} catch (error) {
