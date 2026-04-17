@@ -70,6 +70,7 @@ const serviceProviderMap: Record<string, KeyResolver> = {
 	openrouter: "OPENROUTER_API_KEY",
 	kilo: "KILO_API_KEY",
 	"vercel-ai-gateway": "AI_GATEWAY_API_KEY",
+	vers: "LLM_PROXY_KEY",
 	zai: "ZAI_API_KEY",
 	mistral: "MISTRAL_API_KEY",
 	minimax: "MINIMAX_API_KEY",

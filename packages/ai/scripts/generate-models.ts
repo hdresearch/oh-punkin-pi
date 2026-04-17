@@ -283,6 +283,18 @@ async function generateModels() {
 		modelsDevModels,
 	);
 
+	// vers: Anthropic models routed through the vers LLM proxy at tokens.vers.sh.
+	// Mirror every anthropic-messages model from the `anthropic` provider onto the `vers`
+	// provider with the proxy baseUrl. Env var: LLM_PROXY_KEY.
+	const versModels: Model[] = allModels
+		.filter(model => model.provider === "anthropic" && model.api === "anthropic-messages")
+		.map(model => ({
+			...model,
+			provider: "vers",
+			baseUrl: "https://tokens.vers.sh",
+		}));
+	allModels.push(...versModels);
+
 	if (!allModels.some(model => model.provider === "cloudflare-ai-gateway")) {
 		allModels.push(CLOUDFLARE_FALLBACK_MODEL);
 	}

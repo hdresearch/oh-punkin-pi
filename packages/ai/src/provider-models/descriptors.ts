@@ -282,4 +282,6 @@ export const DEFAULT_MODEL_PER_PROVIDER: Record<KnownProvider, string> = {
 	"minimax-code-cn": "MiniMax-M2.5",
 	"openai-codex": "gpt-5.4",
 	"gitlab-duo": "duo-chat-sonnet-4-5",
+	// vers: anthropic-messages proxy at tokens.vers.sh, mirrors anthropic catalog with baseUrl swap.
+	vers: "claude-opus-4-7",
 } as Record<KnownProvider, string>;
