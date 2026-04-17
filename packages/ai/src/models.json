@@ -4822,6 +4822,37 @@
 				"maxLevel": "xhigh"
 			}
 		},
+		"claude-opus-4.7": {
+			"id": "claude-opus-4.7",
+			"name": "Claude Opus 4.7",
+			"api": "anthropic-messages",
+			"provider": "github-copilot",
+			"baseUrl": "https://api.individual.githubcopilot.com",
+			"reasoning": true,
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"contextWindow": 144000,
+			"maxTokens": 64000,
+			"headers": {
+				"User-Agent": "GitHubCopilotChat/0.35.0",
+				"Editor-Version": "vscode/1.107.0",
+				"Editor-Plugin-Version": "copilot-chat/0.35.0",
+				"Copilot-Integration-Id": "vscode-chat"
+			},
+			"thinking": {
+				"mode": "anthropic-adaptive",
+				"minLevel": "minimal",
+				"maxLevel": "xhigh"
+			}
+		},
 		"claude-sonnet-4": {
 			"id": "claude-sonnet-4",
 			"name": "Claude Sonnet 4",
@@ -43742,6 +43773,28 @@
 				"mode": "effort",
 				"minLevel": "low",
 				"maxLevel": "high"
+			}
+		},
+		"gemma-4-uncensored": {
+			"id": "gemma-4-uncensored",
+			"name": "gemma-4-uncensored",
+			"api": "openai-completions",
+			"provider": "venice",
+			"baseUrl": "https://api.venice.ai/api/v1",
+			"reasoning": false,
+			"input": [
+				"text"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"contextWindow": 222222,
+			"maxTokens": 8888,
+			"compat": {
+				"supportsUsageInStreaming": false
 			}
 		},
 		"google-gemma-3-27b-it": {
