@@ -1053,8 +1053,8 @@ export class TUI extends Container {
 				const line = newLines[i];
 				buffer += TERMINAL.isImageLine(line) ? line : line + reset;
 			}
-			buffer += "\x1b[?2026l"; // End synchronized output
-			this.terminal.write(buffer);
+			// Update viewport bookkeeping BEFORE splicing cursor escape,
+			// so #hardwareCursorEscape reads the fresh #viewportTopRow.
 			this.#cursorRow = Math.max(0, newLines.length - 1);
 			this.#hardwareCursorRow = this.#cursorRow;
 			// Reset max lines when clearing, otherwise track growth
@@ -1064,7 +1064,10 @@ export class TUI extends Container {
 				this.#maxLinesRendered = Math.max(this.#maxLinesRendered, newLines.length);
 			}
 			this.#viewportTopRow = Math.max(0, this.#maxLinesRendered - height);
-			this.#positionHardwareCursor(cursorPos, newLines.length);
+			// Position hardware cursor inside the same synchronized block.
+			buffer += this.#hardwareCursorEscape(cursorPos, newLines.length);
+			buffer += "\x1b[?2026l"; // End synchronized output
+			this.terminal.write(buffer);
 			this.#previousLines = newLines;
 			this.#previousWidth = width;
 			this.#previousHeight = height;
@@ -1136,15 +1139,19 @@ export class TUI extends Container {
 
 		// No changes - but still need to update hardware cursor position if it moved
 		if (firstChanged === -1) {
-			this.#positionHardwareCursor(cursorPos, newLines.length);
 			this.#viewportTopRow = Math.max(0, this.#maxLinesRendered - height);
+			const cursorEsc0 = this.#hardwareCursorEscape(cursorPos, newLines.length);
+			if (cursorEsc0) this.terminal.write(`\x1b[?2026h${cursorEsc0}\x1b[?2026l`);
 			return;
 		}
 
 		// All changes are in deleted lines (nothing to render, just clear)
 		if (firstChanged >= newLines.length) {
+			let buffer = "";
+			let hadContent = false;
 			if (this.#previousLines.length > newLines.length) {
-				let buffer = "\x1b[?2026h";
+				buffer = "\x1b[?2026h";
+				hadContent = true;
 				// Move to end of new content (clamp to 0 for empty content)
 				const targetRow = Math.max(0, newLines.length - 1);
 				const lineDiff = computeLineDiff(targetRow);
@@ -1170,22 +1177,33 @@ export class TUI extends Container {
 				if (moveUp > 0) {
 					buffer += `\x1b[${moveUp}A`;
 				}
-				buffer += "\x1b[?2026l";
-				this.terminal.write(buffer);
 				this.#cursorRow = targetRow;
 				this.#hardwareCursorRow = targetRow;
 			}
-			this.#positionHardwareCursor(cursorPos, newLines.length);
+			this.#maxLinesRendered = Math.max(this.#maxLinesRendered, newLines.length);
+			this.#viewportTopRow = Math.max(0, this.#maxLinesRendered - height);
+			const cursorEsc2 = this.#hardwareCursorEscape(cursorPos, newLines.length);
+			// Single synchronized block: content clear (if any) + cursor placement.
+			if (hadContent) {
+				buffer += cursorEsc2;
+				buffer += "\x1b[?2026l";
+				this.terminal.write(buffer);
+			} else if (cursorEsc2) {
+				this.terminal.write(`\x1b[?2026h${cursorEsc2}\x1b[?2026l`);
+			}
 			this.#previousLines = newLines;
 			this.#previousWidth = width;
 			this.#previousHeight = height;
-			this.#viewportTopRow = Math.max(0, this.#maxLinesRendered - height);
 			return;
 		}
 
-		// Check if firstChanged is above what was previously visible
-		// Use previousLines.length (not maxLinesRendered) to avoid false positives after content shrinks
-		const previousContentViewportTop = Math.max(0, this.#previousLines.length - height);
+		// Check if firstChanged is above what is currently visible in the terminal.
+		// Use #viewportTopRow (cached truth about terminal viewport top) rather than
+		// previousLines.length - height: a prior shrink leaves the terminal viewport
+		// scrolled even though current content is short, so prevLen-height under-reports
+		// the true viewport top and lets rows that are physically in scrollback be
+		// "moved to" via clamped ESC[NA, desyncing renderer belief from reality.
+		const previousContentViewportTop = this.#viewportTopRow;
 		if (firstChanged < previousContentViewportTop) {
 			// Change lies above the current viewport; lines there live in scrollback
 			// and must not be re-emitted (causes duplicates) nor wiped with \x1b[3J
@@ -1202,7 +1220,8 @@ export class TUI extends Container {
 				this.#previousHeight = height;
 				this.#maxLinesRendered = Math.max(this.#maxLinesRendered, newLines.length);
 				this.#viewportTopRow = Math.max(0, this.#maxLinesRendered - height);
-				this.#positionHardwareCursor(cursorPos, newLines.length);
+				const cursorEsc = this.#hardwareCursorEscape(cursorPos, newLines.length);
+				if (cursorEsc) this.terminal.write(`\x1b[?2026h${cursorEsc}\x1b[?2026l`);
 				return;
 			}
 		}
@@ -1274,8 +1293,11 @@ export class TUI extends Container {
 			buffer += isImage ? line : line + SEGMENT_RESET;
 		}
 
-		// Track where cursor ended up after rendering
-		let finalCursorRow = renderEnd;
+		// Track where cursor ended up after rendering. When firstChanged was clamped
+		// up past renderEnd (change range entirely above viewport + newLen shrunk),
+		// the emission loop doesn't execute and cursor stays at moveTargetRow = firstChanged.
+		// Using renderEnd alone under-reports in that case.
+		let finalCursorRow = Math.max(firstChanged, renderEnd);
 
 		// If we had more lines before, clear them and move cursor back
 		if (this.#previousLines.length > newLines.length) {
@@ -1293,6 +1315,20 @@ export class TUI extends Container {
 			buffer += `\x1b[${extraLines}A`;
 		}
 
+		// Track cursor position for next render BEFORE computing cursor escape,
+		// so #hardwareCursorEscape sees the fresh #viewportTopRow.
+		// cursorRow tracks end of content (for viewport calculation)
+		// hardwareCursorRow tracks actual terminal cursor position (for movement)
+		this.#cursorRow = Math.max(0, newLines.length - 1);
+		this.#hardwareCursorRow = finalCursorRow;
+		// Track terminal's working area (grows but doesn't shrink unless cleared)
+		this.#maxLinesRendered = Math.max(this.#maxLinesRendered, newLines.length);
+		this.#viewportTopRow = Math.max(0, this.#maxLinesRendered - height);
+
+		// Position hardware cursor for IME — inside the same sync block,
+		// so terminal never displays an intermediate cursor row between content
+		// emission and final placement.
+		buffer += this.#hardwareCursorEscape(cursorPos, newLines.length);
 		buffer += "\x1b[?2026l"; // End synchronized output
 
 		if (process.env.PI_TUI_DEBUG === "1") {
@@ -1324,20 +1360,8 @@ export class TUI extends Container {
 			fs.writeFileSync(debugPath, debugData);
 		}
 
-		// Write entire buffer at once
+		// Write entire buffer at once (single synchronized frame).
 		this.terminal.write(buffer);
-
-		// Track cursor position for next render
-		// cursorRow tracks end of content (for viewport calculation)
-		// hardwareCursorRow tracks actual terminal cursor position (for movement)
-		this.#cursorRow = Math.max(0, newLines.length - 1);
-		this.#hardwareCursorRow = finalCursorRow;
-		// Track terminal's working area (grows but doesn't shrink unless cleared)
-		this.#maxLinesRendered = Math.max(this.#maxLinesRendered, newLines.length);
-		this.#viewportTopRow = Math.max(0, this.#maxLinesRendered - height);
-
-		// Position hardware cursor for IME
-		this.#positionHardwareCursor(cursorPos, newLines.length);
 
 		this.#previousLines = newLines;
 		this.#previousWidth = width;
@@ -1345,33 +1369,44 @@ export class TUI extends Container {
 	}
 
 	/**
-	 * Position the hardware cursor for IME candidate window.
-	 * @param cursorPos The cursor position extracted from rendered output, or null
-	 * @param totalLines Total number of rendered lines
+	 * Build escape string to place hardware cursor for IME candidate window.
+	 *
+	 * Uses absolute CUP (Cursor Position) targeting a terminal-screen row,
+	 * derived from `targetRow - #viewportTopRow`. Absolute positioning is
+	 * self-correcting — it ignores any accumulated drift from prior clamped
+	 * relative moves.
+	 *
+	 * Returns the escape string (not yet wrapped in synchronized output);
+	 * caller must splice it into their own sync block before \x1b[?2026l.
+	 * Also updates #hardwareCursorRow to reflect the logical target row.
+	 *
+	 * @param cursorPos Cursor position extracted from rendered output, or null
+	 * @param totalLines Total number of rendered lines (newLines.length)
+	 * @returns escape sequence; empty string is never returned (always emits
+	 *          at least ?25l to force a known cursor-visibility state)
 	 */
-	#positionHardwareCursor(cursorPos: { row: number; col: number } | null, totalLines: number): void {
+	#hardwareCursorEscape(cursorPos: { row: number; col: number } | null, totalLines: number): string {
 		if (!cursorPos || totalLines <= 0) {
-			this.terminal.hideCursor();
-			return;
+			// Leave #hardwareCursorRow untouched — the caller's prior frame-end assignment
+			// (finalCursorRow or similar) remains authoritative for next frame's computeLineDiff.
+			return "\x1b[?25l";
 		}
 
-		// Clamp cursor position to valid range
+		const height = this.terminal.rows;
 		const targetRow = Math.max(0, Math.min(cursorPos.row, totalLines - 1));
 		const targetCol = Math.max(0, cursorPos.col);
-
-		// Move cursor from current position to target
-		const rowDelta = targetRow - this.#hardwareCursorRow;
-		let buffer = "";
-		if (rowDelta > 0) {
-			buffer += `\x1b[${rowDelta}B`; // Move down
-		} else if (rowDelta < 0) {
-			buffer += `\x1b[${-rowDelta}A`; // Move up
-		}
-		// Move to absolute column (1-indexed)
-		buffer += `\x1b[${targetCol + 1}G`;
-		buffer += this.#showHardwareCursor ? "\x1b[?25h" : "\x1b[?25l";
-
-		this.terminal.write(`\x1b[?2026h${buffer}\x1b[?2026l`);
 		this.#hardwareCursorRow = targetRow;
+
+		// Screen row is logical targetRow offset by the post-frame viewport top.
+		// Callers MUST have updated #viewportTopRow before calling this.
+		const screenRow = targetRow - this.#viewportTopRow;
+		if (screenRow < 0 || screenRow >= height) {
+			// Marker is outside visible viewport (e.g. scrolled off).
+			return "\x1b[?25l";
+		}
+
+		// CUP is 1-indexed on both axes.
+		const visibility = this.#showHardwareCursor ? "\x1b[?25h" : "\x1b[?25l";
+		return `\x1b[${screenRow + 1};${targetCol + 1}H${visibility}`;
 	}
 }
