@@ -356,12 +356,12 @@ export class SelectorController {
 			}
 
 			// Provider settings - update runtime preferences
-			case "providers.webSearch":
+			case "toolServices.webSearch":
 				if (typeof value === "string" && isSearchProviderPreference(value)) {
 					setPreferredSearchProvider(value);
 				}
 				break;
-			case "providers.image":
+			case "toolServices.image":
 				if (value === "auto" || value === "gemini" || value === "openrouter") {
 					setPreferredImageProvider(value);
 				}

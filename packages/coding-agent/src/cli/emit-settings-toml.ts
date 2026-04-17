@@ -14,7 +14,6 @@ export interface EmitTomlOptions {
 	includeComments: boolean;
 	includePriorityHeader: boolean;
 	groupBulk: boolean;
-	renameProviders: boolean;
 	templateDate: string;
 	outputTemplate: string;
 	outputActive: string;
@@ -57,7 +56,8 @@ const IMPORTANCE: Record<string, Set<string>> = {
 	images: new Set(["autoResize", "blockImages"]),
 	inspect_image: new Set(["enabled"]),
 	lsp: new Set(["enabled", "diagnosticsOnWrite", "formatOnWrite"]),
-	providers: new Set(["image", "parallelFetch", "webSearch"]),
+	toolServices: new Set(["image", "parallelFetch", "webSearch"]),
+	llmProviders: new Set(["kimiApiFormat", "openaiWebsockets"]),
 	mcp: new Set(["enableProjectConfig", "discoveryMode", "discoveryDefaultServers", "notifications"]),
 	memories: new Set(["enabled"]),
 	python: new Set(["toolMode", "kernelMode", "sharedGateway"]),
@@ -80,7 +80,8 @@ const IMPORTANCE: Record<string, Set<string>> = {
 const PRIORITY_PREFIXES = [
 	"default",
 	"thinkingBudgets",
-	"providers",
+	"toolServices",
+	"llmProviders",
 	"retry",
 	"compaction",
 	"contextPromotion",
@@ -148,7 +149,7 @@ const PRIORITY_TIERS: Array<{ label: string; keys: string[] }> = [
 			"github.enabled",
 			"secrets.enabled",
 			"fetch.enabled",
-			"toolingProviders.webSearch",
+			"toolServices.webSearch",
 		],
 	},
 	{
@@ -175,11 +176,6 @@ function splitKey(fullKey: string): { prefix: string; subkey: string } {
 	if (dotIndex === -1) return { prefix: "default", subkey: fullKey };
 	return { prefix: fullKey.slice(0, dotIndex), subkey: fullKey.slice(dotIndex + 1) };
 }
-
-function displayPrefix(prefix: string, renameProviders: boolean): string {
-	return renameProviders && prefix === "providers" ? "toolingProviders" : prefix;
-}
-
 function tomlEscape(value: string): string {
 	return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
 }
@@ -216,7 +212,7 @@ function pushHeader(lines: string[], options: EmitTomlOptions): void {
 		);
 	} else {
 		lines.push("# Flat rule: full setting paths emitted in alphabetical order.");
-		lines.push("# Roundtrip note: this mode avoids prefix regrouping and provider relabeling drift.");
+		lines.push("# Roundtrip note: this mode avoids prefix regrouping.");
 	}
 	lines.push("");
 	if (!options.includePriorityHeader) return;
@@ -245,32 +241,43 @@ function emitPrefixedBlock(
 		if (includeComments && item.description) lines.push(`# ${item.description}`);
 		const value = item.value;
 		const fullPath = `${prefixLabel}.${item.path}`;
-		if (value && typeof value === "object" && !Array.isArray(value)) {
+		if (value !== null && typeof value === "object" && !Array.isArray(value)) {
 			const record = value as Record<string, unknown>;
 			const keys = Object.keys(record).sort();
 			if (keys.length === 0) {
 				lines.push(`"${fullPath}" = {}`);
 			} else {
-				lines.push(`["${fullPath}"]`);
+				// Inline table: avoids TOML [section] scope absorbing subsequent bare keys.
+				const entries: string[] = [];
 				for (const key of keys) {
 					const nestedValue = record[key];
-					if (nestedValue && typeof nestedValue === "object" && !Array.isArray(nestedValue)) {
+					if (nestedValue !== null && typeof nestedValue === "object" && !Array.isArray(nestedValue)) {
 						const rendered = JSON.stringify(
 							nestedValue,
 							Object.keys(nestedValue as Record<string, unknown>).sort(),
 						);
-						lines.push(`"${key}" = "${tomlEscape(rendered)}"`);
+						entries.push(`"${key}" = "${tomlEscape(rendered)}"`);
 					} else {
-						lines.push(`"${key}" = ${formatScalar(nestedValue)}`);
+						entries.push(`"${key}" = ${formatScalar(nestedValue)}`);
 					}
 				}
+				lines.push(`"${fullPath}" = { ${entries.join(", ")} }`);
 			}
 		} else if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object" && value[0] !== null) {
 			lines.push(`"${fullPath}" = []`);
 			for (const entry of value as Array<Record<string, unknown>>) {
 				lines.push(`[["${fullPath}"]]`);
 				for (const key of Object.keys(entry).sort()) {
-					lines.push(`${key} = ${formatScalar(entry[key])}`);
+					const entryValue = entry[key];
+					if (entryValue !== null && typeof entryValue === "object" && !Array.isArray(entryValue)) {
+						const rendered = JSON.stringify(
+							entryValue,
+							Object.keys(entryValue as Record<string, unknown>).sort(),
+						);
+						lines.push(`${key} = "${tomlEscape(rendered)}"`);
+					} else {
+						lines.push(`${key} = ${formatScalar(entryValue)}`);
+					}
 				}
 			}
 		} else {
@@ -284,18 +291,17 @@ function renderGrouped(options: EmitTomlOptions, settingsByPrefix: Map<string, S
 	const lines: string[] = [];
 	pushHeader(lines, options);
 	for (const rawPrefix of orderedPrefixes([...settingsByPrefix.keys()], options.prefixOrder)) {
-		const shownPrefix = displayPrefix(rawPrefix, options.renameProviders);
 		const items = [...(settingsByPrefix.get(rawPrefix) ?? [])].sort((a, b) => a.path.localeCompare(b.path));
 		if (!options.groupBulk) {
-			emitPrefixedBlock(lines, shownPrefix, items, options.includeComments, "all");
+			emitPrefixedBlock(lines, rawPrefix, items, options.includeComments, "all");
 			lines.push("");
 			continue;
 		}
 		const importance = IMPORTANCE[rawPrefix] ?? new Set<string>();
 		const userItems = items.filter(item => importance.has(item.path) || importance.has(`${rawPrefix}.${item.path}`));
 		const bulkItems = items.filter(item => !userItems.includes(item));
-		emitPrefixedBlock(lines, shownPrefix, userItems, options.includeComments, "hot");
-		emitPrefixedBlock(lines, shownPrefix, bulkItems, options.includeComments, "more");
+		emitPrefixedBlock(lines, rawPrefix, userItems, options.includeComments, "hot");
+		emitPrefixedBlock(lines, rawPrefix, bulkItems, options.includeComments, "more");
 		lines.push("");
 	}
 	return `${lines.join("\n").trimEnd()}\n`;
@@ -303,7 +309,7 @@ function renderGrouped(options: EmitTomlOptions, settingsByPrefix: Map<string, S
 
 function renderFlat(options: EmitTomlOptions, allSettings: SettingMeta[]): string {
 	const lines: string[] = [];
-	pushHeader(lines, { ...options, renameProviders: false, groupBulk: false });
+	pushHeader(lines, { ...options, groupBulk: false });
 	for (const item of [...allSettings].sort((a, b) => a.path.localeCompare(b.path))) {
 		if (options.includeComments && item.description) lines.push(`# ${item.description}`);
 		const value = item.value;
@@ -372,7 +378,6 @@ export function defaultEmitOptions(templateDate: string): EmitTomlOptions {
 		includeComments: true,
 		includePriorityHeader: true,
 		groupBulk: true,
-		renameProviders: true,
 		templateDate,
 		outputTemplate: path.join(os.homedir(), ".agent", `ohp-settings-template-${templateDate}.toml`),
 		outputActive: path.join(os.homedir(), ".agent", "ohp-settings.toml"),

@@ -39,7 +39,6 @@ export interface ConfigCommandArgs {
 		includeComments?: boolean;
 		includePriorityHeader?: boolean;
 		groupBulk?: boolean;
-		renameProviders?: boolean;
 		templateDate?: string;
 		outputTemplate?: string;
 		outputActive?: string;
@@ -127,10 +126,6 @@ export function parseConfigArgs(args: string[]): ConfigCommandArgs | undefined {
 			result.flags.groupBulk = true;
 		} else if (arg === "--no-group-bulk") {
 			result.flags.groupBulk = false;
-		} else if (arg === "--rename-providers") {
-			result.flags.renameProviders = true;
-		} else if (arg === "--no-rename-providers") {
-			result.flags.renameProviders = false;
 		} else if (arg === "--layout") {
 			result.flags.layout = args[++i] as EmitLayout | undefined;
 		} else if (arg === "--prefix-order") {
@@ -430,7 +425,6 @@ async function handleEmitToml(flags: ConfigCommandArgs["flags"]): Promise<void> 
 	options.includeComments = flags.includeComments ?? options.includeComments;
 	options.includePriorityHeader = flags.includePriorityHeader ?? options.includePriorityHeader;
 	options.groupBulk = flags.groupBulk ?? options.groupBulk;
-	options.renameProviders = flags.renameProviders ?? options.renameProviders;
 	options.outputTemplate = flags.outputTemplate ?? options.outputTemplate;
 	options.outputActive = flags.outputActive ?? options.outputActive;
 	await emitSettingsToml(options);
@@ -468,7 +462,6 @@ ${chalk.bold("emit-toml options:")}
   --include-comments / --no-include-comments
   --include-priority-header / --no-include-priority-header
   --group-bulk / --no-group-bulk
-  --rename-providers / --no-rename-providers
   --template-date YYYY-MM-DD
   --output-template <path>
   --output-active <path>

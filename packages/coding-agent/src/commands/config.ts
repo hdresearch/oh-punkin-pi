@@ -37,10 +37,6 @@ export default class Config extends Command {
 			allowNo: true,
 		}),
 		"group-bulk": Flags.boolean({ description: "Split hot vs more fields in grouped mode", allowNo: true }),
-		"rename-providers": Flags.boolean({
-			description: "Relabel providers as toolingProviders in emitted TOML",
-			allowNo: true,
-		}),
 		"template-date": Flags.string({ description: "Template date suffix for emitted template artifact" }),
 		"output-template": Flags.string({ description: "Path for emitted template TOML" }),
 		"output-active": Flags.string({ description: "Path for emitted active TOML" }),
@@ -62,7 +58,6 @@ export default class Config extends Command {
 				includeComments: flags["include-comments"],
 				includePriorityHeader: flags["include-priority-header"],
 				groupBulk: flags["group-bulk"],
-				renameProviders: flags["rename-providers"],
 				templateDate: flags["template-date"],
 				outputTemplate: flags["output-template"],
 				outputActive: flags["output-active"],

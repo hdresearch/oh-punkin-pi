@@ -24,7 +24,8 @@ export type SettingTab =
 	| "editing"
 	| "tools"
 	| "tasks"
-	| "providers";
+	| "toolServices"
+	| "llmProviders";
 
 /** Tab display metadata - icon is resolved via theme.symbol() */
 export type TabMetadata = { label: string; icon: `tab.${string}` };
@@ -38,7 +39,8 @@ export const SETTING_TABS: SettingTab[] = [
 	"editing",
 	"tools",
 	"tasks",
-	"providers",
+	"toolServices",
+	"llmProviders",
 ];
 
 /** Tab display metadata - icon is a symbol key from theme.ts (tab.*) */
@@ -50,7 +52,8 @@ export const TAB_METADATA: Record<SettingTab, { label: string; icon: `tab.${stri
 	editing: { label: "Editing", icon: "tab.editing" },
 	tools: { label: "Tools", icon: "tab.tools" },
 	tasks: { label: "Tasks", icon: "tab.tasks" },
-	providers: { label: "Providers", icon: "tab.providers" },
+	toolServices: { label: "Tool Services", icon: "tab.toolServices" },
+	llmProviders: { label: "LLM Providers", icon: "tab.llmProviders" },
 };
 
 /** Status line segment identifiers */
@@ -1498,11 +1501,15 @@ export const SETTINGS_SCHEMA = {
 	"secrets.enabled": {
 		type: "boolean",
 		default: false,
-		ui: { tab: "providers", label: "Hide Secrets", description: "Obfuscate secrets before sending to AI providers" },
+		ui: {
+			tab: "llmProviders",
+			label: "Hide Secrets",
+			description: "Obfuscate secrets before sending to AI providers",
+		},
 	},
 
 	// Provider selection
-	"providers.webSearch": {
+	"toolServices.webSearch": {
 		type: "enum",
 		values: [
 			"auto",
@@ -1522,53 +1529,53 @@ export const SETTINGS_SCHEMA = {
 		] as const,
 		default: "auto",
 		ui: {
-			tab: "providers",
+			tab: "toolServices",
 			label: "Web Search Provider",
 			description: "Provider for web search tool",
 			submenu: true,
 		},
 	},
-	"providers.image": {
+	"toolServices.image": {
 		type: "enum",
 		values: ["auto", "gemini", "openrouter"] as const,
 		default: "auto",
 		ui: {
-			tab: "providers",
+			tab: "toolServices",
 			label: "Image Provider",
 			description: "Provider for image generation tool",
 			submenu: true,
 		},
 	},
 
-	"providers.kimiApiFormat": {
+	"llmProviders.kimiApiFormat": {
 		type: "enum",
 		values: ["openai", "anthropic"] as const,
 		default: "anthropic",
 		ui: {
-			tab: "providers",
+			tab: "llmProviders",
 			label: "Kimi API Format",
 			description: "API format for Kimi Code provider",
 			submenu: true,
 		},
 	},
 
-	"providers.openaiWebsockets": {
+	"llmProviders.openaiWebsockets": {
 		type: "enum",
 		values: ["auto", "off", "on"] as const,
 		default: "auto",
 		ui: {
-			tab: "providers",
+			tab: "llmProviders",
 			label: "OpenAI WebSockets",
 			description: "Websocket policy for OpenAI Codex models (auto uses model defaults, on forces, off disables)",
 			submenu: true,
 		},
 	},
 
-	"providers.parallelFetch": {
+	"toolServices.parallelFetch": {
 		type: "boolean",
 		default: true,
 		ui: {
-			tab: "providers",
+			tab: "toolServices",
 			label: "Parallel Fetch",
 			description: "Use Parallel extract API for URL fetching when credentials are available",
 		},
@@ -1578,25 +1585,25 @@ export const SETTINGS_SCHEMA = {
 	"exa.enabled": {
 		type: "boolean",
 		default: true,
-		ui: { tab: "providers", label: "Exa", description: "Master toggle for all Exa search tools" },
+		ui: { tab: "toolServices", label: "Exa", description: "Master toggle for all Exa search tools" },
 	},
 
 	"exa.enableSearch": {
 		type: "boolean",
 		default: true,
-		ui: { tab: "providers", label: "Exa Search", description: "Basic search, deep search, code search, crawl" },
+		ui: { tab: "toolServices", label: "Exa Search", description: "Basic search, deep search, code search, crawl" },
 	},
 
 	"exa.enableResearcher": {
 		type: "boolean",
 		default: false,
-		ui: { tab: "providers", label: "Exa Researcher", description: "AI-powered deep research tasks" },
+		ui: { tab: "toolServices", label: "Exa Researcher", description: "AI-powered deep research tasks" },
 	},
 
 	"exa.enableWebsets": {
 		type: "boolean",
 		default: false,
-		ui: { tab: "providers", label: "Exa Websets", description: "Webset management and enrichment tools" },
+		ui: { tab: "toolServices", label: "Exa Websets", description: "Webset management and enrichment tools" },
 	},
 
 	"commit.mapReduceEnabled": { type: "boolean", default: true },

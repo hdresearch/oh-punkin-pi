@@ -294,7 +294,7 @@ const OPTION_PROVIDERS: Partial<Record<SettingPath, OptionProvider>> = {
 		{ value: "never", label: "never", description: "Never interrupt; inject warning after completion" },
 	],
 	// Provider options
-	"providers.webSearch": [
+	"toolServices.webSearch": [
 		{
 			value: "auto",
 			label: "Auto",
@@ -312,16 +312,16 @@ const OPTION_PROVIDERS: Partial<Record<SettingPath, OptionProvider>> = {
 		{ value: "synthetic", label: "Synthetic", description: "Requires SYNTHETIC_API_KEY" },
 		{ value: "parallel", label: "Parallel", description: "Requires PARALLEL_API_KEY" },
 	],
-	"providers.image": [
+	"toolServices.image": [
 		{ value: "auto", label: "Auto", description: "Priority: OpenRouter > Gemini" },
 		{ value: "gemini", label: "Gemini", description: "Requires GEMINI_API_KEY" },
 		{ value: "openrouter", label: "OpenRouter", description: "Requires OPENROUTER_API_KEY" },
 	],
-	"providers.kimiApiFormat": [
+	"llmProviders.kimiApiFormat": [
 		{ value: "openai", label: "OpenAI", description: "api.kimi.com" },
 		{ value: "anthropic", label: "Anthropic", description: "api.moonshot.ai" },
 	],
-	"providers.openaiWebsockets": [
+	"llmProviders.openaiWebsockets": [
 		{ value: "auto", label: "Auto", description: "Use model/provider default websocket behavior" },
 		{ value: "off", label: "Off", description: "Disable websockets for OpenAI Codex models" },
 		{ value: "on", label: "On", description: "Force websockets for OpenAI Codex models" },

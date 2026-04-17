@@ -490,7 +490,7 @@ async function renderHtmlToText(
 	};
 
 	// Try Parallel extract first when credentials are configured
-	if (settings.get("providers.parallelFetch") && (await findParallelApiKey())) {
+	if (settings.get("toolServices.parallelFetch") && (await findParallelApiKey())) {
 		try {
 			const parallelResult = await extractWithParallel([url], {
 				objective: "Extract the main content",

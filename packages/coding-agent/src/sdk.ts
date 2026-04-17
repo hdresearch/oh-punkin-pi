@@ -660,12 +660,12 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 			: undefined;
 
 	// Initialize provider preferences from settings
-	const webSearchProvider = settings.get("providers.webSearch");
+	const webSearchProvider = settings.get("toolServices.webSearch");
 	if (typeof webSearchProvider === "string" && isSearchProviderPreference(webSearchProvider)) {
 		setPreferredSearchProvider(webSearchProvider);
 	}
 
-	const imageProvider = settings.get("providers.image");
+	const imageProvider = settings.get("toolServices.image");
 	if (imageProvider === "auto" || imageProvider === "gemini" || imageProvider === "openrouter") {
 		setPreferredImageProvider(imageProvider);
 	}
@@ -1446,7 +1446,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		.map(name => toolRegistry.get(name))
 		.filter((tool): tool is AgentTool => tool !== undefined);
 
-	const openaiWebsocketSetting = settings.get("providers.openaiWebsockets") ?? "auto";
+	const openaiWebsocketSetting = settings.get("llmProviders.openaiWebsockets") ?? "auto";
 	const preferOpenAICodexWebsockets =
 		openaiWebsocketSetting === "on" ? true : openaiWebsocketSetting === "off" ? false : undefined;
 	const serviceTierSetting = settings.get("serviceTier");
@@ -1479,7 +1479,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		presencePenalty: settings.get("presencePenalty") >= 0 ? settings.get("presencePenalty") : undefined,
 		repetitionPenalty: settings.get("repetitionPenalty") >= 0 ? settings.get("repetitionPenalty") : undefined,
 		serviceTier: initialServiceTier,
-		kimiApiFormat: settings.get("providers.kimiApiFormat") ?? "anthropic",
+		kimiApiFormat: settings.get("llmProviders.kimiApiFormat") ?? "anthropic",
 		preferWebsockets: preferOpenAICodexWebsockets,
 		getToolContext: tc => toolContextStore.getContext(tc),
 		getApiKey: async provider => {

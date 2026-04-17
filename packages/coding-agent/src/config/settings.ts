@@ -12,6 +12,7 @@
  */
 
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import {
 	getAgentDbPath,
@@ -107,6 +108,93 @@ function setByPath(obj: RawSettings, segments: string[], value: unknown): void {
 	current[segments[segments.length - 1]] = value;
 }
 
+/**
+ * Normalize TOML-emitted dotted-literal keys into nested structure.
+ * Bun.TOML.parse treats `"default.modelRoles" = ...` as a literal top-level
+ * key named `default.modelRoles`, not as nested `default.modelRoles`. The
+ * emitter in cli/emit-settings-toml.ts uses this quoted-dotted form for
+ * roundtrip-safety; the loader must invert it before merging into runtime
+ * settings that are looked up via parsePath/getByPath.
+ */
+function rawDeepMerge(base: RawSettings, overrides: RawSettings): RawSettings {
+	const result: RawSettings = { ...base };
+	for (const key of Object.keys(overrides)) {
+		const override = overrides[key];
+		if (override === undefined) continue;
+		const baseVal = base[key];
+		if (
+			override !== null &&
+			typeof override === "object" &&
+			!Array.isArray(override) &&
+			baseVal !== null &&
+			typeof baseVal === "object" &&
+			!Array.isArray(baseVal)
+		) {
+			result[key] = rawDeepMerge(baseVal as RawSettings, override as RawSettings);
+		} else {
+			result[key] = override;
+		}
+	}
+	return result;
+}
+
+function normalizeDottedKeys(raw: RawSettings): RawSettings {
+	const result: RawSettings = {};
+	for (const [key, value] of Object.entries(raw)) {
+		const normalized =
+			value !== null && typeof value === "object" && !Array.isArray(value)
+				? normalizeDottedKeys(value as RawSettings)
+				: value;
+		const segments = key.includes(".") ? parsePath(key) : [key];
+		const existing = getByPath(result, segments);
+		if (
+			existing !== null &&
+			typeof existing === "object" &&
+			!Array.isArray(existing) &&
+			normalized !== null &&
+			typeof normalized === "object" &&
+			!Array.isArray(normalized)
+		) {
+			setByPath(result, segments, rawDeepMerge(existing as RawSettings, normalized as RawSettings));
+		} else {
+			setByPath(result, segments, normalized);
+		}
+	}
+	return result;
+}
+
+/**
+ * Lift the emitter's synthetic `default.*` bucket to the root.
+ * emit-settings-toml.ts wraps bare top-level keys (modelRoles, defaultThinkingLevel,
+ * hideThinkingBlock, etc.) under a `default` prefix for presentation. This undoes
+ * the wrap so `settings.get("modelRoles")` resolves via the normal top-level path.
+ */
+function liftSyntheticDefault(raw: RawSettings): RawSettings {
+	const bucket = raw.default;
+	if (bucket === null || bucket === undefined || typeof bucket !== "object" || Array.isArray(bucket)) {
+		return raw;
+	}
+	const result: RawSettings = { ...raw };
+	delete result.default;
+	for (const [key, value] of Object.entries(bucket as RawSettings)) {
+		if (value === undefined) continue;
+		const existing = result[key];
+		if (
+			existing !== null &&
+			typeof existing === "object" &&
+			!Array.isArray(existing) &&
+			value !== null &&
+			typeof value === "object" &&
+			!Array.isArray(value)
+		) {
+			result[key] = rawDeepMerge(existing as RawSettings, value as RawSettings);
+		} else {
+			result[key] = value;
+		}
+	}
+	return result;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Settings Class
 // ═══════════════════════════════════════════════════════════════════════════
@@ -121,6 +209,8 @@ export class Settings {
 	#global: RawSettings = {};
 	/** Project settings from .claude/settings.yml etc */
 	#project: RawSettings = {};
+	/** User-agent settings from ~/.agent/ohp-settings.toml (dominates config.yml per Carter's rule) */
+	#user: RawSettings = {};
 	/** Runtime overrides (not persisted) */
 	#overrides: RawSettings = {};
 	/** Merged view (global + project + overrides) */
@@ -392,6 +482,12 @@ export class Settings {
 	// ─────────────────────────────────────────────────────────────────────────
 
 	async #load(): Promise<Settings> {
+		// Load user-agent TOML first to decide config.yml suppression.
+		// Carter's rule: ~/.agent/ohp-settings.toml is authoritative at user level.
+		// When present, it suppresses config.yml entirely (hard suppression).
+		const userResult = await this.#loadUserAgentToml();
+		this.#user = userResult.data;
+
 		if (this.#persist) {
 			// Open storage
 			this.#storage = await AgentStorage.open(getAgentDbPath(this.#agentDir));
@@ -399,8 +495,17 @@ export class Settings {
 			// Migrate from legacy formats if needed
 			await this.#migrateFromLegacy();
 
-			// Load global settings from config.yml
-			this.#global = await this.#loadYaml(this.#configPath!);
+			if (userResult.path !== null) {
+				// Hard suppression: user-agent TOML is present, config.yml is ignored as a read source.
+				// Writes still target config.yml so `settings.set()` remains functional.
+				logger.debug("Settings: suppressing config.yml read (user-agent TOML present)", {
+					userAgentToml: userResult.path,
+					configYml: this.#configPath,
+				});
+			} else {
+				// No user-agent TOML: config.yml is the authoritative user-level source.
+				this.#global = await this.#loadYaml(this.#configPath!);
+			}
 		}
 
 		// Load project settings
@@ -440,6 +545,34 @@ export class Settings {
 		} catch {
 			return {};
 		}
+	}
+
+	async #loadUserAgentToml(): Promise<{ data: RawSettings; path: string | null }> {
+		// Carter's rule: ~/.agent/ohp-settings.toml dominates other user-level
+		// settings. When present, config.yml is suppressed at read time (see #load).
+		const home = os.homedir();
+		const candidates = [
+			path.join(home, ".agent", "ohp-settings.toml"),
+			path.join(home, ".agents", "ohp-settings.toml"),
+		];
+		for (const candidate of candidates) {
+			try {
+				const content = await Bun.file(candidate).text();
+				const parsed = Bun.TOML.parse(content);
+				if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
+					const normalized = normalizeDottedKeys(parsed as RawSettings);
+					const lifted = liftSyntheticDefault(normalized);
+					return { data: this.#migrateRawSettings(lifted), path: candidate };
+				}
+			} catch (error) {
+				if (isEnoent(error)) continue;
+				logger.warn("Settings: failed to load user-agent TOML", {
+					path: candidate,
+					error: String(error),
+				});
+			}
+		}
+		return { data: {}, path: null };
 	}
 
 	async #migrateFromLegacy(): Promise<void> {
@@ -587,8 +720,11 @@ export class Settings {
 	// ─────────────────────────────────────────────────────────────────────────
 
 	#rebuildMerged(): void {
-		this.#merged = this.#deepMerge(this.#deepMerge({}, this.#global), this.#project);
-		this.#merged = this.#deepMerge(this.#merged, this.#overrides);
+		let merged = this.#deepMerge({}, this.#global);
+		merged = this.#deepMerge(merged, this.#user);
+		merged = this.#deepMerge(merged, this.#project);
+		merged = this.#deepMerge(merged, this.#overrides);
+		this.#merged = merged;
 	}
 
 	#fireAllHooks(): void {
