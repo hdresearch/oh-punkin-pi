@@ -115,7 +115,7 @@ async function assertConverges(s: Scenario, label: string | number): Promise<voi
 			const v = streamed.viewport[i] ?? "";
 			if (o !== v) diff.push(`row ${i}: oracle=${JSON.stringify(o)} stream=${JSON.stringify(v)}`);
 		}
-		console.error("diff:\n" + diff.join("\n"));
+		console.error(`diff:\n${diff.join("\n")}`);
 	}
 
 	expect(streamed.viewport).toEqual(oracle.viewport);
