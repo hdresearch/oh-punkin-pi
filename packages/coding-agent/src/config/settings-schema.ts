@@ -299,7 +299,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "tools",
 			label: "Artifact spill threshold (KB)",
-			description: "Tool output above this size is saved as an artifact; tail is kept inline",
+			description: "Tool output above this size (KB) is saved as an artifact; tail is kept inline",
 			submenu: true,
 		},
 	},
@@ -309,7 +309,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "tools",
 			label: "Artifact tail size (KB)",
-			description: "Amount of tail content kept inline when output spills to artifact",
+			description: "Amount of tail content (KB) kept inline when output spills to artifact",
 			submenu: true,
 		},
 	},
@@ -319,7 +319,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "tools",
 			label: "Artifact tail lines",
-			description: "Maximum lines of tail content kept inline when output spills to artifact",
+			description: "Maximum lines of tail content (lines) kept inline when output spills to artifact",
 			submenu: true,
 		},
 	},
@@ -358,7 +358,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "appearance",
 			label: "Auto-Resize Images",
-			description: "Resize large images to 2000x2000 max for better model compatibility",
+			description: "Resize large images to 2000×2000 pixels max for better model compatibility",
 		},
 	},
 
@@ -540,7 +540,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "model",
 			label: "Retry Attempts",
-			description: "Maximum retry attempts on API errors",
+			description: "Maximum retry attempts (count) on API errors",
 			submenu: true,
 		},
 	},
@@ -671,7 +671,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "interaction",
 			label: "Ask Timeout",
-			description: "Auto-select recommended option after timeout (0 to disable)",
+			description: "Auto-select recommended option after timeout in seconds (0 to disable)",
 			submenu: true,
 		},
 	},
@@ -757,7 +757,8 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "context",
 			label: "Compaction Threshold",
-			description: "Percent threshold for context maintenance; set to Default to use legacy reserve-based behavior",
+			description:
+				"Percent threshold (percentage) for context maintenance; set to Default to use legacy reserve-based behavior",
 			submenu: true,
 		},
 	},
@@ -767,7 +768,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "context",
 			label: "Compaction Token Limit",
-			description: "Fixed token limit for context maintenance; overrides percentage if set",
+			description: "Fixed token limit (tokens) for context maintenance; overrides percentage if set",
 			submenu: true,
 		},
 	},
@@ -936,7 +937,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "editing",
 			label: "Fuzzy Match Threshold",
-			description: "Similarity threshold for fuzzy matches",
+			description: "Similarity threshold for fuzzy matches (0-1)",
 			submenu: true,
 		},
 	},
@@ -997,7 +998,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "editing",
 			label: "Default Read Limit",
-			description: "Default number of lines returned when agent calls read without a limit",
+			description: "Default number of lines (lines) returned when agent calls read without a limit",
 			submenu: true,
 		},
 	},
@@ -1099,7 +1100,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "tools",
 			label: "Todo Reminder Limit",
-			description: "Maximum reminders to complete todos before giving up",
+			description: "Maximum reminders (count) to complete todos before giving up",
 			submenu: true,
 		},
 	},
@@ -1308,7 +1309,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "tools",
 			label: "Max Async Jobs",
-			description: "Maximum concurrent background jobs (1-100)",
+			description: "Maximum concurrent background jobs (count, 1-100)",
 			submenu: true,
 		},
 	},
@@ -1356,7 +1357,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "tools",
 			label: "MCP Notification Debounce",
-			description: "Debounce window for MCP resource update notifications before injecting into conversation",
+			description: "Debounce window (ms) for MCP resource update notifications before injecting into conversation",
 		},
 	},
 
@@ -1418,7 +1419,7 @@ export const SETTINGS_SCHEMA = {
 		ui: {
 			tab: "tasks",
 			label: "Max Concurrent Tasks",
-			description: "Concurrent limit for subagents",
+			description: "Concurrent limit for subagents (count)",
 			submenu: true,
 		},
 	},

@@ -150,10 +150,22 @@ function pushFileHeader(lines: string[], options: EmitTomlOptions): void {
 	lines.push("");
 }
 
+function shouldCommentDefaultValue(value: unknown): boolean {
+	if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+		return true;
+	}
+	if (Array.isArray(value)) {
+		return value.every(
+			item => item === null || typeof item === "string" || typeof item === "number" || typeof item === "boolean",
+		);
+	}
+	return false;
+}
+
 function emitSettingComments(lines: string[], item: SettingMeta, includeComments: boolean): void {
 	if (!includeComments) return;
 	if (item.description) lines.push(`# ${item.description}`);
-	if (item.defaultValue !== undefined && !isNonEmptyRecord(item.defaultValue)) {
+	if (item.defaultValue !== undefined && shouldCommentDefaultValue(item.defaultValue)) {
 		lines.push(`# Default: ${formatValue(item.defaultValue)}`);
 	}
 	if (item.allowedValues && item.allowedValues.length > 0) {
