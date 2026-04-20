@@ -310,7 +310,7 @@ export function formatDiagnostics(
 		const fileBranch = isLastFileNode ? theme.tree.last : theme.tree.branch;
 
 		const fileIcon = theme.fg("muted", getLangIcon(filePath));
-		output += `\n ${theme.fg("dim", fileBranch)} ${fileIcon} ${theme.fg("accent", filePath)}`;
+		output += `\n ${theme.fg("dim", fileBranch)} ${fileIcon}  ${theme.fg("accent", filePath)}`;
 
 		for (let di = 0; di < diagnostics.length && diagsShown < maxDiags; di++) {
 			const d = diagnostics[di];

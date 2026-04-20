@@ -404,7 +404,7 @@ export const writeToolRenderer = {
 		const spinner =
 			options?.spinnerFrame !== undefined ? formatStatusIcon("running", uiTheme, options.spinnerFrame) : "";
 
-		let text = `${formatTitle("Write", uiTheme)} ${spinner ? `${spinner} ` : ""}${langIcon} ${pathDisplay}`;
+		let text = `${formatTitle("Write", uiTheme)} ${spinner ? `${spinner} ` : ""}${langIcon}  ${pathDisplay}`;
 
 		if (!args.content) {
 			return new Text(text, 0, 0);
@@ -435,7 +435,7 @@ export const writeToolRenderer = {
 			{
 				icon: "success",
 				title: "Write",
-				description: `${langIcon} ${pathDisplay}`,
+				description: `${langIcon}  ${pathDisplay}`,
 			},
 			uiTheme,
 		);
