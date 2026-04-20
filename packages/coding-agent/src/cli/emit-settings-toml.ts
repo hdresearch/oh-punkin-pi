@@ -15,9 +15,11 @@ import { SETTINGS_SCHEMA } from "../config/settings-schema";
 //                            Each child emits its bare relative tail.
 //      Group of size 1    -> emit the fully-qualified flat key (no header).
 //   4. Arrays-of-objects always emit inline (`= [ {…}, {…} ]`).
-//      Records always emit as inline tables (`= { … }`).
-//      No `[[x]]` headers, no nested `[x.y]` sub-headers; absorption-by-scope
-//      is structurally impossible.
+//      Empty records emit as inline tables (`= {}`), but non-empty records emit as
+//      nested TOML subtables (`[x.y]`) so multiline edits stay valid and editor-
+//      friendly.
+//      No `[[x]]` headers; nested `[x.y]` headers are used only for non-empty
+//      record-valued settings.
 //
 // Live ~/.agent/ohp-settings.toml is NEVER written here. Emit only produces the
 // dated reference template at ~/.agent/ohp-settings-template-YYYY-MM-DD.toml.
@@ -40,6 +42,8 @@ export interface EmitTomlOptions {
 interface SettingMeta {
 	path: string;
 	description: string;
+	allowedValues?: readonly string[];
+	defaultValue?: unknown;
 	value: unknown;
 }
 
@@ -64,8 +68,23 @@ function isBareKeySafe(k: string): boolean {
 	return /^[A-Za-z0-9_-]+$/.test(k);
 }
 
+function hasTomlEntries(record: Record<string, unknown>): boolean {
+	return Object.entries(record).some(([, value]) => value !== undefined);
+}
+
+function isNonEmptyRecord(value: unknown): value is Record<string, unknown> {
+	return (
+		value !== null &&
+		typeof value === "object" &&
+		!Array.isArray(value) &&
+		hasTomlEntries(value as Record<string, unknown>)
+	);
+}
+
 function formatInlineRecord(record: Record<string, unknown>): string {
-	const keys = Object.keys(record).sort();
+	const keys = Object.keys(record)
+		.filter(key => record[key] !== undefined)
+		.sort();
 	if (keys.length === 0) return "{}";
 	const parts = keys.map(k => `${isBareKeySafe(k) ? k : `"${tomlEscape(k)}"`} = ${formatValue(record[k])}`);
 	return `{ ${parts.join(", ")} }`;
@@ -74,8 +93,6 @@ function formatInlineRecord(record: Record<string, unknown>): string {
 function formatInlineAoT(value: Array<Record<string, unknown>>): string {
 	if (value.length === 0) return "[]";
 	if (value.length === 1) return `[${formatInlineRecord(value[0])}]`;
-	// Multi-line inline AoT: one record per line, trailing comma on each entry.
-	// Preserves the no-`[[…]]`-scope-leak guarantee while staying diff-readable.
 	const inner = value.map(r => `\t${formatInlineRecord(r)},`).join("\n");
 	return `[\n${inner}\n]`;
 }
@@ -90,58 +107,103 @@ function formatValue(value: unknown): string {
 	return formatScalar(value);
 }
 
+function emitNestedRecord(lines: string[], tablePath: string[], record: Record<string, unknown>): void {
+	const entries = Object.entries(record)
+		.filter(([, value]) => value !== undefined)
+		.sort(([a], [b]) => a.localeCompare(b));
+	const scalarEntries = entries.filter(([, value]) => !isNonEmptyRecord(value));
+	const tableEntries = entries.filter(([, value]) => isNonEmptyRecord(value));
+
+	for (const [key, value] of scalarEntries) {
+		lines.push(`${isBareKeySafe(key) ? key : `"${tomlEscape(key)}"`} = ${formatValue(value)}`);
+	}
+
+	for (const [key, value] of tableEntries) {
+		if (lines.length > 0 && lines[lines.length - 1] !== "") lines.push("");
+		lines.push(`[${[...tablePath, key].join(".")}]`);
+		emitNestedRecord(lines, [...tablePath, key], value as Record<string, unknown>);
+	}
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Emit
 // ─────────────────────────────────────────────────────────────────────────────
 
 function collectSettings(): SettingMeta[] {
-	return (Object.keys(SETTINGS_SCHEMA) as SettingPath[])
-		.map(key => ({
+	return (Object.keys(SETTINGS_SCHEMA) as SettingPath[]).map(key => {
+		const definition = SETTINGS_SCHEMA[key];
+		return {
 			path: key,
 			description: getUi(key)?.description ?? "",
+			allowedValues: definition.type === "enum" ? definition.values : undefined,
+			defaultValue: definition.default,
 			value: settings.get(key),
-		}))
-		.sort((a, b) => a.path.localeCompare(b.path));
+		};
+	});
 }
 
 function pushFileHeader(lines: string[], options: EmitTomlOptions): void {
 	if (!options.includeComments) return;
 	lines.push(`# ${APP_NAME.toUpperCase()} settings reference template`);
-	lines.push("# Lex-sorted by full path. Prefixes with >=2 keys form a [section] block;");
-	lines.push("# single-key prefixes emit as fully-qualified flat keys. No nested sections,");
-	lines.push("# no [[array]] headers — absorption-by-scope is structurally impossible.");
+	lines.push("# Prefix-grouped by everything before the final dot; entries within a prefix are");
+	lines.push("# sorted by final key segment. Non-empty record values emit as nested TOML tables.");
 	lines.push("");
+}
+
+function emitSettingComments(lines: string[], item: SettingMeta, includeComments: boolean): void {
+	if (!includeComments) return;
+	if (item.description) lines.push(`# ${item.description}`);
+	if (item.defaultValue !== undefined && !isNonEmptyRecord(item.defaultValue)) {
+		lines.push(`# Default: ${formatValue(item.defaultValue)}`);
+	}
+	if (item.allowedValues && item.allowedValues.length > 0) {
+		lines.push(`# Allowed values: ${item.allowedValues.map(value => JSON.stringify(value)).join(", ")}`);
+	}
 }
 
 export function renderSettingsToml(items: SettingMeta[], options: EmitTomlOptions): string {
 	const lines: string[] = [];
 	pushFileHeader(lines, options);
 
-	let i = 0;
-	while (i < items.length) {
-		const prefix = items[i].path.split(".", 1)[0];
-		let j = i;
-		while (j < items.length && items[j].path.split(".", 1)[0] === prefix) j++;
-		const run = items.slice(i, j);
-		if (run.length >= 2) {
-			// Section block
-			lines.push(""); // blank line before header
-			lines.push(`[${prefix}]`);
-			for (const item of run) {
-				if (options.includeComments && item.description) lines.push(`# ${item.description}`);
-				const tail = item.path.slice(prefix.length + 1);
-				// Tail may itself be dotted (e.g. `isolation.mode` under [task]); TOML
-				// interprets bare-dotted keys within an open section scope as nested
-				// table assignments, which is exactly what we want.
-				lines.push(`${tail} = ${formatValue(item.value)}`);
-			}
+	const groups = new Map<string, SettingMeta[]>();
+	for (const item of items) {
+		const dot = item.path.lastIndexOf(".");
+		const prefix = item.path.slice(0, dot);
+		const existing = groups.get(prefix);
+		if (existing) {
+			existing.push(item);
 		} else {
-			// Singleton — flat fully-qualified
-			const item = run[0];
-			if (options.includeComments && item.description) lines.push(`# ${item.description}`);
-			lines.push(`"${item.path}" = ${formatValue(item.value)}`);
+			groups.set(prefix, [item]);
 		}
-		i = j;
+	}
+
+	const sortedPrefixes = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b));
+	for (const prefix of sortedPrefixes) {
+		const group = groups.get(prefix)!;
+		group.sort((a, b) => {
+			const aKey = a.path.slice(a.path.lastIndexOf(".") + 1);
+			const bKey = b.path.slice(b.path.lastIndexOf(".") + 1);
+			return aKey.localeCompare(bKey);
+		});
+
+		lines.push("");
+		lines.push(`[${prefix}]`);
+
+		const scalarItems = group.filter(item => !isNonEmptyRecord(item.value));
+		const tableItems = group.filter(item => isNonEmptyRecord(item.value));
+
+		for (const item of scalarItems) {
+			emitSettingComments(lines, item, options.includeComments);
+			const key = item.path.slice(item.path.lastIndexOf(".") + 1);
+			lines.push(`${key} = ${formatValue(item.value)}`);
+		}
+
+		for (const item of tableItems) {
+			if (lines.length > 0 && lines[lines.length - 1] !== "") lines.push("");
+			emitSettingComments(lines, item, options.includeComments);
+			lines.push(`[${item.path}]`);
+			emitNestedRecord(lines, item.path.split("."), item.value as Record<string, unknown>);
+		}
 	}
 
 	return `${lines.join("\n").trimEnd()}\n`;

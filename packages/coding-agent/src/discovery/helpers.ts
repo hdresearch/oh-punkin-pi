@@ -93,6 +93,34 @@ export function getProjectPath(ctx: LoadContext, source: SourceId, subpath: stri
 	return path.join(ctx.cwd, paths.projectDir, subpath);
 }
 
+type UserAgentMd = { path: string; content: string };
+
+let userAgentMdCache: Map<string, UserAgentMd | null> | undefined;
+
+export async function getUserAgentMd(ctx: LoadContext): Promise<UserAgentMd | null> {
+	if (!userAgentMdCache) userAgentMdCache = new Map();
+	const key = ctx.home;
+	if (userAgentMdCache.has(key)) return userAgentMdCache.get(key) ?? null;
+
+	const variations = ["AGENT.md", "agent.md", "AGENT.MD", "Agent.md"];
+	for (const filename of variations) {
+		const agentMdPath = path.join(ctx.home, ".agent", filename);
+		const content = await readFile(agentMdPath);
+		if (content !== null) {
+			const result = { path: agentMdPath, content };
+			userAgentMdCache.set(key, result);
+			return result;
+		}
+	}
+
+	userAgentMdCache.set(key, null);
+	return null;
+}
+
+export async function shouldSuppressProjectAgentMds(ctx: LoadContext): Promise<boolean> {
+	return (await getUserAgentMd(ctx)) !== null;
+}
+
 /**
  * Create source metadata for an item.
  */

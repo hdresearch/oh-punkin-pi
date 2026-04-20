@@ -24,8 +24,10 @@ import {
 	discoverExtensionModulePaths,
 	expandEnvVarsDeep,
 	getExtensionNameFromPath,
+	getUserAgentMd,
 	loadFilesFromDir,
 	scanSkillsFromDir,
+	shouldSuppressProjectAgentMds,
 } from "./helpers";
 
 const PROVIDER_ID = "claude";
@@ -52,28 +54,8 @@ function getProjectClaude(ctx: LoadContext): string {
  * If ~/.agent/AGENT.md exists, project-level config autoload is suppressed.
  * The user's personal agent file is the sole autoloaded behavioral authority.
  */
-let agentMdCache: Map<string, string | null> | undefined;
-
-async function getAgentMd(ctx: LoadContext): Promise<string | null> {
-	if (!agentMdCache) agentMdCache = new Map();
-	const key = ctx.home;
-	if (agentMdCache.has(key)) return agentMdCache.get(key) ?? null;
-	const variations = ["AGENT.md", "agent.md", "AGENT.MD", "Agent.md"];
-	for (const filename of variations) {
-		const agentMdPath = path.join(ctx.home, AGENT_DIR, filename);
-		const content = await readFile(agentMdPath);
-		if (content !== null) {
-			agentMdCache.set(key, content);
-			return content;
-		}
-	}
-	agentMdCache.set(key, null);
-	return null;
-}
-
-/** Returns true when hardened user prefs mode is active. */
 async function shouldSkipProjectLevel(ctx: LoadContext): Promise<boolean> {
-	return (await getAgentMd(ctx)) !== null;
+	return shouldSuppressProjectAgentMds(ctx);
 }
 
 function isMissingDirectoryError(error: unknown): boolean {
@@ -163,26 +145,18 @@ async function loadContextFiles(ctx: LoadContext): Promise<LoadResult<ContextFil
 	const items: ContextFile[] = [];
 	const warnings: string[] = [];
 
-	const agentMd = await getAgentMd(ctx);
+	const agentMd = await getUserAgentMd(ctx);
 
 	// When ~/.agent/AGENT.md exists, ~/.agent/ is the sole user-level authority —
 	// ~/.claude/CLAUDE.md is suppressed (hot override).
 	// All recognized files in ~/.agent/ are loaded as user-level context.
 	if (agentMd !== null) {
-		const variations = ["AGENT.md", "agent.md", "AGENT.MD", "Agent.md"];
-		for (const filename of variations) {
-			const agentMdPath = path.join(ctx.home, AGENT_DIR, filename);
-			const content = await readFile(agentMdPath);
-			if (content !== null) {
-				items.push({
-					path: agentMdPath,
-					content,
-					level: "user",
-					_source: createSourceMeta(PROVIDER_ID, agentMdPath, "user"),
-				});
-				break;
-			}
-		}
+		items.push({
+			path: agentMd.path,
+			content: agentMd.content,
+			level: "user",
+			_source: createSourceMeta(PROVIDER_ID, agentMd.path, "user"),
+		});
 
 		// Load additional user-level files from ~/.agent/
 		for (const extra of AGENT_DIR_EXTRA_FILES) {

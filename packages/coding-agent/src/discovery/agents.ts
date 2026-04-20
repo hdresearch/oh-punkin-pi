@@ -21,6 +21,7 @@ import {
 	createSourceMeta,
 	loadFilesFromDir,
 	scanSkillsFromDir,
+	shouldSuppressProjectAgentMds,
 } from "./helpers";
 
 const PROVIDER_ID = "agents";
@@ -178,8 +179,11 @@ async function loadContextFiles(ctx: LoadContext): Promise<LoadResult<ContextFil
 		return { path: filePath, content, level, depth, _source: createSourceMeta(PROVIDER_ID, filePath, level) };
 	};
 
+	const projectCandidates = (await shouldSuppressProjectAgentMds(ctx))
+		? []
+		: getProjectPathCandidates(ctx, "AGENTS.md");
 	const results = await Promise.all([
-		...getProjectPathCandidates(ctx, "AGENTS.md").map(p => load(p, "project")),
+		...projectCandidates.map(p => load(p, "project")),
 		...getUserPathCandidates(ctx, "AGENTS.md").map(p => load(p, "user")),
 	]);
 

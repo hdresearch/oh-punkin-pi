@@ -10,7 +10,7 @@ import { registerProvider } from "../capability";
 import { type ContextFile, contextFileCapability } from "../capability/context-file";
 import { readFile } from "../capability/fs";
 import type { LoadContext, LoadResult } from "../capability/types";
-import { calculateDepth, createSourceMeta } from "./helpers";
+import { calculateDepth, createSourceMeta, shouldSuppressProjectAgentMds } from "./helpers";
 
 const PROVIDER_ID = "agents-md";
 const DISPLAY_NAME = "AGENTS.md";
@@ -19,9 +19,12 @@ const DISPLAY_NAME = "AGENTS.md";
  * Load standalone AGENTS.md files.
  */
 async function loadAgentsMd(ctx: LoadContext): Promise<LoadResult<ContextFile>> {
+	if (await shouldSuppressProjectAgentMds(ctx)) {
+		return { items: [], warnings: [] };
+	}
+
 	const items: ContextFile[] = [];
 	const warnings: string[] = [];
-
 	// Walk up from cwd looking for AGENTS.md files
 	let current = ctx.cwd;
 

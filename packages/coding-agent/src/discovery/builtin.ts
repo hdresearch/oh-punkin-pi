@@ -32,6 +32,7 @@ import {
 	loadFilesFromDir,
 	SOURCE_PATHS,
 	scanSkillsFromDir,
+	shouldSuppressProjectAgentMds,
 } from "./helpers";
 
 const PROVIDER_ID = "native";
@@ -838,19 +839,21 @@ async function loadContextFiles(ctx: LoadContext): Promise<LoadResult<ContextFil
 		});
 	}
 
-	const nearestProjectConfigDir = await findNearestProjectConfigDir(ctx.cwd, ctx.repoRoot);
-	if (nearestProjectConfigDir) {
-		const projectPath = path.join(nearestProjectConfigDir.dir, "AGENTS.md");
-		const projectContent = await readFile(projectPath);
-		if (projectContent) {
-			items.push({
-				path: projectPath,
-				content: projectContent,
-				level: "project",
-				depth: nearestProjectConfigDir.depth,
-				_source: createSourceMeta(PROVIDER_ID, projectPath, "project"),
-			});
-			return { items, warnings };
+	if (!(await shouldSuppressProjectAgentMds(ctx))) {
+		const nearestProjectConfigDir = await findNearestProjectConfigDir(ctx.cwd, ctx.repoRoot);
+		if (nearestProjectConfigDir) {
+			const projectPath = path.join(nearestProjectConfigDir.dir, "AGENTS.md");
+			const projectContent = await readFile(projectPath);
+			if (projectContent) {
+				items.push({
+					path: projectPath,
+					content: projectContent,
+					level: "project",
+					depth: nearestProjectConfigDir.depth,
+					_source: createSourceMeta(PROVIDER_ID, projectPath, "project"),
+				});
+				return { items, warnings };
+			}
 		}
 	}
 	return { items, warnings };

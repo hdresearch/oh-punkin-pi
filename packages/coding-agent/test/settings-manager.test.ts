@@ -120,5 +120,34 @@ describe("Settings", () => {
 			const savedSettings = await readSettings();
 			expect(savedSettings.defaultThinkingLevel).toBe(Effort.High);
 		});
+
+		it("should persist user-level changes back to ohp-settings.toml when that file is authoritative", async () => {
+			const originalHome = process.env.HOME;
+			const userAgentDir = path.join(testDir, ".agent");
+			const userTomlPath = path.join(userAgentDir, "ohp-settings.toml");
+			fs.mkdirSync(userAgentDir, { recursive: true });
+			await Bun.write(userTomlPath, "[model]\nroles = {}\n");
+			process.env.HOME = testDir;
+
+			try {
+				const settings = await Settings.init({ cwd: projectDir, agentDir });
+				settings.set("model.roles", { default: "anthropic/claude-sonnet" });
+				await settings.flush();
+
+				const savedText = await Bun.file(userTomlPath).text();
+				expect(savedText).toContain("[model.roles]");
+
+				const savedToml = Bun.TOML.parse(savedText) as {
+					model?: { roles?: Record<string, string> };
+				};
+				expect(savedToml.model?.roles?.default).toBe("anthropic/claude-sonnet");
+			} finally {
+				if (originalHome === undefined) {
+					delete process.env.HOME;
+				} else {
+					process.env.HOME = originalHome;
+				}
+			}
+		});
 	});
 });

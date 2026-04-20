@@ -258,10 +258,103 @@ export function liftSyntheticDefault(raw: RawSettings): RawSettings {
 	return result;
 }
 
+function formatTomlString(value: string): string {
+	return `"${value.replaceAll("\\", "\\\\").replaceAll('"', '\\"')}"`;
+}
+
+function isTomlBareKeySafe(value: string): boolean {
+	return /^[A-Za-z0-9_-]+$/.test(value);
+}
+
+function formatTomlKey(value: string): string {
+	return isTomlBareKeySafe(value) ? value : formatTomlString(value);
+}
+
+function hasTomlEntries(record: Record<string, unknown>): boolean {
+	return Object.entries(record).some(([, value]) => value !== undefined);
+}
+
+function isNonEmptyTomlRecord(value: unknown): value is Record<string, unknown> {
+	return (
+		value !== null &&
+		typeof value === "object" &&
+		!Array.isArray(value) &&
+		hasTomlEntries(value as Record<string, unknown>)
+	);
+}
+
+function formatTomlValue(value: unknown): string {
+	if (typeof value === "boolean") return value ? "true" : "false";
+	if (typeof value === "number") return Number.isFinite(value) ? String(value) : '""';
+	if (typeof value === "string") return formatTomlString(value);
+	if (value === null || value === undefined) return '""';
+	if (Array.isArray(value)) {
+		if (value.length > 0 && value.every(item => item !== null && typeof item === "object" && !Array.isArray(item))) {
+			if (value.length === 1) {
+				return `[${formatTomlInlineRecord(value[0] as Record<string, unknown>)}]`;
+			}
+			const inner = value.map(item => `\t${formatTomlInlineRecord(item as Record<string, unknown>)},`).join("\n");
+			return `[\n${inner}\n]`;
+		}
+		return `[${value.map(item => formatTomlValue(item)).join(", ")}]`;
+	}
+	if (typeof value === "object") {
+		return formatTomlInlineRecord(value as Record<string, unknown>);
+	}
+	throw new Error(`Unsupported TOML value type: ${typeof value}`);
+}
+
+function formatTomlInlineRecord(record: Record<string, unknown>): string {
+	const entries = Object.entries(record)
+		.filter(([, value]) => value !== undefined)
+		.sort(([a], [b]) => a.localeCompare(b));
+	if (entries.length === 0) return "{}";
+	return `{ ${entries.map(([key, value]) => `${formatTomlKey(key)} = ${formatTomlValue(value)}`).join(", ")} }`;
+}
+
+function emitTomlTable(lines: string[], tablePath: string[], record: Record<string, unknown>): void {
+	if (tablePath.length > 0) {
+		if (lines.length > 0) lines.push("");
+		lines.push(`[${tablePath.join(".")}]`);
+	}
+
+	const entries = Object.entries(record)
+		.filter(([, value]) => value !== undefined)
+		.sort(([a], [b]) => a.localeCompare(b));
+	const scalarEntries = entries.filter(([, value]) => !isNonEmptyTomlRecord(value));
+	const tableEntries = entries.filter(([, value]) => isNonEmptyTomlRecord(value));
+
+	for (const [key, value] of scalarEntries) {
+		lines.push(`${formatTomlKey(key)} = ${formatTomlValue(value)}`);
+	}
+
+	for (const [key, value] of tableEntries) {
+		emitTomlTable(lines, [...tablePath, key], value as Record<string, unknown>);
+	}
+}
+
+function renderRawSettingsToml(raw: RawSettings): string {
+	const lines: string[] = [];
+	const entries = Object.entries(raw)
+		.filter(([, value]) => value !== undefined)
+		.sort(([a], [b]) => a.localeCompare(b));
+	const scalarEntries = entries.filter(([, value]) => !isNonEmptyTomlRecord(value));
+	const tableEntries = entries.filter(([, value]) => isNonEmptyTomlRecord(value));
+
+	for (const [key, value] of scalarEntries) {
+		lines.push(`${formatTomlKey(key)} = ${formatTomlValue(value)}`);
+	}
+
+	for (const [key, value] of tableEntries) {
+		emitTomlTable(lines, [key], value as Record<string, unknown>);
+	}
+
+	return `${lines.join("\n").trimEnd()}\n`;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Settings Class
 // ═══════════════════════════════════════════════════════════════════════════
-
 export class Settings {
 	#configPath: string | null;
 	#cwd: string;
@@ -274,6 +367,7 @@ export class Settings {
 	#project: RawSettings = {};
 	/** User-agent settings from ~/.agent/ohp-settings.toml (dominates config.yml per Carter's rule) */
 	#user: RawSettings = {};
+	#userConfigPath: string | null = null;
 	/** Runtime overrides (not persisted) */
 	#overrides: RawSettings = {};
 	/** Merged view (global + project + overrides) */
@@ -376,7 +470,8 @@ export class Settings {
 	set<P extends SettingPath>(path: P, value: SettingValue<P>): void {
 		const prev = this.get(path);
 		const segments = parsePath(path);
-		setByPath(this.#global, segments, value);
+		const target = this.#userConfigPath ? this.#user : this.#global;
+		setByPath(target, segments, value);
 		this.#modified.add(path);
 		this.#rebuildMerged();
 		this.#queueSave();
@@ -550,6 +645,7 @@ export class Settings {
 		// When present, it suppresses config.yml entirely (hard suppression).
 		const userResult = await this.#loadUserAgentToml();
 		this.#user = userResult.data;
+		this.#userConfigPath = userResult.path;
 
 		if (this.#persist) {
 			// Open storage
@@ -559,9 +655,7 @@ export class Settings {
 			await this.#migrateFromLegacy();
 
 			if (userResult.path !== null) {
-				// Hard suppression: user-agent TOML is present, config.yml is ignored as a read source.
-				// Writes still target config.yml so `settings.set()` remains functional.
-				logger.debug("Settings: suppressing config.yml read (user-agent TOML present)", {
+				logger.debug("Settings: using user-agent TOML as authoritative user-level store", {
 					userAgentToml: userResult.path,
 					configYml: this.#configPath,
 				});
@@ -595,6 +689,23 @@ export class Settings {
 		}
 	}
 
+	async #loadToml(filePath: string): Promise<RawSettings> {
+		try {
+			const content = await Bun.file(filePath).text();
+			const parsed = Bun.TOML.parse(content);
+			if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+				return {};
+			}
+			const normalized = normalizeDottedKeys(parsed as RawSettings);
+			const lifted = liftSyntheticDefault(normalized);
+			return this.#migrateRawSettings(lifted);
+		} catch (error) {
+			if (isEnoent(error)) return {};
+			logger.warn("Settings: failed to load user-agent TOML", { path: filePath, error: String(error) });
+			return {};
+		}
+	}
+
 	async #loadProjectSettings(): Promise<RawSettings> {
 		try {
 			const result = await loadCapability(settingsCapability.id, { cwd: this.#cwd });
@@ -620,12 +731,9 @@ export class Settings {
 		];
 		for (const candidate of candidates) {
 			try {
-				const content = await Bun.file(candidate).text();
-				const parsed = Bun.TOML.parse(content);
-				if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
-					const normalized = normalizeDottedKeys(parsed as RawSettings);
-					const lifted = liftSyntheticDefault(normalized);
-					return { data: this.#migrateRawSettings(lifted), path: candidate };
+				const data = await this.#loadToml(candidate);
+				if (Object.keys(data).length > 0 || (await Bun.file(candidate).exists())) {
+					return { data, path: candidate };
 				}
 			} catch (error) {
 				if (isEnoent(error)) continue;
@@ -730,7 +838,7 @@ export class Settings {
 	// ─────────────────────────────────────────────────────────────────────────
 
 	#queueSave(): void {
-		if (!this.#persist || !this.#configPath) return;
+		if (!this.#persist || (!this.#configPath && !this.#userConfigPath)) return;
 
 		// Debounce: wait 100ms for more changes
 		if (this.#saveTimer) {
@@ -745,31 +853,33 @@ export class Settings {
 	}
 
 	async #saveNow(): Promise<void> {
-		if (!this.#persist || !this.#configPath || this.#modified.size === 0) return;
+		const savePath = this.#userConfigPath ?? this.#configPath;
+		if (!this.#persist || !savePath || this.#modified.size === 0) return;
 
-		const configPath = this.#configPath;
 		const modifiedPaths = [...this.#modified];
+		const target = this.#userConfigPath ? this.#user : this.#global;
 		this.#modified.clear();
 
 		try {
-			await withFileLock(configPath, async () => {
-				// Re-read to preserve external changes
-				const current = await this.#loadYaml(configPath);
+			await withFileLock(savePath, async () => {
+				const current = this.#userConfigPath ? await this.#loadToml(savePath) : await this.#loadYaml(savePath);
 
-				// Apply only our modified paths
 				for (const modPath of modifiedPaths) {
 					const segments = parsePath(modPath);
-					const value = getByPath(this.#global, segments);
+					const value = getByPath(target, segments);
 					setByPath(current, segments, value);
 				}
 
-				// Update our global with any external changes we preserved
-				this.#global = current;
-				await Bun.write(configPath, YAML.stringify(this.#global, null, 2));
+				if (this.#userConfigPath) {
+					this.#user = current;
+					await Bun.write(savePath, renderRawSettingsToml(this.#user));
+				} else {
+					this.#global = current;
+					await Bun.write(savePath, YAML.stringify(this.#global, null, 2));
+				}
 			});
 		} catch (error) {
-			logger.warn("Settings: save failed", { error: String(error) });
-			// Re-add failed paths for retry
+			logger.warn("Settings: save failed", { error: String(error), path: savePath });
 			for (const p of modifiedPaths) {
 				this.#modified.add(p);
 			}
