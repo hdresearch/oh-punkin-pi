@@ -119,6 +119,16 @@ function findRuntimeAssistant(session: AgentSession, text: string): AssistantMes
 	return message;
 }
 
+function findRuntimeCustomMessage(session: AgentSession, customType: string) {
+	const message = session.messages.find(
+		candidate => candidate.role === "custom" && candidate.customType === customType,
+	);
+	if (!message || message.role !== "custom") {
+		throw new Error(`Expected runtime custom message with type: ${customType}`);
+	}
+	return message;
+}
+
 function expectAssistantReplayMetadataSanitized(message: AssistantMessage): void {
 	// After rehydration, assistant Responses-family providerPayload must be stripped
 	// to prevent stale native history replay on warmed sessions.
@@ -450,6 +460,9 @@ describe("AgentSession OpenAI Responses replay boundaries", () => {
 			},
 			{ triggerTurn: false },
 		);
+
+		const runtimeCustomMessage = findRuntimeCustomMessage(session, "proxy-details");
+		expect(runtimeCustomMessage.bracketId).toBeDefined();
 
 		const originalSessionFile = session.sessionFile;
 		expect(originalSessionFile).toBeDefined();

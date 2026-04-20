@@ -65,6 +65,10 @@ if [[ ! -f "$BINARY" ]]; then
 fi
 
 echo "==> Built: $BINARY"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    echo "==> Adhoc-signing built binary..."
+    codesign --force --sign - "$BINARY"
+fi
 ls -lh "$BINARY"
 
 if $INSTALL; then
@@ -72,6 +76,10 @@ if $INSTALL; then
     mkdir -p "$PREFIX/bin"
     cp "$BINARY" "$DEST"
     chmod +x "$DEST"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        echo "==> Adhoc-signing installed binary..."
+        codesign --force --sign - "$DEST"
+    fi
     echo "==> Installed: $DEST"
     "$DEST" --version
 fi

@@ -120,7 +120,7 @@ export const MODEL_MAPPINGS: Record<string, GitLabModelMapping> = {
 		reasoning: true,
 		input: ["text", "image"],
 		cost: { input: 2.5, output: 10, cacheRead: 0, cacheWrite: 0 },
-		contextWindow: 272000,
+		contextWindow: 400000,
 		maxTokens: 128000,
 	},
 	"duo-chat-gpt-5-2-codex": {
@@ -131,7 +131,7 @@ export const MODEL_MAPPINGS: Record<string, GitLabModelMapping> = {
 		reasoning: true,
 		input: ["text", "image"],
 		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-		contextWindow: 272000,
+		contextWindow: 400000,
 		maxTokens: 128000,
 	},
 };

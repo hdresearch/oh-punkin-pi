@@ -132,8 +132,8 @@ describe("bundled GPT-5.4 model metadata", () => {
 		expect(copilotMini?.thinking).toEqual({ mode: "effort", minLevel: "low", maxLevel: "xhigh" });
 		expect(openAiCodexMini?.api).toBe("openai-codex-responses");
 		expect(openAiCodexNano?.api).toBe("openai-codex-responses");
-		expect(openAiCodexMini?.contextWindow).toBe(272000);
-		expect(openAiCodexNano?.contextWindow).toBe(272000);
+		expect(openAiCodexMini?.contextWindow).toBe(400000);
+		expect(openAiCodexNano?.contextWindow).toBe(400000);
 		expect(openAiCodexMini?.preferWebsockets).toBe(true);
 		expect(openAiCodexNano?.preferWebsockets).toBe(true);
 		expect(openAiCodexMini?.priority).toBe(1);
@@ -147,8 +147,8 @@ describe("bundled GPT-5.4 model metadata", () => {
 		const openAiCodexNano = getBundledModel("openai-codex", "gpt-5.4-nano");
 		const copilotMini = getBundledModel("github-copilot", "gpt-5.4-mini");
 
-		expect(openAiCodexMini.contextWindow).toBe(272000);
-		expect(openAiCodexNano.contextWindow).toBe(272000);
+		expect(openAiCodexMini.contextWindow).toBe(400000);
+		expect(openAiCodexNano.contextWindow).toBe(400000);
 		expect(requireSupportedEffort(openAiMini, Effort.XHigh)).toBe(Effort.XHigh);
 		expect(requireSupportedEffort(openAiNano, Effort.XHigh)).toBe(Effort.XHigh);
 		expect(requireSupportedEffort(openAiCodexMini, Effort.XHigh)).toBe(Effort.XHigh);
@@ -239,8 +239,8 @@ describe("generated model policies", () => {
 		expect(models[1]?.cost.cacheRead).toBe(0.5);
 		expect(models[1]?.cost.cacheWrite).toBe(6.25);
 		expect(models[1]?.contextWindow).toBe(1000000);
-		expect(models[2]?.contextWindow).toBe(272000);
-		expect(models[3]?.contextWindow).toBe(272000);
+		expect(models[2]?.contextWindow).toBe(400000);
+		expect(models[3]?.contextWindow).toBe(400000);
 		expect(models[3]?.priority).toBe(1);
 	});
 

@@ -299,22 +299,21 @@ function applyAnthropicCatalogPolicy(model: ApiModel<Api>, parsedModel: Anthropi
 }
 
 function applyOpenAICatalogPolicy(model: ApiModel<Api>, parsedModel: OpenAIModel): void {
-	// Codex models: 400K figure includes output budget; input window is 272K.
-	if (parsedModel.variant.startsWith("codex") && parsedModel.variant !== "codex-spark") {
-		model.contextWindow = 272000;
-		return;
+	// Normalize stale Codex alias metadata back up to the published 400K total context.
+	// Request-local reserve/output shaping happens elsewhere and must not rewrite model capacity.
+	const shouldUsePublishedCodexContext =
+		(parsedModel.variant.startsWith("codex") && parsedModel.variant !== "codex-spark") ||
+		(model.api === "openai-codex-responses" &&
+			semverEqual(parsedModel.version, "5.4") &&
+			(parsedModel.variant === "mini" || parsedModel.variant === "nano"));
+	if (shouldUsePublishedCodexContext && model.contextWindow < 400000) {
+		model.contextWindow = 400000;
 	}
-	// GPT-5.4 mini/nano use plain OpenAI IDs on the Codex transport, but Codex still
-	// enforces the lower prompt budget for these variants. Codex discovery can also
-	// report inconsistent priorities for the GPT-5.4 family, so normalize by parsed
-	// variant instead of special-casing raw model ids.
+	// GPT-5.4 provider priorities can drift across transports, so normalize by parsed variant.
 	if (model.api === "openai-codex-responses" && semverEqual(parsedModel.version, "5.4")) {
 		const normalizedPriority = CODEX_GPT_5_4_PRIORITY_BY_VARIANT[parsedModel.variant];
 		if (normalizedPriority !== undefined) {
 			model.priority = normalizedPriority;
-		}
-		if (parsedModel.variant === "mini" || parsedModel.variant === "nano") {
-			model.contextWindow = 272000;
 		}
 	}
 }

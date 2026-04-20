@@ -397,6 +397,24 @@ const noOpUIContext: ExtensionUIContext = {
 	setToolsExpanded: () => {},
 };
 
+function createRuntimeCustomMessage<T = unknown>(
+	message: Pick<CustomMessage<T>, "customType" | "content" | "display" | "details" | "attribution"> & {
+		timestamp?: number;
+		bracketId?: BracketId;
+	},
+): CustomMessage<T> {
+	return {
+		role: "custom",
+		customType: message.customType,
+		content: message.content,
+		display: message.display,
+		details: message.details,
+		attribution: message.attribution,
+		timestamp: message.timestamp ?? Date.now(),
+		bracketId: message.bracketId ?? generateUserBracketId(),
+	};
+}
+
 // ============================================================================
 // AgentSession Class
 // ============================================================================
@@ -2376,14 +2394,12 @@ export class AgentSession {
 
 		this.#planReferenceSent = true;
 
-		return {
-			role: "custom",
+		return createRuntimeCustomMessage({
 			customType: "plan-mode-reference",
 			content,
 			display: false,
 			attribution: "agent",
-			timestamp: Date.now(),
-		};
+		});
 	}
 
 	async #buildPlanModeMessage(): Promise<CustomMessage | null> {
@@ -2417,14 +2433,12 @@ export class AgentSession {
 			iterative: state.workflow === "iterative",
 		});
 
-		return {
-			role: "custom",
+		return createRuntimeCustomMessage({
 			customType: "plan-mode-context",
 			content,
 			display: false,
 			attribution: "agent",
-			timestamp: Date.now(),
-		};
+		});
 	}
 
 	/**
@@ -2535,15 +2549,13 @@ export class AgentSession {
 			return;
 		}
 
-		const customMessage: CustomMessage<T> = {
-			role: "custom",
+		const customMessage = createRuntimeCustomMessage({
 			customType: message.customType,
 			content: message.content,
 			display: message.display,
 			details: message.details,
 			attribution: message.attribution ?? "agent",
-			timestamp: Date.now(),
-		};
+		});
 
 		await this.#promptWithMessage(customMessage, textContent, options);
 	}
@@ -2641,15 +2653,16 @@ export class AgentSession {
 					const promptAttribution: "user" | "agent" | undefined =
 						"attribution" in message ? message.attribution : undefined;
 					for (const msg of result.messages) {
-						messages.push({
-							role: "custom",
-							customType: msg.customType,
-							content: msg.content,
-							display: msg.display,
-							details: msg.details,
-							attribution: msg.attribution ?? promptAttribution ?? (message.role === "user" ? "user" : "agent"),
-							timestamp: Date.now(),
-						});
+						messages.push(
+							createRuntimeCustomMessage({
+								customType: msg.customType,
+								content: msg.content,
+								display: msg.display,
+								details: msg.details,
+								attribution:
+									msg.attribution ?? promptAttribution ?? (message.role === "user" ? "user" : "agent"),
+							}),
+						);
 					}
 				}
 
@@ -2975,15 +2988,13 @@ export class AgentSession {
 		message: Pick<CustomMessage<T>, "customType" | "content" | "display" | "details" | "attribution">,
 		options?: { triggerTurn?: boolean; deliverAs?: "steer" | "followUp" | "nextTurn" },
 	): Promise<void> {
-		const appMessage: CustomMessage<T> = {
-			role: "custom",
+		const appMessage = createRuntimeCustomMessage({
 			customType: message.customType,
 			content: message.content,
 			display: message.display,
 			details: message.details,
 			attribution: message.attribution ?? "agent",
-			timestamp: Date.now(),
-		};
+		});
 		if (this.isStreaming) {
 			if (options?.deliverAs === "nextTurn") {
 				this.#queueHiddenNextTurnMessage(appMessage, options?.triggerTurn ?? false);
@@ -4199,15 +4210,15 @@ export class AgentSession {
 			this.sessionManager.branchWithSummary(null, report, { startedAt: checkpointState.startedAt });
 		}
 		const details = { startedAt: checkpointState.startedAt, rewoundAt: new Date().toISOString() };
-		this.agent.appendMessage({
-			role: "custom",
-			customType: "rewind-report",
-			content: report,
-			display: false,
-			details,
-			attribution: "agent",
-			timestamp: Date.now(),
-		});
+		this.agent.appendMessage(
+			createRuntimeCustomMessage({
+				customType: "rewind-report",
+				content: report,
+				display: false,
+				details,
+				attribution: "agent",
+			}),
+		);
 		this.sessionManager.appendCustomMessageEntry("rewind-report", report, false, details, "agent");
 		this.#checkpointState = undefined;
 		this.#pendingRewindReport = undefined;
@@ -4283,14 +4294,12 @@ export class AgentSession {
 		const eagerTodoReminder = renderPromptTemplate(eagerTodoPrompt);
 
 		return {
-			message: {
-				role: "custom",
+			message: createRuntimeCustomMessage({
 				customType: "eager-todo-prelude",
 				content: eagerTodoReminder,
 				display: false,
 				attribution: "agent",
-				timestamp: Date.now(),
-			},
+			}),
 			toolChoice: todoWriteToolChoice,
 		};
 	}

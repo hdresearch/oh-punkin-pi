@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Preserved published 400000-token Codex total-context metadata across OpenAI-family providers; request shaping remains local to reserve-token and compaction flows
+
 ## [13.17.6] - 2026-04-01
 
 ### Fixed
@@ -119,7 +123,7 @@
 ### Changed
 
 - Updated thinking configuration format from `levels` array to `minLevel` and `maxLevel` properties for improved clarity
-- Corrected context window from 400000 to 272000 tokens for GPT-5.4 mini and nano variants on Codex transport
+- Normalized GPT-5.4 mini and nano Codex transport handling without redefining published total-context metadata
 - Normalized GPT-5.4 variant priority handling to use parsed variant instead of special-casing raw model IDs
 - Added support for `mini` variant in OpenAI model parsing regex
 
@@ -964,7 +968,7 @@
 - Fixed `preferWebsockets` option handling to correctly respect explicit `false` values when determining transport preference
 - Fixed WebSocket append state not being reset after aborted requests, preventing stale state from affecting subsequent turns
 - Fixed WebSocket append state not being reset after stream errors, preventing failed append attempts from blocking future requests
-- Fixed Codex model context window metadata to use 272000 input tokens (instead of 400000 total budget) for non-Spark Codex variants
+- Fixed Codex metadata handling for non-Spark variants without rewriting published total-context limits
 
 ## [12.0.0] - 2026-02-12
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
 import type { Message } from "@oh-my-pi/pi-ai";
 import { inferCopilotInitiator } from "@oh-my-pi/pi-ai/providers/github-copilot-headers";
+import { generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
 import { convertToLlm } from "@oh-my-pi/pi-coding-agent/session/messages";
 
 function expectAttribution(message: Message | undefined, expected: "user" | "agent" | undefined): void {
@@ -23,6 +24,7 @@ describe("convertToLlm custom message mapping", () => {
 				display: true,
 				attribution: "agent",
 				timestamp: Date.now(),
+				bracketId: generateUserBracketId(),
 			},
 		];
 
@@ -42,6 +44,7 @@ describe("convertToLlm custom message mapping", () => {
 				content: "Run this skill with my arguments",
 				display: true,
 				timestamp: Date.now(),
+				bracketId: generateUserBracketId(),
 			},
 		];
 
@@ -62,6 +65,7 @@ describe("convertToLlm custom message mapping", () => {
 				display: false,
 				attribution: "agent",
 				timestamp: Date.now(),
+				bracketId: generateUserBracketId(),
 			},
 		];
 
@@ -82,6 +86,7 @@ describe("convertToLlm custom message mapping", () => {
 				display: true,
 				attribution: "user",
 				timestamp: Date.now(),
+				bracketId: generateUserBracketId(),
 			},
 		];
 

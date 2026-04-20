@@ -3,6 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { Agent } from "@oh-my-pi/pi-agent-core";
 import { getBundledModel } from "@oh-my-pi/pi-ai/models";
+import { generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
 import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
 import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import { loadExtensions } from "@oh-my-pi/pi-coding-agent/extensibility/extensions/loader";
@@ -38,7 +39,10 @@ describe("AgentSession auto-compaction queue resume", () => {
 	beforeEach(async () => {
 		tempDir = TempDir.createSync("@pi-auto-compaction-queue-");
 		vi.useFakeTimers();
-
+		// waitForIdle() eventually passes through #waitForAgentQuiescence(), which uses
+		// Bun.sleep(0) as a post-queue flush. Under fake timers that sleep will never
+		// resolve on its own, so stub it to an already-settled promise for this file.
+		vi.spyOn(Bun, "sleep").mockImplementation(async () => undefined);
 		// Provide an extension that short-circuits compaction so the test doesn't
 		// make any LLM calls.
 		const extensionsDir = path.join(getProjectAgentDir(tempDir.path()), "extensions");
@@ -140,18 +144,19 @@ describe("AgentSession auto-compaction queue resume", () => {
 			content: [{ type: "text", text: "Queued custom" }],
 			display: false,
 			timestamp: Date.now(),
+			bracketId: generateUserBracketId(),
 		});
-
 		expect(session.agent.hasQueuedMessages()).toBe(true);
 
-		const continueSpy = vi.spyOn(session.agent, "continue").mockResolvedValue();
+		const continueSpy = vi.spyOn(session.agent, "continue").mockImplementation(async () => {
+			session.agent.clearAllQueues();
+		});
 
 		// Wait for auto_compaction_end event to know when the async handler is done
 		const { promise: compactionDone, resolve: onCompactionDone } = Promise.withResolvers<void>();
 		session.subscribe(event => {
 			if (event.type === "auto_compaction_end") onCompactionDone();
 		});
-
 		// Build a fake AssistantMessage with high token usage to trigger threshold
 		// compaction (contextWindow=200000, threshold ~80%).
 		const assistantMsg = {
@@ -179,7 +184,7 @@ describe("AgentSession auto-compaction queue resume", () => {
 		session.agent.emitExternalEvent({ type: "agent_end", messages: [assistantMsg] });
 
 		// Wait for compaction completion, then verify waitForIdle blocks on queued continuation.
-		await compactionDone;
+		await withTimeout(compactionDone, 1000, "Auto-compaction end timed out");
 		await Promise.resolve();
 		const idlePromise = session.waitForIdle();
 		let idleResolved = false;
@@ -189,7 +194,12 @@ describe("AgentSession auto-compaction queue resume", () => {
 		await Promise.resolve();
 		expect(idleResolved).toBe(false);
 		vi.advanceTimersByTime(200);
-		await idlePromise;
+		await Promise.resolve();
+		vi.runAllTimers();
+		await Promise.resolve();
+		vi.runAllTimers();
+		await Promise.resolve();
+		await withTimeout(idlePromise, 1000, "Queued continue never settled");
 
 		expect(continueSpy).toHaveBeenCalledTimes(1);
 		const runtimeSignals = getRuntimeSignals();
@@ -237,8 +247,14 @@ describe("AgentSession auto-compaction queue resume", () => {
 		await withTimeout(reminderDone, 1000, "Todo reminder timed out");
 		await Promise.resolve();
 
-		expect(getRuntimeSignals()).toContain("todo:1/3");
-		expect(continueSpy).toHaveBeenCalledTimes(1);
-		await session.waitForIdle();
+		// Todo reminders are ambient HUD context only: they emit the extension signal
+		// once with maxAttempts=1 and do not schedule agent.continue().
+		expect(getRuntimeSignals()).toContain("todo:1/1");
+		expect(continueSpy).toHaveBeenCalledTimes(0);
+		vi.runAllTimers();
+		await Promise.resolve();
+		vi.runAllTimers();
+		await Promise.resolve();
+		await withTimeout(session.waitForIdle(), 1000, "Todo waitForIdle timed out");
 	});
 });

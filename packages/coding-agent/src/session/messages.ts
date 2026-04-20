@@ -134,7 +134,7 @@ export interface CustomMessage<T = unknown> {
 	/** Who initiated this message for billing/attribution semantics. */
 	attribution?: MessageAttribution;
 	timestamp: number;
-	bracketId?: BracketId;
+	bracketId: BracketId;
 }
 
 /**
@@ -149,7 +149,7 @@ export interface HookMessage<T = unknown> {
 	/** Who initiated this message for billing/attribution semantics. */
 	attribution?: MessageAttribution;
 	timestamp: number;
-	bracketId?: BracketId;
+	bracketId: BracketId;
 }
 
 /**
