@@ -15574,7 +15574,7 @@
 		},
 		"openrouter/elephant-alpha": {
 			"id": "openrouter/elephant-alpha",
-			"name": "Elephant (new)",
+			"name": "Elephant",
 			"api": "openai-completions",
 			"provider": "kilo",
 			"baseUrl": "https://api.kilo.ai/api/gateway",
