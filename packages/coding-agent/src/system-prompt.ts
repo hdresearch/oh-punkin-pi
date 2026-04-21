@@ -13,6 +13,7 @@ import { systemPromptCapability } from "./capability/system-prompt";
 import { renderPromptTemplate } from "./config/prompt-templates";
 import type { SkillsSettings } from "./config/settings";
 import { type ContextFile, loadCapability, type SystemPrompt as SystemPromptFile } from "./discovery";
+import { shouldSuppressProjectAgentMds } from "./discovery/helpers";
 import { loadSkills, type Skill } from "./extensibility/skills";
 import customSystemPromptTemplate from "./prompts/system/custom-system-prompt.md" with { type: "text" };
 import systemPromptTemplate from "./prompts/system/system-prompt.md" with { type: "text" };
@@ -475,7 +476,22 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 		const contextFilesPromise = providedContextFiles
 			? Promise.resolve(providedContextFiles)
 			: logger.timeAsync("loadProjectContextFiles", loadProjectContextFiles, { cwd: resolvedCwd });
-		const agentsMdSearchPromise = logger.timeAsync("buildAgentsMdSearch", buildAgentsMdSearch, resolvedCwd);
+		const agentsMdSearchPromise = logger.timeAsync("buildAgentsMdSearch", async () => {
+			const suppressed = await shouldSuppressProjectAgentMds({
+				cwd: resolvedCwd,
+				home: os.homedir(),
+				repoRoot: null,
+			});
+			if (suppressed) {
+				return {
+					scopePath: ".",
+					limit: AGENTS_MD_LIMIT,
+					pattern: `AGENTS.md depth ${AGENTS_MD_MIN_DEPTH}-${AGENTS_MD_MAX_DEPTH}`,
+					files: [] as string[],
+				};
+			}
+			return buildAgentsMdSearch(resolvedCwd);
+		});
 		const skillsPromise: Promise<Skill[]> =
 			providedSkills !== undefined
 				? Promise.resolve(providedSkills)

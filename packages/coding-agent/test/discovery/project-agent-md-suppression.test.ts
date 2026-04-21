@@ -6,6 +6,7 @@ import { type ContextFile, contextFileCapability } from "@ohp/coding-agent/capab
 import { clearCache } from "@ohp/coding-agent/capability/fs";
 import { _resetSettingsForTest, Settings } from "@ohp/coding-agent/config/settings";
 import { initializeWithSettings, loadCapability } from "@ohp/coding-agent/discovery";
+import { buildSystemPrompt } from "@ohp/coding-agent/system-prompt";
 
 describe("user agent authority suppresses project AGENTS.md sources", () => {
 	let tempDir = "";
@@ -29,6 +30,8 @@ describe("user agent authority suppresses project AGENTS.md sources", () => {
 		await Bun.write(path.join(tempDir, "AGENTS.md"), "# Bare project AGENTS\n");
 		await Bun.write(path.join(tempDir, ".agent", "AGENTS.md"), "# Project .agent AGENTS\n");
 		await Bun.write(path.join(tempDir, ".ohp", "AGENTS.md"), "# Project .ohp AGENTS\n");
+		await fs.mkdir(path.join(tempDir, "src"), { recursive: true });
+		await Bun.write(path.join(tempDir, "src", "AGENTS.md"), "# Project src AGENTS\n");
 
 		const settings = await Settings.init({ inMemory: true, cwd: tempDir });
 		initializeWithSettings(settings);
@@ -57,5 +60,16 @@ describe("user agent authority suppresses project AGENTS.md sources", () => {
 
 		const userAgent = result.items.find(item => item.level === "user" && path.basename(item.path) === "AGENT.md");
 		expect(userAgent?.path).toBe(path.join(tempHomeDir, ".agent", "AGENT.md"));
+	});
+
+	test("buildSystemPrompt omits <dir-context> block (agentsMdSearch path leak) under user authority", async () => {
+		const prompt = await buildSystemPrompt({ cwd: tempDir });
+		expect(prompt).not.toContain("<dir-context>");
+		expect(prompt).not.toContain(path.join(tempDir, "AGENTS.md"));
+		expect(prompt).not.toContain(path.join(tempDir, ".agent", "AGENTS.md"));
+		expect(prompt).not.toContain(path.join(tempDir, ".ohp", "AGENTS.md"));
+		// src/AGENTS.md lives at depth 1 under a visible dir; without the fix this path
+		// would have been emitted into the <dir-context> block via agentsMdSearch.files.
+		expect(prompt).not.toContain("src/AGENTS.md");
 	});
 });
