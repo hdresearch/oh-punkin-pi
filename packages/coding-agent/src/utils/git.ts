@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { isEnoent, Snowflake } from "@oh-my-pi/pi-utils";
+import { isEnoent, Snowflake } from "@ohp/utils";
 import {
 	parseDiffHunks as parseCommitDiffHunks,
 	parseFileDiffs,

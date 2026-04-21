@@ -6,8 +6,8 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as piCodingAgent from "@oh-my-pi/pi-coding-agent";
-import { getAgentDir, getProjectDir, isEnoent, logger } from "@oh-my-pi/pi-utils";
+import * as piCodingAgent from "@ohp/coding-agent";
+import { getAgentDir, getProjectDir, isEnoent, logger } from "@ohp/utils";
 import * as typebox from "@sinclair/typebox";
 import { getConfigDirs } from "../../config";
 import { execCommand } from "../../exec/exec";

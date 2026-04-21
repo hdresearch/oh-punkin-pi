@@ -6,10 +6,10 @@ import type {
 	AgentToolResult,
 	AgentToolUpdateCallback,
 	ToolCallContext,
-} from "@oh-my-pi/pi-agent-core";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
-import { isEnoent, untilAborted } from "@oh-my-pi/pi-utils";
+} from "@ohp/agent-core";
+import type { Component } from "@ohp/tui";
+import { Text } from "@ohp/tui";
+import { isEnoent, untilAborted } from "@ohp/utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { unzipSync, zipSync } from "fflate";
 import { renderPromptTemplate } from "../config/prompt-templates";

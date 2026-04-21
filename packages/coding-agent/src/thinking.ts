@@ -1,5 +1,5 @@
-import { type ResolvedThinkingLevel, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { clampThinkingLevelForModel, type Effort, type Model, THINKING_EFFORTS } from "@oh-my-pi/pi-ai";
+import { type ResolvedThinkingLevel, ThinkingLevel } from "@ohp/agent-core";
+import { clampThinkingLevelForModel, type Effort, type Model, THINKING_EFFORTS } from "@ohp/ai";
 
 /**
  * Metadata used to render thinking selector values in the coding-agent UI.

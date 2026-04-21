@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getRemoteHostDir, getSshControlDir, isEnoent, logger, postmortem } from "@oh-my-pi/pi-utils";
+import { getRemoteHostDir, getSshControlDir, isEnoent, logger, postmortem } from "@ohp/utils";
 import { $ } from "bun";
 import { buildSshTarget, sanitizeHostName } from "./utils";
 

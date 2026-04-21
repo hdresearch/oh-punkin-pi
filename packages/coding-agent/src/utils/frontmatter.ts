@@ -1,4 +1,4 @@
-import { logger, truncate } from "@oh-my-pi/pi-utils";
+import { logger, truncate } from "@ohp/utils";
 import { YAML } from "bun";
 
 function stripHtmlComments(content: string): string {

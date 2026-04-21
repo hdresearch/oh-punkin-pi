@@ -3,8 +3,8 @@ import {
 	analyzeAuthError,
 	discoverOAuthEndpoints,
 	extractMcpAuthServerUrl,
-} from "@oh-my-pi/pi-coding-agent/mcp/oauth-discovery";
-import { hookFetch } from "@oh-my-pi/pi-utils";
+} from "@ohp/coding-agent/mcp/oauth-discovery";
+import { hookFetch } from "@ohp/utils";
 
 describe("mcp oauth discovery", () => {
 	it("extracts Mcp-Auth-Server from transport error headers", () => {

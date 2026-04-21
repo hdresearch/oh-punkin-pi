@@ -1,5 +1,5 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { type Api, type AssistantMessage, completeSimple, type Model } from "@oh-my-pi/pi-ai";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@ohp/agent-core";
+import { type Api, type AssistantMessage, completeSimple, type Model } from "@ohp/ai";
 import { type Static, Type } from "@sinclair/typebox";
 import { expandRoleAlias, resolveModelFromString } from "../config/model-resolver";
 import { renderPromptTemplate } from "../config/prompt-templates";

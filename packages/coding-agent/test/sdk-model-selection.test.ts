@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { createAgentSession, type ExtensionFactory } from "@oh-my-pi/pi-coding-agent/sdk";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { createAgentSession, type ExtensionFactory } from "@ohp/coding-agent/sdk";
+import { SessionManager } from "@ohp/coding-agent/session/session-manager";
+import { Snowflake } from "@ohp/utils";
 
 describe("createAgentSession deferred model pattern resolution", () => {
 	let tempDir: string;

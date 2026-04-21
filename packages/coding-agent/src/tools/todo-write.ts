@@ -1,7 +1,7 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@ohp/agent-core";
+import { StringEnum } from "@ohp/ai";
+import type { Component } from "@ohp/tui";
+import { Text } from "@ohp/tui";
 import { type Static, Type } from "@sinclair/typebox";
 import chalk from "chalk";
 import { renderPromptTemplate } from "../config/prompt-templates";

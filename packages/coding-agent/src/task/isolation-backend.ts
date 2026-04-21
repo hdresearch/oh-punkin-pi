@@ -1,5 +1,5 @@
-import { projfsOverlayProbe } from "@oh-my-pi/pi-natives";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import { projfsOverlayProbe } from "@ohp/natives";
+import { Snowflake } from "@ohp/utils";
 import { cleanupProjfsOverlay, ensureProjfsOverlay, isProjfsUnavailableError } from "./worktree";
 
 export type TaskIsolationMode = "none" | "worktree" | "fuse-overlay" | "fuse-projfs";

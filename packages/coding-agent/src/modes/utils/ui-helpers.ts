@@ -1,6 +1,6 @@
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage, ImageContent, Message } from "@oh-my-pi/pi-ai";
-import { Spacer, Text, TruncatedText } from "@oh-my-pi/pi-tui";
+import type { AgentMessage } from "@ohp/agent-core";
+import type { AssistantMessage, ImageContent, Message } from "@ohp/ai";
+import { Spacer, Text, TruncatedText } from "@ohp/tui";
 import { settings } from "../../config/settings";
 import { renderTurnEnd, renderTurnStart } from "../../core/carter_kit/turn-boundary";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";

@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { type ContextFile, contextFileCapability } from "@oh-my-pi/pi-coding-agent/capability/context-file";
-import { clearCache } from "@oh-my-pi/pi-coding-agent/capability/fs";
-import { _resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { initializeWithSettings, loadCapability } from "@oh-my-pi/pi-coding-agent/discovery";
+import { type ContextFile, contextFileCapability } from "@ohp/coding-agent/capability/context-file";
+import { clearCache } from "@ohp/coding-agent/capability/fs";
+import { _resetSettingsForTest, Settings } from "@ohp/coding-agent/config/settings";
+import { initializeWithSettings, loadCapability } from "@ohp/coding-agent/discovery";
 
 describe("user agent authority suppresses project AGENTS.md sources", () => {
 	let tempDir = "";

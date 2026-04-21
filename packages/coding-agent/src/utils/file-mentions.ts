@@ -7,9 +7,9 @@
  */
 import * as fs from "node:fs/promises";
 import path from "node:path";
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import { generateSystemBracketId } from "@oh-my-pi/pi-ai/role-boundary";
-import { glob } from "@oh-my-pi/pi-natives";
+import type { AgentMessage } from "@ohp/agent-core";
+import { generateSystemBracketId } from "@ohp/ai/role-boundary";
+import { glob } from "@ohp/natives";
 import { formatHashLines } from "../patch/hashline";
 import type { FileMentionMessage } from "../session/messages";
 import {

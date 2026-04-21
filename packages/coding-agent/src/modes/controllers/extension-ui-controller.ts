@@ -1,6 +1,6 @@
-import type { Component, OverlayHandle, TUI } from "@oh-my-pi/pi-tui";
-import { Container, Spacer, Text } from "@oh-my-pi/pi-tui";
-import { logger } from "@oh-my-pi/pi-utils";
+import type { Component, OverlayHandle, TUI } from "@ohp/tui";
+import { Container, Spacer, Text } from "@ohp/tui";
+import { logger } from "@ohp/utils";
 import { KeybindingsManager } from "../../config/keybindings";
 import type {
 	ExtensionActions,

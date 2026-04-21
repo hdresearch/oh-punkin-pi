@@ -4,7 +4,7 @@
  * Handles `omp jupyter` subcommand for managing the shared Python gateway.
  */
 
-import { APP_NAME } from "@oh-my-pi/pi-utils";
+import { APP_NAME } from "@ohp/utils";
 import chalk from "chalk";
 import { getGatewayStatus, shutdownSharedGateway } from "../ipy/gateway-coordinator";
 

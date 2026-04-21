@@ -1,4 +1,4 @@
-import type { AgentToolResult } from "@oh-my-pi/pi-agent-core";
+import type { AgentToolResult } from "@ohp/agent-core";
 
 export interface PendingAction {
 	label: string;

@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as path from "node:path";
-import { Agent, type AgentMessage, type AgentTool } from "@oh-my-pi/pi-agent-core";
-import { type AssistantMessage, getBundledModel, type TextContent, type ToolCall } from "@oh-my-pi/pi-ai";
-import { AssistantMessageEventStream } from "@oh-my-pi/pi-ai/utils/event-stream";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { convertToLlm } from "@oh-my-pi/pi-coding-agent/session/messages";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { TodoWriteTool } from "@oh-my-pi/pi-coding-agent/tools";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { Agent, type AgentMessage, type AgentTool } from "@ohp/agent-core";
+import { type AssistantMessage, getBundledModel, type TextContent, type ToolCall } from "@ohp/ai";
+import { AssistantMessageEventStream } from "@ohp/ai/utils/event-stream";
+import { ModelRegistry } from "@ohp/coding-agent/config/model-registry";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { AgentSession } from "@ohp/coding-agent/session/agent-session";
+import { AuthStorage } from "@ohp/coding-agent/session/auth-storage";
+import { convertToLlm } from "@ohp/coding-agent/session/messages";
+import { SessionManager } from "@ohp/coding-agent/session/session-manager";
+import type { ToolSession } from "@ohp/coding-agent/tools";
+import { TodoWriteTool } from "@ohp/coding-agent/tools";
+import { TempDir } from "@ohp/utils";
 import { Type } from "@sinclair/typebox";
 
 class MockAssistantStream extends AssistantMessageEventStream {}

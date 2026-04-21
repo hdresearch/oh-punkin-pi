@@ -1,6 +1,6 @@
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { Usage } from "@oh-my-pi/pi-ai";
-import { $env } from "@oh-my-pi/pi-utils";
+import type { ThinkingLevel } from "@ohp/agent-core";
+import type { Usage } from "@ohp/ai";
+import { $env } from "@ohp/utils";
 import { type Static, Type } from "@sinclair/typebox";
 import type { NestedRepoPatch } from "./worktree";
 

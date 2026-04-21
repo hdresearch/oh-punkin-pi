@@ -6,7 +6,7 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { $env, abortableSleep, getAgentDir, isEnoent } from "@oh-my-pi/pi-utils";
+import { $env, abortableSleep, getAgentDir, isEnoent } from "@ohp/utils";
 import packageJson from "../../../package.json" with { type: "json" };
 import type { OAuthController, OAuthCredentials } from "./types";
 

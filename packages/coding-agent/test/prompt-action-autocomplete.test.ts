@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { KeybindingsManager, setKeybindings, TUI_KEYBINDINGS } from "@oh-my-pi/pi-tui";
+import { KeybindingsManager, setKeybindings, TUI_KEYBINDINGS } from "@ohp/tui";
 import { KeybindingsManager as AppKeybindingsManager } from "../src/config/keybindings";
 import { createPromptActionAutocompleteProvider } from "../src/modes/prompt-action-autocomplete";
 

@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { AutocompleteItem } from "@oh-my-pi/pi-tui";
+import type { AutocompleteItem } from "@ohp/tui";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import type { ExtensionContext, ExtensionFactory } from "../extensibility/extensions";
 import commandInitializeTemplate from "./command-initialize.md" with { type: "text" };

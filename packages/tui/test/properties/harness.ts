@@ -13,8 +13,8 @@
  *     from-scratch render of the same logical lines (reference oracle).
  */
 
-import type { Focusable } from "@oh-my-pi/pi-tui";
-import { type Component, CURSOR_MARKER, TUI } from "@oh-my-pi/pi-tui";
+import type { Focusable } from "@ohp/tui";
+import { type Component, CURSOR_MARKER, TUI } from "@ohp/tui";
 import type { Terminal as XtermTerminalType } from "@xterm/headless";
 import { VirtualTerminal } from "../virtual-terminal";
 

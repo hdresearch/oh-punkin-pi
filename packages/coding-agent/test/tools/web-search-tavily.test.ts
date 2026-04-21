@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import { hookFetch } from "@oh-my-pi/pi-utils";
+import { hookFetch } from "@ohp/utils";
 import { AgentStorage } from "../../src/session/agent-storage";
 import { getSearchProvider, resolveProviderChain, SEARCH_PROVIDER_ORDER } from "../../src/web/search/provider";
 import { searchTavily } from "../../src/web/search/providers/tavily";

@@ -11,16 +11,7 @@
  * - Space: Toggle selected item (or master switch)
  * - Esc: Close dashboard (clears search first if active)
  */
-import {
-	type Component,
-	Container,
-	matchesKey,
-	padding,
-	Spacer,
-	Text,
-	truncateToWidth,
-	visibleWidth,
-} from "@oh-my-pi/pi-tui";
+import { type Component, Container, matchesKey, padding, Spacer, Text, truncateToWidth, visibleWidth } from "@ohp/tui";
 import { Settings } from "../../../config/settings";
 import { DynamicBorder } from "../../../modes/components/dynamic-border";
 import { theme } from "../../../modes/theme/theme";

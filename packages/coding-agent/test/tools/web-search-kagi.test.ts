@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import { hookFetch } from "@oh-my-pi/pi-utils";
+import { hookFetch } from "@ohp/utils";
 import { searchWithKagi } from "../../src/web/kagi";
 import { searchKagi } from "../../src/web/search/providers/kagi";
 import { SearchProviderError } from "../../src/web/search/types";

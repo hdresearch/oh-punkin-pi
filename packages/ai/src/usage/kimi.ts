@@ -1,4 +1,4 @@
-import { $env } from "@oh-my-pi/pi-utils";
+import { $env } from "@ohp/utils";
 import type {
 	UsageAmount,
 	UsageFetchContext,

@@ -4,7 +4,7 @@
  * Extends the base AgentMessage type with coding-agent specific message types,
  * and provides a transformer to convert them to LLM-compatible messages.
  */
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
+import type { AgentMessage } from "@ohp/agent-core";
 import type {
 	AssistantMessage,
 	BracketId,
@@ -15,7 +15,7 @@ import type {
 	TextContent,
 	ToolResultMessage,
 	UserMessage,
-} from "@oh-my-pi/pi-ai";
+} from "@ohp/ai";
 import {
 	generateSystemBracketIdDeterministic,
 	generateToolResultBracketIdDeterministic,
@@ -26,7 +26,7 @@ import {
 	wrapSystem,
 	wrapToolResult,
 	wrapUser,
-} from "@oh-my-pi/pi-ai/role-boundary";
+} from "@ohp/ai/role-boundary";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import branchSummaryContextPrompt from "../prompts/compaction/branch-summary-context.md" with { type: "text" };
 import compactionSummaryContextPrompt from "../prompts/compaction/compaction-summary-context.md" with { type: "text" };
@@ -216,7 +216,7 @@ export interface FileMentionMessage {
 
 // Extend CustomAgentMessages via declaration merging
 // Legacy hookMessage is kept for migration; new code should use custom.
-declare module "@oh-my-pi/pi-agent-core" {
+declare module "@ohp/agent-core" {
 	interface CustomAgentMessages {
 		bashExecution: BashExecutionMessage;
 		pythonExecution: PythonExecutionMessage;

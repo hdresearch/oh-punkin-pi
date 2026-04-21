@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { type SettingPath, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { createTools, HIDDEN_TOOLS, type ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
+import { type SettingPath, Settings } from "@ohp/coding-agent/config/settings";
+import { createTools, HIDDEN_TOOLS, type ToolSession } from "@ohp/coding-agent/tools";
 
 Bun.env.PI_PYTHON_SKIP_CHECK = "1";
 

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import { hookFetch } from "@oh-my-pi/pi-utils";
+import { hookFetch } from "@ohp/utils";
 import { _resetSettingsForTest, Settings } from "../../../src/config/settings";
 import * as toolsManager from "../../../src/utils/tools-manager";
 import { handleYouTube } from "../../../src/web/scrapers/youtube";

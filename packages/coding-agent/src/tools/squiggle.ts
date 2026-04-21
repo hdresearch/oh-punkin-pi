@@ -4,9 +4,9 @@
  * These tools let the model create bracketed reasoning sections that persist
  * across turns and are visible in the conversation history.
  */
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import type { BracketId } from "@oh-my-pi/pi-ai";
-import { closeSquiggleBracket, openSquiggleBracket } from "@oh-my-pi/pi-ai/role-boundary";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@ohp/agent-core";
+import type { BracketId } from "@ohp/ai";
+import { closeSquiggleBracket, openSquiggleBracket } from "@ohp/ai/role-boundary";
 import { type Static, Type } from "@sinclair/typebox";
 import type { ToolSession } from ".";
 

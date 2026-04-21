@@ -1,4 +1,4 @@
-import { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
+import { ThinkingLevel } from "@ohp/agent-core";
 import {
 	type Component,
 	Container,
@@ -9,7 +9,7 @@ import {
 	Text,
 	TruncatedText,
 	truncateToWidth,
-} from "@oh-my-pi/pi-tui";
+} from "@ohp/tui";
 import type { TreeFilterMode } from "../../config/settings-schema";
 import { theme } from "../../modes/theme/theme";
 import { matchesAppInterrupt } from "../../modes/utils/keybinding-matchers";

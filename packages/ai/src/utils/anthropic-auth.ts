@@ -8,7 +8,7 @@
  *   4. API key credentials in ~/.ohp/agent/agent.db
  *   5. Generic Anthropic fallback (ANTHROPIC_API_KEY / ANTHROPIC_BASE_URL)
  */
-import { $env, getAgentDbPath } from "@oh-my-pi/pi-utils";
+import { $env, getAgentDbPath } from "@ohp/utils";
 import { type AuthCredential, AuthCredentialStore } from "../auth-storage";
 import {
 	buildAnthropicHeaders as buildProviderAnthropicHeaders,

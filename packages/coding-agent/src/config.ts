@@ -1,14 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import {
-	CONFIG_DIR_NAME,
-	getAgentDir,
-	getConfigAgentDirName,
-	getProjectDir,
-	isEnoent,
-	logger,
-} from "@oh-my-pi/pi-utils";
+import { CONFIG_DIR_NAME, getAgentDir, getConfigAgentDirName, getProjectDir, isEnoent, logger } from "@ohp/utils";
 import type { TSchema } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import { Ajv, type ErrorObject, type ValidateFunction } from "ajv";

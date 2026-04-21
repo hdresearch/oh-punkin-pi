@@ -1,4 +1,4 @@
-import { $env, ptree } from "@oh-my-pi/pi-utils";
+import { $env, ptree } from "@ohp/utils";
 import type { RenderResult, SpecialHandler } from "./types";
 import { buildResult, loadPage } from "./types";
 

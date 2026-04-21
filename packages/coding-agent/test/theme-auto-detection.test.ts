@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
-import * as themeModule from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import * as nativesModule from "@oh-my-pi/pi-natives";
+import * as themeModule from "@ohp/coding-agent/modes/theme/theme";
+import * as nativesModule from "@ohp/natives";
 
 const originalPlatform = process.platform;
 const originalColorfgbg = Bun.env.COLORFGBG;

@@ -1,4 +1,4 @@
-import { getEnvApiKey } from "@oh-my-pi/pi-ai";
+import { getEnvApiKey } from "@ohp/ai";
 import { findCredential } from "./search/providers/utils";
 
 const PARALLEL_API_URL = "https://api.parallel.ai";

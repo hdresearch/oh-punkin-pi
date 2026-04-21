@@ -1,6 +1,6 @@
-import type { TextContent } from "@oh-my-pi/pi-ai";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Box, Container, Markdown, Spacer, Text } from "@oh-my-pi/pi-tui";
+import type { TextContent } from "@ohp/ai";
+import type { Component } from "@ohp/tui";
+import { Box, Container, Markdown, Spacer, Text } from "@ohp/tui";
 import type { HookMessageRenderer } from "../../extensibility/hooks/types";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import type { HookMessage } from "../../session/messages";

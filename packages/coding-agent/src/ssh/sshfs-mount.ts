@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getRemoteDir, postmortem } from "@oh-my-pi/pi-utils";
+import { getRemoteDir, postmortem } from "@ohp/utils";
 import { $ } from "bun";
 import { getControlDir, getControlPathTemplate, type SSHConnectionTarget } from "./connection-manager";
 import { buildSshTarget, sanitizeHostName } from "./utils";

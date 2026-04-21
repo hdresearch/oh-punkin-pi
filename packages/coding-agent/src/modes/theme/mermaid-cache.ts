@@ -1,4 +1,4 @@
-import { extractMermaidBlocks, logger, renderMermaidAsciiSafe } from "@oh-my-pi/pi-utils";
+import { extractMermaidBlocks, logger, renderMermaidAsciiSafe } from "@ohp/utils";
 
 const cache = new Map<bigint, string>();
 const failed = new Set<bigint>();

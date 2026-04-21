@@ -1,11 +1,11 @@
 /**
  * Extension runner - executes extensions and manages their lifecycle.
  */
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { ImageContent, Model } from "@oh-my-pi/pi-ai";
-import type { SearchDb } from "@oh-my-pi/pi-natives";
-import type { KeyId } from "@oh-my-pi/pi-tui";
-import { logger } from "@oh-my-pi/pi-utils";
+import type { AgentMessage } from "@ohp/agent-core";
+import type { ImageContent, Model } from "@ohp/ai";
+import type { SearchDb } from "@ohp/natives";
+import type { KeyId } from "@ohp/tui";
+import { logger } from "@ohp/utils";
 import type { ModelRegistry } from "../../config/model-registry";
 import { type Theme, theme } from "../../modes/theme/theme";
 import type { SessionManager } from "../../session/session-manager";

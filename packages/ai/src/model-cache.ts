@@ -3,7 +3,7 @@
  * Replaces per-provider JSON files with a single cache.db.
  */
 import { Database } from "bun:sqlite";
-import { getModelDbPath } from "@oh-my-pi/pi-utils";
+import { getModelDbPath } from "@ohp/utils";
 import type { Api, Model } from "./types";
 
 const CACHE_SCHEMA_VERSION = 2;

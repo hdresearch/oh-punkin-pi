@@ -5,7 +5,7 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { CONFIG_DIR_NAME, getAgentDir, getProjectDir, isEnoent } from "@oh-my-pi/pi-utils";
+import { CONFIG_DIR_NAME, getAgentDir, getProjectDir, isEnoent } from "@ohp/utils";
 import { YAML } from "bun";
 import chalk from "chalk";
 import { theme } from "../modes/theme/theme";

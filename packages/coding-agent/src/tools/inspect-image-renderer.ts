@@ -1,5 +1,5 @@
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
+import type { Component } from "@ohp/tui";
+import { Text } from "@ohp/tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme } from "../modes/theme/theme";
 import { renderStatusLine } from "../tui";

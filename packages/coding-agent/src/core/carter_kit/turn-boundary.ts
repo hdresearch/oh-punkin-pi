@@ -6,8 +6,8 @@
  */
 
 import { createHash, randomBytes } from "node:crypto";
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import { formatTimestamp } from "@oh-my-pi/pi-ai/role-boundary";
+import type { AgentMessage } from "@ohp/agent-core";
+import { formatTimestamp } from "@ohp/ai/role-boundary";
 
 // ============================================================================
 // Local type definitions (avoid circular imports with session/messages.ts)

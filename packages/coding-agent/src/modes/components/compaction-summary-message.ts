@@ -1,4 +1,4 @@
-import { Box, Markdown, Spacer, Text } from "@oh-my-pi/pi-tui";
+import { Box, Markdown, Spacer, Text } from "@ohp/tui";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import type { CompactionSummaryMessage } from "../../session/messages";
 

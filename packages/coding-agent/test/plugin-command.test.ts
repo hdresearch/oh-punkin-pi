@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { CliConfig } from "@oh-my-pi/pi-utils/cli";
+import type { CliConfig } from "@ohp/utils/cli";
 import Plugin from "../src/commands/plugin";
 
 const TEST_CONFIG: CliConfig = {

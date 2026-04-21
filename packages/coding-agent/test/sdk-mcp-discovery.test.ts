@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { Effort, getBundledModel, type Model } from "@oh-my-pi/pi-ai";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import type { CustomTool } from "@oh-my-pi/pi-coding-agent/extensibility/custom-tools/types";
-import { createAgentSession } from "@oh-my-pi/pi-coding-agent/sdk";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import { ThinkingLevel } from "@ohp/agent-core";
+import { Effort, getBundledModel, type Model } from "@ohp/ai";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import type { CustomTool } from "@ohp/coding-agent/extensibility/custom-tools/types";
+import { createAgentSession } from "@ohp/coding-agent/sdk";
+import { SessionManager } from "@ohp/coding-agent/session/session-manager";
+import { Snowflake } from "@ohp/utils";
 import { Type } from "@sinclair/typebox";
 
 function createMcpCustomTool(name: string, serverName: string, mcpToolName: string): CustomTool {

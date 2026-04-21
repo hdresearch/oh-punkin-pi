@@ -1,9 +1,9 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import { FileType, glob } from "@oh-my-pi/pi-natives";
-import { CONFIG_DIR_NAME, getConfigDirName, getProjectDir, tryParseJson } from "@oh-my-pi/pi-utils";
+import type { ThinkingLevel } from "@ohp/agent-core";
+import { FileType, glob } from "@ohp/natives";
+import { CONFIG_DIR_NAME, getConfigDirName, getProjectDir, tryParseJson } from "@ohp/utils";
 import { readDirEntries, readFile } from "../capability/fs";
 import { parseRuleConditionAndScope, type Rule, type RuleFrontmatter } from "../capability/rule";
 import type { Skill, SkillFrontmatter } from "../capability/skill";

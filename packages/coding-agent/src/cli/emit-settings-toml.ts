@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { APP_NAME } from "@oh-my-pi/pi-utils";
+import { APP_NAME } from "@ohp/utils";
 import { getUi, type SettingPath, settings } from "../config/settings";
 import { SETTINGS_SCHEMA } from "../config/settings-schema";
 

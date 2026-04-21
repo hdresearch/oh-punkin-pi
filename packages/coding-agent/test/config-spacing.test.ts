@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { _resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { getDefaultTabWidth, getIndentation, Snowflake, setDefaultTabWidth } from "@oh-my-pi/pi-utils";
+import { _resetSettingsForTest, Settings } from "@ohp/coding-agent/config/settings";
+import { getDefaultTabWidth, getIndentation, Snowflake, setDefaultTabWidth } from "@ohp/utils";
 
 describe("indentation resolver", () => {
 	let tempDir = "";

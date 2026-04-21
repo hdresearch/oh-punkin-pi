@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import { Agent } from "@oh-my-pi/pi-agent-core";
-import { getBundledModel } from "@oh-my-pi/pi-ai";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import * as bashExecutor from "@oh-my-pi/pi-coding-agent/exec/bash-executor";
-import type { ExtensionRunner } from "@oh-my-pi/pi-coding-agent/extensibility/extensions";
-import * as pythonExecutor from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { TOOL_TIMEOUTS } from "@oh-my-pi/pi-coding-agent/tools/tool-timeouts";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { Agent } from "@ohp/agent-core";
+import { getBundledModel } from "@ohp/ai";
+import { ModelRegistry } from "@ohp/coding-agent/config/model-registry";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import * as bashExecutor from "@ohp/coding-agent/exec/bash-executor";
+import type { ExtensionRunner } from "@ohp/coding-agent/extensibility/extensions";
+import * as pythonExecutor from "@ohp/coding-agent/ipy/executor";
+import { AgentSession } from "@ohp/coding-agent/session/agent-session";
+import { AuthStorage } from "@ohp/coding-agent/session/auth-storage";
+import { SessionManager } from "@ohp/coding-agent/session/session-manager";
+import { TOOL_TIMEOUTS } from "@ohp/coding-agent/tools/tool-timeouts";
+import { TempDir } from "@ohp/utils";
 
 describe("AgentSession user shortcut hooks", () => {
 	let tempDir: TempDir;

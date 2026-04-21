@@ -1,10 +1,10 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { AgentToolResult } from "@oh-my-pi/pi-agent-core";
-import type { ImageContent, TextContent } from "@oh-my-pi/pi-ai";
-import { htmlToMarkdown } from "@oh-my-pi/pi-natives";
-import { type Component, Text } from "@oh-my-pi/pi-tui";
-import { ptree, truncate } from "@oh-my-pi/pi-utils";
+import type { AgentToolResult } from "@ohp/agent-core";
+import type { ImageContent, TextContent } from "@ohp/ai";
+import { htmlToMarkdown } from "@ohp/natives";
+import { type Component, Text } from "@ohp/tui";
+import { ptree, truncate } from "@ohp/utils";
 import { parseHTML } from "linkedom";
 import type { Settings } from "../config/settings";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";

@@ -1,4 +1,4 @@
-import { THINKING_EFFORTS } from "@oh-my-pi/pi-ai";
+import { THINKING_EFFORTS } from "@ohp/ai";
 
 /** Unified settings schema - single source of truth for all settings.
  * Unified settings schema - single source of truth for all settings.

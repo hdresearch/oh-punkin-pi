@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as fsp from "node:fs/promises";
 import * as path from "node:path";
-import { isEnoent, toError } from "@oh-my-pi/pi-utils";
+import { isEnoent, toError } from "@ohp/utils";
 
 export interface SessionStorageStat {
 	size: number;

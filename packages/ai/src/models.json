@@ -38951,13 +38951,13 @@
 				"image"
 			],
 			"cost": {
-				"input": 0.95,
-				"output": 4,
-				"cacheRead": 0.16,
+				"input": 0.6,
+				"output": 2.8,
+				"cacheRead": 0.19999999999999998,
 				"cacheWrite": 0
 			},
 			"contextWindow": 262144,
-			"maxTokens": 8888,
+			"maxTokens": 262144,
 			"thinking": {
 				"mode": "effort",
 				"minLevel": "minimal",
@@ -42602,8 +42602,8 @@
 				"text"
 			],
 			"cost": {
-				"input": 0.7,
-				"output": 0.14,
+				"input": 0.72,
+				"output": 2.3,
 				"cacheRead": 2.24,
 				"cacheWrite": 0
 			},
@@ -44237,6 +44237,28 @@
 				"mode": "effort",
 				"minLevel": "minimal",
 				"maxLevel": "xhigh"
+			}
+		},
+		"kimi-k2-6": {
+			"id": "kimi-k2-6",
+			"name": "kimi-k2-6",
+			"api": "openai-completions",
+			"provider": "venice",
+			"baseUrl": "https://api.venice.ai/api/v1",
+			"reasoning": false,
+			"input": [
+				"text"
+			],
+			"cost": {
+				"input": 0,
+				"output": 0,
+				"cacheRead": 0,
+				"cacheWrite": 0
+			},
+			"contextWindow": 222222,
+			"maxTokens": 8888,
+			"compat": {
+				"supportsUsageInStreaming": false
 			}
 		},
 		"kimi-k2-thinking": {

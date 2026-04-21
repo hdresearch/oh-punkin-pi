@@ -4,7 +4,7 @@
  * Uses Tavily's agent-focused search API to return structured results with an
  * optional synthesized answer.
  */
-import { getEnvApiKey } from "@oh-my-pi/pi-ai";
+import { getEnvApiKey } from "@ohp/ai";
 import type { SearchResponse, SearchSource } from "../../../web/search/types";
 import { SearchProviderError } from "../../../web/search/types";
 import { clampNumResults, dateToAgeSeconds } from "../utils";

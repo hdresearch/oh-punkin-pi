@@ -10,10 +10,10 @@ import {
 	getOAuthProviders,
 	type OAuthCredentials,
 	unregisterOAuthProviders,
-} from "@oh-my-pi/pi-ai";
-import { ModelRegistry, type ProviderConfigInput } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+} from "@ohp/ai";
+import { ModelRegistry, type ProviderConfigInput } from "@ohp/coding-agent/config/model-registry";
+import { AuthStorage } from "@ohp/coding-agent/session/auth-storage";
+import { Snowflake } from "@ohp/utils";
 
 describe("ModelRegistry runtime provider registration", () => {
 	let tempDir: string;

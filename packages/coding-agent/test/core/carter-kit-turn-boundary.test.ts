@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { formatTimestamp } from "@oh-my-pi/pi-ai/role-boundary";
-import { renderTurnStart, type TurnStartMessage } from "@oh-my-pi/pi-coding-agent/core/carter_kit/turn-boundary";
+import { formatTimestamp } from "@ohp/ai/role-boundary";
+import { renderTurnStart, type TurnStartMessage } from "@ohp/coding-agent/core/carter_kit/turn-boundary";
 
 describe("CarterKit turn boundary timestamps", () => {
 	it("formats spring timestamps in NYC with a numeric offset", () => {

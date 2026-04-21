@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { enforceStrictSchema, sanitizeSchemaForStrictMode, tryEnforceStrictSchema } from "@oh-my-pi/pi-ai/utils/schema";
+import { enforceStrictSchema, sanitizeSchemaForStrictMode, tryEnforceStrictSchema } from "@ohp/ai/utils/schema";
 import { Type } from "@sinclair/typebox";
 
 describe("sanitizeSchemaForStrictMode", () => {

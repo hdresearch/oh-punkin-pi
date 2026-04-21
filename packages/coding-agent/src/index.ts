@@ -4,11 +4,11 @@ import { HookEditorComponent, HookInputComponent, HookSelectorComponent } from "
 
 // TypeBox helper for string enums (convenience for custom tools)
 // Re-export from pi-ai which uses the correct enum-based schema format
-export { StringEnum } from "@oh-my-pi/pi-ai";
+export { StringEnum } from "@ohp/ai";
 // Re-export TUI components for custom tool rendering
-export { Container, Markdown, Spacer, Text } from "@oh-my-pi/pi-tui";
+export { Container, Markdown, Spacer, Text } from "@ohp/tui";
 // Logging
-export { getAgentDir, logger, VERSION } from "@oh-my-pi/pi-utils";
+export { getAgentDir, logger, VERSION } from "@ohp/utils";
 export * from "./config/keybindings";
 export * from "./config/model-registry";
 // Prompt templates

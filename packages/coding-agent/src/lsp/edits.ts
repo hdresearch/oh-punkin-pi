@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import path from "node:path";
-import { isEnoent } from "@oh-my-pi/pi-utils";
+import { isEnoent } from "@ohp/utils";
 import type { CreateFile, DeleteFile, RenameFile, TextDocumentEdit, TextEdit, WorkspaceEdit } from "./types";
 import { uriToFile } from "./utils";
 

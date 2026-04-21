@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import type { RenderResultOptions } from "@oh-my-pi/pi-agent-core";
-import { renderCall, renderResult } from "@oh-my-pi/pi-coding-agent/lsp/render";
-import type { CodeAction, SymbolInformation } from "@oh-my-pi/pi-coding-agent/lsp/types";
+import type { RenderResultOptions } from "@ohp/agent-core";
+import { renderCall, renderResult } from "@ohp/coding-agent/lsp/render";
+import type { CodeAction, SymbolInformation } from "@ohp/coding-agent/lsp/types";
 import {
 	applyCodeAction,
 	collectGlobMatches,
@@ -9,11 +9,11 @@ import {
 	filterWorkspaceSymbols,
 	hasGlobPattern,
 	resolveSymbolColumn,
-} from "@oh-my-pi/pi-coding-agent/lsp/utils";
-import { getThemeByName } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import { clampTimeout } from "@oh-my-pi/pi-coding-agent/tools/tool-timeouts";
-import { sanitizeText } from "@oh-my-pi/pi-natives";
-import { TempDir } from "@oh-my-pi/pi-utils";
+} from "@ohp/coding-agent/lsp/utils";
+import { getThemeByName } from "@ohp/coding-agent/modes/theme/theme";
+import { clampTimeout } from "@ohp/coding-agent/tools/tool-timeouts";
+import { sanitizeText } from "@ohp/natives";
+import { TempDir } from "@ohp/utils";
 
 describe("lsp regressions", () => {
 	it("detects bracket-style glob patterns", () => {

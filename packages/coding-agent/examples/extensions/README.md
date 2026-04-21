@@ -70,7 +70,7 @@ cp permission-gate.ts ~/.ohp/agent/extensions/
 See [docs/extensions.md](../../docs/extensions.md) for full documentation.
 
 ```typescript
-import type { ExtensionAPI } from "@oh-my-pi/pi-coding-agent";
+import type { ExtensionAPI } from "@ohp/coding-agent";
 import { Type } from "@sinclair/typebox";
 
 export default function (pi: ExtensionAPI) {
@@ -113,7 +113,7 @@ export default function (pi: ExtensionAPI) {
 **Use StringEnum for string parameters** (required for Google API compatibility):
 
 ```typescript
-import { StringEnum } from "@oh-my-pi/pi-ai";
+import { StringEnum } from "@ohp/ai";
 
 // Good
 action: StringEnum(["list", "add"] as const);

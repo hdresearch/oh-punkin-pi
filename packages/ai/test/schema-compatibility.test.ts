@@ -6,7 +6,7 @@ import {
 	sanitizeSchemaForGoogle,
 	validateSchemaCompatibility,
 	validateStrictSchemaEnforcement,
-} from "@oh-my-pi/pi-ai/utils/schema";
+} from "@ohp/ai/utils/schema";
 
 function hasRule(result: SchemaCompatibilityResult, rule: string): boolean {
 	return result.violations.some(violation => violation.rule === rule);

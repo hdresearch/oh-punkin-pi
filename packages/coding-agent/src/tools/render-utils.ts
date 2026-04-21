@@ -5,13 +5,13 @@
  * tool renderers to ensure a unified TUI experience.
  */
 import * as os from "node:os";
-import { type Ellipsis, truncateToWidth } from "@oh-my-pi/pi-tui";
-import { getIndentation, pluralize } from "@oh-my-pi/pi-utils";
+import { type Ellipsis, truncateToWidth } from "@ohp/tui";
+import { getIndentation, pluralize } from "@ohp/utils";
 import { settings } from "../config/settings";
 import type { Theme } from "../modes/theme/theme";
 import { formatDimensionNote, type ResizedImage } from "../utils/image-resize";
 
-export { Ellipsis, truncateToWidth } from "@oh-my-pi/pi-tui";
+export { Ellipsis, truncateToWidth } from "@ohp/tui";
 
 export function replaceTabs(text: string, file?: string): string {
 	return text.replaceAll("\t", getIndentation(file));
@@ -106,7 +106,7 @@ export function getDomain(url: string): string {
 // Formatting Utilities
 // =============================================================================
 
-export { formatAge, formatBytes, formatCount, formatDuration, pluralize } from "@oh-my-pi/pi-utils";
+export { formatAge, formatBytes, formatCount, formatDuration, pluralize } from "@ohp/utils";
 
 // =============================================================================
 // Theme Helper Utilities

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { type PendingExtensionRequest, requestRpcEditor } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mode";
-import type { RpcExtensionUIRequest } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-types";
+import { type PendingExtensionRequest, requestRpcEditor } from "@ohp/coding-agent/modes/rpc/rpc-mode";
+import type { RpcExtensionUIRequest } from "@ohp/coding-agent/modes/rpc/rpc-types";
 
 function isExtensionUiRequest(obj: RpcExtensionUIRequest | object): obj is RpcExtensionUIRequest {
 	return "type" in obj && obj.type === "extension_ui_request";

@@ -1,8 +1,8 @@
 import { Database, type Statement } from "bun:sqlite";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { type AuthCredential, AuthCredentialStore, type StoredAuthCredential } from "@oh-my-pi/pi-ai";
-import { getAgentDbPath, isRecord, logger } from "@oh-my-pi/pi-utils";
+import { type AuthCredential, AuthCredentialStore, type StoredAuthCredential } from "@ohp/ai";
+import { getAgentDbPath, isRecord, logger } from "@ohp/utils";
 import type { RawSettings as Settings } from "../config/settings";
 
 /** Row shape for settings table queries */
@@ -26,7 +26,7 @@ const instances = new Map<string, AgentStorage>();
 
 /**
  * Unified SQLite storage for agent settings, model usage, and auth credentials.
- * Delegates auth credential operations to AuthCredentialStore from @oh-my-pi/pi-ai.
+ * Delegates auth credential operations to AuthCredentialStore from @ohp/ai.
  * Uses singleton pattern per database path; access via AgentStorage.open().
  */
 export class AgentStorage {

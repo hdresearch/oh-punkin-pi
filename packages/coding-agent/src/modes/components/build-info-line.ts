@@ -1,4 +1,4 @@
-import type { Component } from "@oh-my-pi/pi-tui";
+import type { Component } from "@ohp/tui";
 import { theme } from "../../modes/theme/theme";
 
 let buildInfo: { projectName: string; gitHash: string; dirty: boolean; buildTimestamp: string } | null = null;

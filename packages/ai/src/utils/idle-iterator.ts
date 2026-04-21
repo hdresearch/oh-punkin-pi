@@ -1,4 +1,4 @@
-import { $env } from "@oh-my-pi/pi-utils";
+import { $env } from "@ohp/utils";
 
 const DEFAULT_OPENAI_STREAM_IDLE_TIMEOUT_MS = 45_000;
 const DEFAULT_STREAM_FIRST_EVENT_TIMEOUT_MS = 45_000;

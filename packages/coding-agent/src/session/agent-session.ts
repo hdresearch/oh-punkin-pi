@@ -26,7 +26,7 @@ import {
 	type AgentToolResult,
 	INTENT_FIELD,
 	ThinkingLevel,
-} from "@oh-my-pi/pi-agent-core";
+} from "@ohp/agent-core";
 import type {
 	AssistantMessage,
 	BracketId,
@@ -43,7 +43,7 @@ import type {
 	ToolChoice,
 	Usage,
 	UsageReport,
-} from "@oh-my-pi/pi-ai";
+} from "@ohp/ai";
 import {
 	calculateRateLimitBackoffMs,
 	getSupportedEfforts,
@@ -51,10 +51,10 @@ import {
 	isUsageLimitError,
 	modelsAreEqual,
 	parseRateLimitReason,
-} from "@oh-my-pi/pi-ai";
-import { generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
-import type { SearchDb } from "@oh-my-pi/pi-natives";
-import { abortableSleep, getAgentDbPath, isEnoent, logger } from "@oh-my-pi/pi-utils";
+} from "@ohp/ai";
+import { generateUserBracketId } from "@ohp/ai/role-boundary";
+import type { SearchDb } from "@ohp/natives";
+import { abortableSleep, getAgentDbPath, isEnoent, logger } from "@ohp/utils";
 import type { AsyncJob, AsyncJobManager } from "../async";
 import type { Rule } from "../capability/rule";
 import { MODEL_ROLE_IDS, type ModelRegistry } from "../config/model-registry";
@@ -1273,7 +1273,7 @@ export class AgentSession {
 			) {
 				continue;
 			}
-			await Bun.sleep(0);
+			await Promise.resolve();
 			if (
 				this.agent.state.isStreaming ||
 				this.agent.state.pendingToolCalls.size > 0 ||

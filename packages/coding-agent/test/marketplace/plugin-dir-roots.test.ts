@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { buildPluginDirRoot } from "@oh-my-pi/pi-coding-agent/discovery/plugin-dir-roots";
+import { buildPluginDirRoot } from "@ohp/coding-agent/discovery/plugin-dir-roots";
 
 describe("buildPluginDirRoot", () => {
 	it("builds root with manifest name", () => {

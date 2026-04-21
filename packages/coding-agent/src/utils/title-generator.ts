@@ -2,10 +2,10 @@
  * Generate session titles using a smol, fast model.
  */
 import * as path from "node:path";
-import type { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { Api, Model } from "@oh-my-pi/pi-ai";
-import { completeSimple } from "@oh-my-pi/pi-ai";
-import { $env, logger } from "@oh-my-pi/pi-utils";
+import type { ThinkingLevel } from "@ohp/agent-core";
+import type { Api, Model } from "@ohp/ai";
+import { completeSimple } from "@ohp/ai";
+import { $env, logger } from "@ohp/utils";
 import type { ModelRegistry } from "../config/model-registry";
 import { resolveRoleSelection } from "../config/model-resolver";
 import { renderPromptTemplate } from "../config/prompt-templates";

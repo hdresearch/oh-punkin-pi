@@ -18,7 +18,7 @@ import {
 	type ThinkingBudgets,
 	type ToolChoice,
 	type ToolResultMessage,
-} from "@oh-my-pi/pi-ai";
+} from "@ohp/ai";
 import { agentLoop, agentLoopContinue } from "./agent-loop";
 import type {
 	AgentContext,
@@ -753,7 +753,7 @@ export class Agent {
 			getToolContext: this.#getToolContext,
 			syncContextBeforeModelCall: async context => {
 				if (this.#listeners.size > 0) {
-					await Bun.sleep(0);
+					await Promise.resolve();
 				}
 				context.systemPrompt = this.#state.systemPrompt;
 				context.tools = this.#state.tools;

@@ -1,4 +1,4 @@
-import { getEnvApiKey } from "@oh-my-pi/pi-ai";
+import { getEnvApiKey } from "@ohp/ai";
 import { findCredential } from "./search/providers/utils";
 
 const KAGI_SEARCH_URL = "https://kagi.com/api/v0/search";

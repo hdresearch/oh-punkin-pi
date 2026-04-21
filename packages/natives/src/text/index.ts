@@ -2,8 +2,8 @@
  * ANSI-aware text utilities powered by native bindings.
  */
 
-import { Ellipsis, type ExtractSegmentsResult, type SliceWithWidthResult } from "@oh-my-pi/pi-natives";
-import { getDefaultTabWidth } from "@oh-my-pi/pi-utils";
+import { Ellipsis, type ExtractSegmentsResult, type SliceWithWidthResult } from "@ohp/natives";
+import { getDefaultTabWidth } from "@ohp/utils";
 import { native } from "../native";
 
 export type { ExtractSegmentsResult, SliceWithWidthResult } from "./types";

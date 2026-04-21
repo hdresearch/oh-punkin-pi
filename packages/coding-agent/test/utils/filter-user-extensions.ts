@@ -1,4 +1,4 @@
-import { getConfigRootDir } from "@oh-my-pi/pi-utils";
+import { getConfigRootDir } from "@ohp/utils";
 
 export function filterUserExtensions<T extends { path: string }>(extensions: T[]): T[] {
 	const configRoot = getConfigRootDir();

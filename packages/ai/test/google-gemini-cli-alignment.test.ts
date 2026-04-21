@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { hookFetch } from "@oh-my-pi/pi-utils";
+import { hookFetch } from "@ohp/utils";
 import type { TSchema } from "@sinclair/typebox";
 import {
 	buildRequest,

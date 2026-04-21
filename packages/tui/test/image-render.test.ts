@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { Image } from "@oh-my-pi/pi-tui/components/image";
+import { Image } from "@ohp/tui/components/image";
 import {
 	type CellDimensions,
 	getCellDimensions,
@@ -8,7 +8,7 @@ import {
 	renderImage,
 	setCellDimensions,
 	TERMINAL,
-} from "@oh-my-pi/pi-tui/terminal-capabilities";
+} from "@ohp/tui/terminal-capabilities";
 
 type MutableTerminalInfo = {
 	imageProtocol: ImageProtocol | null;

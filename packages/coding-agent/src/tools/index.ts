@@ -1,6 +1,6 @@
-import type { AgentTool } from "@oh-my-pi/pi-agent-core";
-import type { SearchDb } from "@oh-my-pi/pi-natives";
-import { $env, logger } from "@oh-my-pi/pi-utils";
+import type { AgentTool } from "@ohp/agent-core";
+import type { SearchDb } from "@ohp/natives";
+import { $env, logger } from "@ohp/utils";
 import type { AsyncJobManager } from "../async";
 import type { PromptTemplate } from "../config/prompt-templates";
 import type { Settings } from "../config/settings";

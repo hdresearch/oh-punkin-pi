@@ -9,8 +9,8 @@ import {
 	streamSimple,
 	type ToolResultMessage,
 	validateToolArguments,
-} from "@oh-my-pi/pi-ai";
-import { generateToolResultBracketId } from "@oh-my-pi/pi-ai/role-boundary";
+} from "@ohp/ai";
+import { generateToolResultBracketId } from "@ohp/ai/role-boundary";
 import type {
 	AgentContext,
 	AgentEvent,

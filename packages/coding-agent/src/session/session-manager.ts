@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
+import type { AgentMessage } from "@ohp/agent-core";
 import type {
 	BracketId,
 	ImageContent,
@@ -11,9 +11,9 @@ import type {
 	ServiceTier,
 	TextContent,
 	Usage,
-} from "@oh-my-pi/pi-ai";
-import { generateToolResultBracketId, generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
-import { getTerminalId } from "@oh-my-pi/pi-tui";
+} from "@ohp/ai";
+import { generateToolResultBracketId, generateUserBracketId } from "@ohp/ai/role-boundary";
+import { getTerminalId } from "@ohp/tui";
 import {
 	getBlobsDir,
 	getAgentDir as getDefaultAgentDir,
@@ -27,7 +27,7 @@ import {
 	resolveEquivalentPath,
 	Snowflake,
 	toError,
-} from "@oh-my-pi/pi-utils";
+} from "@ohp/utils";
 import { ArtifactManager } from "./artifacts";
 import {
 	type BlobPutResult,

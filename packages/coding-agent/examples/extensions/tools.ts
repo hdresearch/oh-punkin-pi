@@ -8,9 +8,9 @@
  * 1. Copy this file to ~/.ohp/agent/extensions/ (legacy: ~/.pi/agent/extensions/) or your project's .ohp/extensions/
  * 2. Use /tools to open the tool selector
  */
-import type { ExtensionAPI, ExtensionContext } from "@oh-my-pi/pi-coding-agent";
-import { getSettingsListTheme } from "@oh-my-pi/pi-coding-agent";
-import { Container, type SettingItem, SettingsList } from "@oh-my-pi/pi-tui";
+import type { ExtensionAPI, ExtensionContext } from "@ohp/coding-agent";
+import { getSettingsListTheme } from "@ohp/coding-agent";
+import { Container, type SettingItem, SettingsList } from "@ohp/tui";
 
 // State persisted to session
 interface ToolsState {

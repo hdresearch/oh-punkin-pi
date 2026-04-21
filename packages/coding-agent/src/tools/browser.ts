@@ -2,9 +2,9 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { Readability } from "@mozilla/readability";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { StringEnum } from "@oh-my-pi/pi-ai";
-import { getPuppeteerDir, logger, Snowflake, untilAborted } from "@oh-my-pi/pi-utils";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@ohp/agent-core";
+import { StringEnum } from "@ohp/ai";
+import { getPuppeteerDir, logger, Snowflake, untilAborted } from "@ohp/utils";
 import { type Static, Type } from "@sinclair/typebox";
 import { type HTMLElement, parseHTML } from "linkedom";
 import type {

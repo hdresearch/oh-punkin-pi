@@ -2,14 +2,14 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { completeSimple, Model } from "@oh-my-pi/pi-ai";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { getThemeByName } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { InspectImageTool } from "@oh-my-pi/pi-coding-agent/tools/inspect-image";
-import { inspectImageToolRenderer } from "@oh-my-pi/pi-coding-agent/tools/inspect-image-renderer";
-import { toolRenderers } from "@oh-my-pi/pi-coding-agent/tools/renderers";
-import { sanitizeText } from "@oh-my-pi/pi-natives";
+import type { completeSimple, Model } from "@ohp/ai";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { getThemeByName } from "@ohp/coding-agent/modes/theme/theme";
+import type { ToolSession } from "@ohp/coding-agent/tools";
+import { InspectImageTool } from "@ohp/coding-agent/tools/inspect-image";
+import { inspectImageToolRenderer } from "@ohp/coding-agent/tools/inspect-image-renderer";
+import { toolRenderers } from "@ohp/coding-agent/tools/renderers";
+import { sanitizeText } from "@ohp/natives";
 import { Value } from "@sinclair/typebox/value";
 
 const TINY_PNG_BASE64 =

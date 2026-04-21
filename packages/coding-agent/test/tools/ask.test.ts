@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it, vi } from "bun:test";
-import type { AgentToolContext } from "@oh-my-pi/pi-agent-core";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { getThemeByName, initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { AskTool, askToolRenderer } from "@oh-my-pi/pi-coding-agent/tools/ask";
-import { ToolAbortError } from "@oh-my-pi/pi-coding-agent/tools/tool-errors";
+import type { AgentToolContext } from "@ohp/agent-core";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { getThemeByName, initTheme } from "@ohp/coding-agent/modes/theme/theme";
+import type { ToolSession } from "@ohp/coding-agent/tools";
+import { AskTool, askToolRenderer } from "@ohp/coding-agent/tools/ask";
+import { ToolAbortError } from "@ohp/coding-agent/tools/tool-errors";
 
 function createSession(overrides: Partial<ToolSession> = {}): ToolSession {
 	return {

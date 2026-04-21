@@ -1,7 +1,7 @@
 import { Database, type Statement } from "bun:sqlite";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getHistoryDbPath, logger } from "@oh-my-pi/pi-utils";
+import { getHistoryDbPath, logger } from "@ohp/utils";
 
 export interface HistoryEntry {
 	id: number;

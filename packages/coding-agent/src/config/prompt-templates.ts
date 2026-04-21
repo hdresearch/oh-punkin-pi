@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getProjectDir, getProjectPromptsDir, getPromptsDir, logger } from "@oh-my-pi/pi-utils";
+import { getProjectDir, getProjectPromptsDir, getPromptsDir, logger } from "@ohp/utils";
 import Handlebars from "handlebars";
 import { computeLineHash } from "../patch/hashline";
 import { jtdToTypeScript } from "../tools/jtd-to-typescript";

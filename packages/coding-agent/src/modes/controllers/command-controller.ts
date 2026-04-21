@@ -8,10 +8,10 @@ import {
 	type ToolCall,
 	type UsageLimit,
 	type UsageReport,
-} from "@oh-my-pi/pi-ai";
-import { copyToClipboard } from "@oh-my-pi/pi-natives";
-import { Loader, Markdown, padding, Spacer, Text, visibleWidth } from "@oh-my-pi/pi-tui";
-import { formatDuration, Snowflake, setProjectDir } from "@oh-my-pi/pi-utils";
+} from "@ohp/ai";
+import { copyToClipboard } from "@ohp/natives";
+import { Loader, Markdown, padding, Spacer, Text, visibleWidth } from "@ohp/tui";
+import { formatDuration, Snowflake, setProjectDir } from "@ohp/utils";
 import { $ } from "bun";
 import { reset as resetCapabilities } from "../../capability";
 import { clearClaudePluginRootsCache } from "../../discovery/helpers";

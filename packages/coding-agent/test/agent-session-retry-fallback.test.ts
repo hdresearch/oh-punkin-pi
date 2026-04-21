@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as path from "node:path";
-import { Agent } from "@oh-my-pi/pi-agent-core";
-import { type AssistantMessage, Effort, getBundledModel, type Model } from "@oh-my-pi/pi-ai";
-import { AssistantMessageEventStream } from "@oh-my-pi/pi-ai/utils/event-stream";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { AgentSession, type AgentSessionEvent } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { Agent } from "@ohp/agent-core";
+import { type AssistantMessage, Effort, getBundledModel, type Model } from "@ohp/ai";
+import { AssistantMessageEventStream } from "@ohp/ai/utils/event-stream";
+import { ModelRegistry } from "@ohp/coding-agent/config/model-registry";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { AgentSession, type AgentSessionEvent } from "@ohp/coding-agent/session/agent-session";
+import { AuthStorage } from "@ohp/coding-agent/session/auth-storage";
+import { SessionManager } from "@ohp/coding-agent/session/session-manager";
+import { TempDir } from "@ohp/utils";
 
 class MockAssistantStream extends AssistantMessageEventStream {}
 

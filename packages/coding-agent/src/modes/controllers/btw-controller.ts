@@ -1,5 +1,5 @@
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import { type AssistantMessage, type Context, streamSimple } from "@oh-my-pi/pi-ai";
+import type { AgentMessage } from "@ohp/agent-core";
+import { type AssistantMessage, type Context, streamSimple } from "@ohp/ai";
 import { renderPromptTemplate } from "../../config/prompt-templates";
 import btwUserPrompt from "../../prompts/system/btw-user.md" with { type: "text" };
 import { toReasoningEffort } from "../../thinking";

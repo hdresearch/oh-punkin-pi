@@ -10,7 +10,7 @@ const COPILOT_PREMIUM_MULTIPLIERS: Record<string, number> = {
 };
 
 import * as path from "node:path";
-import { $env } from "@oh-my-pi/pi-utils";
+import { $env } from "@ohp/utils";
 import { AuthCredentialStore } from "../src/auth-storage";
 import { createModelManager } from "../src/model-manager";
 import {

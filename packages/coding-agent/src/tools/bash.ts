@@ -1,9 +1,9 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { ImageProtocol, TERMINAL, Text } from "@oh-my-pi/pi-tui";
-import { $env, getProjectDir, isEnoent } from "@oh-my-pi/pi-utils";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@ohp/agent-core";
+import type { Component } from "@ohp/tui";
+import { ImageProtocol, TERMINAL, Text } from "@ohp/tui";
+import { $env, getProjectDir, isEnoent } from "@ohp/utils";
 import { Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../config/prompt-templates";
 import { type BashResult, executeBash } from "../exec/bash-executor";

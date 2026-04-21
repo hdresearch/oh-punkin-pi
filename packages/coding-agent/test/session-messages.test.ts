@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { Message } from "@oh-my-pi/pi-ai";
-import { inferCopilotInitiator } from "@oh-my-pi/pi-ai/providers/github-copilot-headers";
-import { generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
-import { convertToLlm } from "@oh-my-pi/pi-coding-agent/session/messages";
+import type { AgentMessage } from "@ohp/agent-core";
+import type { Message } from "@ohp/ai";
+import { inferCopilotInitiator } from "@ohp/ai/providers/github-copilot-headers";
+import { generateUserBracketId } from "@ohp/ai/role-boundary";
+import { convertToLlm } from "@ohp/coding-agent/session/messages";
 
 function expectAttribution(message: Message | undefined, expected: "user" | "agent" | undefined): void {
 	expect(message).toBeDefined();

@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { CONFIG_DIR_NAME, isEnoent, logger } from "@oh-my-pi/pi-utils";
+import { CONFIG_DIR_NAME, isEnoent, logger } from "@ohp/utils";
 import { YAML } from "bun";
 import type { SecretEntry } from "./obfuscator";
 import { compileSecretRegex } from "./regex";

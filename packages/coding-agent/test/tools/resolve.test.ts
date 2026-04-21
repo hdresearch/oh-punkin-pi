@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { getThemeByName } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { PendingActionStore } from "@oh-my-pi/pi-coding-agent/tools/pending-action";
-import { ResolveTool, resolveToolRenderer } from "@oh-my-pi/pi-coding-agent/tools/resolve";
-import { sanitizeText } from "@oh-my-pi/pi-natives";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { getThemeByName } from "@ohp/coding-agent/modes/theme/theme";
+import type { ToolSession } from "@ohp/coding-agent/tools";
+import { PendingActionStore } from "@ohp/coding-agent/tools/pending-action";
+import { ResolveTool, resolveToolRenderer } from "@ohp/coding-agent/tools/resolve";
+import { sanitizeText } from "@ohp/natives";
 
 function createSession(pendingActionStore?: PendingActionStore): ToolSession {
 	return {

@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { EditTool } from "@oh-my-pi/pi-coding-agent/patch";
-import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
-import { Snowflake } from "@oh-my-pi/pi-utils";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { EditTool } from "@ohp/coding-agent/patch";
+import type { ToolSession } from "@ohp/coding-agent/tools";
+import { Snowflake } from "@ohp/utils";
 
 function createTestToolSession(cwd: string, settings: Settings = Settings.isolated()): ToolSession {
 	const sessionFile = path.join(cwd, "session.jsonl");

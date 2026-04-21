@@ -1,4 +1,4 @@
-import type { ImageContent } from "@oh-my-pi/pi-ai";
+import type { ImageContent } from "@ohp/ai";
 import type { Args } from "./args";
 
 export interface InitialMessageInput {

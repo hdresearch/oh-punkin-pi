@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
-import type { ImageContent } from "@oh-my-pi/pi-ai";
-import { formatBytes } from "@oh-my-pi/pi-utils";
+import type { ImageContent } from "@ohp/ai";
+import { formatBytes } from "@ohp/utils";
 import { resolveReadPath } from "../tools/path-utils";
 import { convertToPng } from "./image-convert";
 import { formatDimensionNote, resizeImage } from "./image-resize";

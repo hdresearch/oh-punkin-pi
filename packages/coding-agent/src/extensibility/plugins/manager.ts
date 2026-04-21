@@ -9,7 +9,7 @@ import {
 	getProjectPluginOverridesPath,
 	isEnoent,
 	logger,
-} from "@oh-my-pi/pi-utils";
+} from "@ohp/utils";
 import { extractPackageName, parsePluginSpec } from "./parser";
 import type {
 	DoctorCheck,

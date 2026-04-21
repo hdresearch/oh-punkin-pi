@@ -4,12 +4,12 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { type Agent, type AgentMessage, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage, ImageContent, Message, Model, UsageReport } from "@oh-my-pi/pi-ai";
-import { generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
-import type { Component, SlashCommand } from "@oh-my-pi/pi-tui";
-import { Container, Loader, Markdown, ProcessTerminal, Spacer, Text, TUI, visibleWidth } from "@oh-my-pi/pi-tui";
-import { APP_NAME, getProjectDir, hsvToRgb, isEnoent, logger, postmortem } from "@oh-my-pi/pi-utils";
+import { type Agent, type AgentMessage, ThinkingLevel } from "@ohp/agent-core";
+import type { AssistantMessage, ImageContent, Message, Model, UsageReport } from "@ohp/ai";
+import { generateUserBracketId } from "@ohp/ai/role-boundary";
+import type { Component, SlashCommand } from "@ohp/tui";
+import { Container, Loader, Markdown, ProcessTerminal, Spacer, Text, TUI, visibleWidth } from "@ohp/tui";
+import { APP_NAME, getProjectDir, hsvToRgb, isEnoent, logger, postmortem } from "@ohp/utils";
 import chalk from "chalk";
 import { KeybindingsManager } from "../config/keybindings";
 import { renderPromptTemplate } from "../config/prompt-templates";

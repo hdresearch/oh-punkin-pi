@@ -1,6 +1,6 @@
-import { INTENT_FIELD } from "@oh-my-pi/pi-agent-core";
-import type { ImageContent } from "@oh-my-pi/pi-ai";
-import { Loader, TERMINAL, Text } from "@oh-my-pi/pi-tui";
+import { INTENT_FIELD } from "@ohp/agent-core";
+import type { ImageContent } from "@ohp/ai";
+import { Loader, TERMINAL, Text } from "@ohp/tui";
 import { settings } from "../../config/settings";
 import { renderTurnEnd, renderTurnStart } from "../../core/carter_kit/turn-boundary";
 import { AssistantMessageComponent } from "../../modes/components/assistant-message";

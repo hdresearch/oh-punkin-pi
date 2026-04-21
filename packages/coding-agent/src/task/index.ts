@@ -15,9 +15,9 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import path from "node:path";
-import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import type { Usage } from "@oh-my-pi/pi-ai";
-import { $env, Snowflake } from "@oh-my-pi/pi-utils";
+import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@ohp/agent-core";
+import type { Usage } from "@ohp/ai";
+import { $env, Snowflake } from "@ohp/utils";
 import type { ToolSession } from "..";
 import { resolveAgentModelPatterns } from "../config/model-resolver";
 import { renderPromptTemplate } from "../config/prompt-templates";

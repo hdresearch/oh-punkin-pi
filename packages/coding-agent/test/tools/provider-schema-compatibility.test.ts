@@ -7,9 +7,9 @@ import {
 	sanitizeSchemaForGoogle,
 	validateSchemaCompatibility,
 	validateStrictSchemaEnforcement,
-} from "@oh-my-pi/pi-ai/utils/schema";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { createTools, HIDDEN_TOOLS, type ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
+} from "@ohp/ai/utils/schema";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { createTools, HIDDEN_TOOLS, type ToolSession } from "@ohp/coding-agent/tools";
 
 interface ToolSchemaEntry {
 	name: string;

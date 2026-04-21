@@ -1,4 +1,4 @@
-import { getIndentation } from "@oh-my-pi/pi-utils";
+import { getIndentation } from "@ohp/utils";
 import * as Diff from "diff";
 import { theme } from "../../modes/theme/theme";
 import { replaceTabs } from "../../tools/render-utils";

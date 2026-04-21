@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { enrichModelThinking } from "@oh-my-pi/pi-ai/model-thinking";
+import { enrichModelThinking } from "@ohp/ai/model-thinking";
 import {
 	getOpenAICodexTransportDetails,
 	prewarmOpenAICodexResponses,
 	streamOpenAICodexResponses,
-} from "@oh-my-pi/pi-ai/providers/openai-codex-responses";
-import type { Context, Model, ProviderSessionState } from "@oh-my-pi/pi-ai/types";
-import { getAgentDir, setAgentDir, TempDir } from "@oh-my-pi/pi-utils";
+} from "@ohp/ai/providers/openai-codex-responses";
+import type { Context, Model, ProviderSessionState } from "@ohp/ai/types";
+import { getAgentDir, setAgentDir, TempDir } from "@ohp/utils";
 
 const originalFetch = global.fetch;
 const originalAgentDir = getAgentDir();

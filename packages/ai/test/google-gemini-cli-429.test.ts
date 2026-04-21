@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { extractRetryDelay } from "@oh-my-pi/pi-ai/providers/google-gemini-cli";
+import { extractRetryDelay } from "@ohp/ai/providers/google-gemini-cli";
 
 // The fail-fast regex used inside the provider to distinguish "known quota errors" (throw immediately)
 // from "ambiguous 429s" (retry up to RATE_LIMIT_BUDGET_MS).

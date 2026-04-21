@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { Agent } from "@oh-my-pi/pi-agent-core";
-import { getBundledModel } from "@oh-my-pi/pi-ai/models";
-import { generateUserBracketId } from "@oh-my-pi/pi-ai/role-boundary";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { loadExtensions } from "@oh-my-pi/pi-coding-agent/extensibility/extensions/loader";
-import { ExtensionRunner } from "@oh-my-pi/pi-coding-agent/extensibility/extensions/runner";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { getProjectAgentDir, TempDir, withTimeout } from "@oh-my-pi/pi-utils";
+import { Agent } from "@ohp/agent-core";
+import { getBundledModel } from "@ohp/ai/models";
+import { generateUserBracketId } from "@ohp/ai/role-boundary";
+import { ModelRegistry } from "@ohp/coding-agent/config/model-registry";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { loadExtensions } from "@ohp/coding-agent/extensibility/extensions/loader";
+import { ExtensionRunner } from "@ohp/coding-agent/extensibility/extensions/runner";
+import { AgentSession } from "@ohp/coding-agent/session/agent-session";
+import { AuthStorage } from "@ohp/coding-agent/session/auth-storage";
+import { SessionManager } from "@ohp/coding-agent/session/session-manager";
+import { getProjectAgentDir, TempDir, withTimeout } from "@ohp/utils";
 
 const runtimeSignalStoreKey = "__ompRuntimeSignals";
 
@@ -39,10 +39,6 @@ describe("AgentSession auto-compaction queue resume", () => {
 	beforeEach(async () => {
 		tempDir = TempDir.createSync("@pi-auto-compaction-queue-");
 		vi.useFakeTimers();
-		// waitForIdle() eventually passes through #waitForAgentQuiescence(), which uses
-		// Bun.sleep(0) as a post-queue flush. Under fake timers that sleep will never
-		// resolve on its own, so stub it to an already-settled promise for this file.
-		vi.spyOn(Bun, "sleep").mockImplementation(async () => undefined);
 		// Provide an extension that short-circuits compaction so the test doesn't
 		// make any LLM calls.
 		const extensionsDir = path.join(getProjectAgentDir(tempDir.path()), "extensions");

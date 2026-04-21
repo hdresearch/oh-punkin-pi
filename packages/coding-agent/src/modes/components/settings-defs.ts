@@ -7,8 +7,8 @@
  * 2. That's it - it appears in the UI automatically
  */
 
-import { THINKING_EFFORTS } from "@oh-my-pi/pi-ai";
-import { TERMINAL } from "@oh-my-pi/pi-tui";
+import { THINKING_EFFORTS } from "@ohp/ai";
+import { TERMINAL } from "@ohp/tui";
 import {
 	getDefault,
 	getEnumValues,

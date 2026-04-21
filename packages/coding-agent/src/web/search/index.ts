@@ -5,8 +5,8 @@
  * providers with provider-specific parameters exposed conditionally.
  *
  */
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import { StringEnum } from "@oh-my-pi/pi-ai";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@ohp/agent-core";
+import { StringEnum } from "@ohp/ai";
 import { Type } from "@sinclair/typebox";
 import { renderPromptTemplate } from "../../config/prompt-templates";
 import type { CustomTool, CustomToolContext, RenderResultOptions } from "../../extensibility/custom-tools/types";

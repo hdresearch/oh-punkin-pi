@@ -7,7 +7,7 @@ import type {
 	MessageCreateParamsStreaming,
 	MessageParam,
 } from "@anthropic-ai/sdk/resources/messages";
-import { $env, abortableSleep, isEnoent } from "@oh-my-pi/pi-utils";
+import { $env, abortableSleep, isEnoent } from "@ohp/utils";
 import { mapEffortToAnthropicAdaptiveEffort } from "../model-thinking";
 import { calculateCost } from "../models";
 import { getEnvApiKey, OUTPUT_FALLBACK_BUFFER } from "../stream";

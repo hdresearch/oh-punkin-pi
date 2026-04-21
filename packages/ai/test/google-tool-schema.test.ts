@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { convertTools } from "@oh-my-pi/pi-ai/providers/google-shared";
-import type { Model, Tool } from "@oh-my-pi/pi-ai/types";
-import { sanitizeSchemaForCCA, sanitizeSchemaForGoogle } from "@oh-my-pi/pi-ai/utils/schema";
+import { convertTools } from "@ohp/ai/providers/google-shared";
+import type { Model, Tool } from "@ohp/ai/types";
+import { sanitizeSchemaForCCA, sanitizeSchemaForGoogle } from "@ohp/ai/utils/schema";
 import type { TSchema } from "@sinclair/typebox";
 
 function createModel(id: string): Model<"google-gemini-cli"> {

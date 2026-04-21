@@ -14,15 +14,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import {
-	getAgentDbPath,
-	getAgentDir,
-	getProjectDir,
-	isEnoent,
-	logger,
-	procmgr,
-	setDefaultTabWidth,
-} from "@oh-my-pi/pi-utils";
+import { getAgentDbPath, getAgentDir, getProjectDir, isEnoent, logger, procmgr, setDefaultTabWidth } from "@ohp/utils";
 import { YAML } from "bun";
 import { type Settings as SettingsCapabilityItem, settingsCapability } from "../capability/settings";
 import type { ModelRole } from "../config/model-registry";

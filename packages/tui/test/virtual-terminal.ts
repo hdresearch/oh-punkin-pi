@@ -1,4 +1,4 @@
-import type { Terminal, TerminalAppearance } from "@oh-my-pi/pi-tui/terminal";
+import type { Terminal, TerminalAppearance } from "@ohp/tui/terminal";
 import type { Terminal as XtermTerminalType } from "@xterm/headless";
 import xterm from "@xterm/headless";
 

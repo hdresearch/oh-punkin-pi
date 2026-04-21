@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@oh-my-pi/pi-coding-agent"><img src="https://img.shields.io/npm/v/@oh-my-pi/pi-coding-agent?style=flat&colorA=222222&colorB=CB3837" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/@ohp/coding-agent"><img src="https://img.shields.io/npm/v/@ohp/coding-agent?style=flat&colorA=222222&colorB=CB3837" alt="npm version"></a>
   <a href="https://github.com/can1357/oh-my-pi/blob/main/packages/coding-agent/CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-keep-E05735?style=flat&colorA=222222" alt="Changelog"></a>
   <a href="https://github.com/can1357/oh-my-pi/blob/main/LICENSE"><img src="https://img.shields.io/github/license/can1357/oh-my-pi?style=flat&colorA=222222&colorB=58A6FF" alt="License"></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&colorA=222222&logo=typescript&logoColor=white" alt="TypeScript"></a>
@@ -405,7 +405,7 @@ Supported platforms: `linux-x64`, `linux-arm64`, `darwin-x64`, `darwin-arm64`, `
 Requires [Bun](https://bun.sh) **>= 1.3.7**:
 
 ```bash
-bun install -g @oh-my-pi/pi-coding-agent
+bun install -g @ohp/coding-agent
 ```
 
 ### Via installer script
@@ -1057,7 +1057,7 @@ Hook locations:
 - CLI: `--hook <path>`
 
 ```typescript
-import type { HookAPI } from "@oh-my-pi/pi-coding-agent/hooks";
+import type { HookAPI } from "@ohp/coding-agent/hooks";
 
 export default function (omp: HookAPI) {
 	omp.on("tool_call", async (event, ctx) => {
@@ -1089,7 +1089,7 @@ Auto-discovered locations:
 
 ```typescript
 import { Type } from "@sinclair/typebox";
-import type { CustomToolFactory } from "@oh-my-pi/pi-coding-agent";
+import type { CustomToolFactory } from "@ohp/coding-agent";
 const factory: CustomToolFactory = () => ({
 	name: "greet",
 	label: "Greeting",
@@ -1268,7 +1268,7 @@ For adding new tools, see [Custom Tools](#custom-tools).
 For embedding omp in Node.js/TypeScript applications, use the SDK:
 
 ```typescript
-import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@oh-my-pi/pi-coding-agent";
+import { ModelRegistry, SessionManager, createAgentSession, discoverAuthStorage } from "@ohp/coding-agent";
 const authStorage = await discoverAuthStorage();
 const modelRegistry = new ModelRegistry(authStorage);
 await modelRegistry.refresh();
@@ -1353,20 +1353,20 @@ For architecture and contribution guidelines, see [packages/coding-agent/DEVELOP
 
 | Package                                                   | Description                                                                |
 | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **[@oh-my-pi/pi-ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
-| **[@oh-my-pi/pi-agent-core](packages/agent)**             | Agent runtime with tool calling and state management                       |
-| **[@oh-my-pi/pi-coding-agent](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
-| **[@oh-my-pi/pi-tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
-| **[@oh-my-pi/pi-natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
-| **[@oh-my-pi/omp-stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
-| **[@oh-my-pi/pi-utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
-| **[@oh-my-pi/swarm-extension](packages/swarm-extension)** | Swarm orchestration extension package                                      |
+| **[@ohp/ai](packages/ai)**                        | Multi-provider LLM client with streaming and model/provider integration    |
+| **[@ohp/agent-core](packages/agent)**             | Agent runtime with tool calling and state management                       |
+| **[@ohp/coding-agent](packages/coding-agent)**    | Interactive coding agent CLI and SDK                                       |
+| **[@ohp/tui](packages/tui)**                      | Terminal UI library with differential rendering                            |
+| **[@ohp/natives](packages/natives)**              | N-API bindings for grep, shell, image, text, syntax highlighting, and more |
+| **[@ohp/stats](packages/stats)**                 | Local observability dashboard for AI usage statistics                      |
+| **[@ohp/utils](packages/utils)**                  | Shared utilities (logging, streams, dirs/env/process helpers)              |
+| **[@ohp/swarm-extension](packages/swarm-extension)** | Swarm orchestration extension package                                      |
 
 ### Rust Crates
 
 | Crate                                                         | Description                                                                                  |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **[pi-natives](crates/pi-natives)**                           | Core Rust native addon used by `@oh-my-pi/pi-natives`                                        |
+| **[pi-natives](crates/pi-natives)**                           | Core Rust native addon used by `@ohp/natives`                                        |
 | **[brush-core-vendored](crates/brush-core-vendored)**         | Vendored fork of [brush-shell](https://github.com/reubeno/brush) for embedded bash execution |
 | **[brush-builtins-vendored](crates/brush-builtins-vendored)** | Vendored bash builtins (cd, echo, test, printf, read, export, etc.)                          |
 

@@ -1,6 +1,6 @@
-import type { BracketId } from "@oh-my-pi/pi-ai";
-import { formatDeltaMs, formatTimestampNYC, generateUserBracketId, sha3Trunc } from "@oh-my-pi/pi-ai/role-boundary";
-import { Container, Markdown, Spacer, visibleWidth } from "@oh-my-pi/pi-tui";
+import type { BracketId } from "@ohp/ai";
+import { formatDeltaMs, formatTimestampNYC, generateUserBracketId, sha3Trunc } from "@ohp/ai/role-boundary";
+import { Container, Markdown, Spacer, visibleWidth } from "@ohp/tui";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 
 // OSC 133 shell integration: marks prompt zones for terminal multiplexers

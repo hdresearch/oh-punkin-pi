@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import type { Skill } from "@oh-my-pi/pi-coding-agent/sdk";
-import { createAgentSession } from "@oh-my-pi/pi-coding-agent/sdk";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import type { Skill } from "@ohp/coding-agent/sdk";
+import { createAgentSession } from "@ohp/coding-agent/sdk";
+import { SessionManager } from "@ohp/coding-agent/session/session-manager";
 
 function createIsolatedSkillsSettings(): Settings {
 	return Settings.isolated({

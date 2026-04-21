@@ -2,7 +2,7 @@
  * Model resolution, scoping, and initial selection
  */
 
-import { ThinkingLevel } from "@oh-my-pi/pi-agent-core";
+import { ThinkingLevel } from "@ohp/agent-core";
 import {
 	type Api,
 	clampThinkingLevelForModel,
@@ -11,7 +11,7 @@ import {
 	type KnownProvider,
 	type Model,
 	modelsAreEqual,
-} from "@oh-my-pi/pi-ai";
+} from "@ohp/ai";
 import chalk from "chalk";
 import MODEL_PRIO from "../priority.json" with { type: "json" };
 import { parseThinkingLevel, resolveThinkingLevelForModel } from "../thinking";

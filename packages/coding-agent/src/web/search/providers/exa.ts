@@ -6,7 +6,7 @@
  * Requests per-result summaries via `contents.summary` and synthesizes
  * them into a combined `answer` string on the SearchResponse.
  */
-import { getEnvApiKey } from "@oh-my-pi/pi-ai";
+import { getEnvApiKey } from "@ohp/ai";
 import { settings } from "../../../config/settings";
 import { callExaTool, findApiKey, isSearchResponse } from "../../../exa/mcp-client";
 import type { SearchResponse, SearchSource } from "../../../web/search/types";

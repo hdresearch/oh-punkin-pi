@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "bun:test";
 const projfsOverlayStartMock = vi.fn();
 const projfsOverlayStopMock = vi.fn();
 
-vi.mock("@oh-my-pi/pi-natives", () => ({
+vi.mock("@ohp/natives", () => ({
 	projfsOverlayStart: projfsOverlayStartMock,
 	projfsOverlayStop: projfsOverlayStopMock,
 }));

@@ -10,7 +10,7 @@ It documents only active behavior.
 
 ## Resolution model and precedence
 
-Most runtime lookups use `$env` from `@oh-my-pi/pi-utils` (`packages/utils/src/env.ts`).
+Most runtime lookups use `$env` from `@ohp/utils` (`packages/utils/src/env.ts`).
 
 `$env` loading order:
 
@@ -269,7 +269,7 @@ Extra conditional behavior:
 
 ## 6) Storage and config root paths
 
-These are consumed via `@oh-my-pi/pi-utils/dirs` and affect where coding-agent stores data.
+These are consumed via `@ohp/utils/dirs` and affect where coding-agent stores data.
 
 | Variable | Default / behavior |
 |---|---|

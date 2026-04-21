@@ -1,4 +1,4 @@
-import { type Component, padding, Text, truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
+import { type Component, padding, Text, truncateToWidth, visibleWidth } from "@ohp/tui";
 import type { RenderResultOptions } from "../extensibility/custom-tools/types";
 import type { Theme, ThemeColor } from "../modes/theme/theme";
 import { renderStatusLine } from "../tui";

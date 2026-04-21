@@ -14,7 +14,7 @@ import {
 	type TUI,
 	truncateToWidth,
 	visibleWidth,
-} from "@oh-my-pi/pi-tui";
+} from "@ohp/tui";
 import { getMarkdownTheme, theme } from "../../modes/theme/theme";
 import { matchesAppExternalEditor, matchesSelectCancel } from "../../modes/utils/keybinding-matchers";
 import { CountdownTimer } from "./countdown-timer";

@@ -1,4 +1,4 @@
-import { ProcessTerminal, TUI } from "@oh-my-pi/pi-tui";
+import { ProcessTerminal, TUI } from "@ohp/tui";
 import { SessionSelectorComponent } from "../modes/components/session-selector";
 import type { SessionInfo } from "../session/session-manager";
 import { FileSessionStorage } from "../session/session-storage";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { createTools, type ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import { createTools, type ToolSession } from "@ohp/coding-agent/tools";
 
 function createSession(overrides: Partial<ToolSession> = {}): ToolSession {
 	return {

@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { getBundledModel } from "@oh-my-pi/pi-ai/models";
-import { streamOpenAICompletions } from "@oh-my-pi/pi-ai/providers/openai-completions";
-import { streamOpenAIResponses } from "@oh-my-pi/pi-ai/providers/openai-responses";
-import type { Context, Model, OpenAICompat, Tool } from "@oh-my-pi/pi-ai/types";
+import { getBundledModel } from "@ohp/ai/models";
+import { streamOpenAICompletions } from "@ohp/ai/providers/openai-completions";
+import { streamOpenAIResponses } from "@ohp/ai/providers/openai-responses";
+import type { Context, Model, OpenAICompat, Tool } from "@ohp/ai/types";
 import { Type } from "@sinclair/typebox";
 
 const originalFetch = global.fetch;

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { formatPromptContent } from "@oh-my-pi/pi-coding-agent/utils/prompt-format";
+import { formatPromptContent } from "@ohp/coding-agent/utils/prompt-format";
 
 describe("formatPromptContent renderPhase", () => {
 	test("pre-render preserves indentation on Handlebars block lines", () => {

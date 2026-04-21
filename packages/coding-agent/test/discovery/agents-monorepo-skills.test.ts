@@ -10,15 +10,15 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { clearCache, readFile } from "@oh-my-pi/pi-coding-agent/capability/fs";
-import type { Rule } from "@oh-my-pi/pi-coding-agent/capability/rule";
-import type { LoadContext } from "@oh-my-pi/pi-coding-agent/capability/types";
+import { clearCache, readFile } from "@ohp/coding-agent/capability/fs";
+import type { Rule } from "@ohp/coding-agent/capability/rule";
+import type { LoadContext } from "@ohp/coding-agent/capability/types";
 import {
 	buildRuleFromMarkdown,
 	calculateDepth,
 	loadFilesFromDir,
 	scanSkillsFromDir,
-} from "@oh-my-pi/pi-coding-agent/discovery/helpers";
+} from "@ohp/coding-agent/discovery/helpers";
 
 const AGENT_DIR_CANDIDATES = [".agent", ".agents"] as const;
 const PROVIDER_ID = "agents";

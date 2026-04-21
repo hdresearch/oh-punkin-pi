@@ -1,11 +1,11 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "bun:test";
-import { SessionSelectorComponent } from "@oh-my-pi/pi-coding-agent/modes/components/session-selector";
-import { SelectorController } from "@oh-my-pi/pi-coding-agent/modes/controllers/selector-controller";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
-import type { InteractiveModeContext } from "@oh-my-pi/pi-coding-agent/modes/types";
-import type { SessionInfo } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { FileSessionStorage } from "@oh-my-pi/pi-coding-agent/session/session-storage";
+import { SessionSelectorComponent } from "@ohp/coding-agent/modes/components/session-selector";
+import { SelectorController } from "@ohp/coding-agent/modes/controllers/selector-controller";
+import { initTheme } from "@ohp/coding-agent/modes/theme/theme";
+import type { InteractiveModeContext } from "@ohp/coding-agent/modes/types";
+import type { SessionInfo } from "@ohp/coding-agent/session/session-manager";
+import { SessionManager } from "@ohp/coding-agent/session/session-manager";
+import { FileSessionStorage } from "@ohp/coding-agent/session/session-storage";
 
 type TestContext = InteractiveModeContext & {
 	editorContainer: {

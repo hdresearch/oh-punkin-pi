@@ -5,7 +5,7 @@
  * wire CarterKit with minimal coupling.
  */
 
-import type { AgentMessage, AgentTool } from "@oh-my-pi/pi-agent-core";
+import type { AgentMessage, AgentTool } from "@ohp/agent-core";
 import type { TSchema } from "@sinclair/typebox";
 import { Type } from "@sinclair/typebox";
 import type { CarterKitRuntime, PushDownToolDef } from "./runtime.js";

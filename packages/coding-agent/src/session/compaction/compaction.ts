@@ -4,7 +4,7 @@
  * Pure functions for compaction logic. The session manager handles I/O,
  * and after compaction the session is reloaded.
  */
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
+import type { AgentMessage } from "@ohp/agent-core";
 import {
 	type AssistantMessage,
 	completeSimple,
@@ -12,21 +12,21 @@ import {
 	type MessageAttribution,
 	type Model,
 	type Usage,
-} from "@oh-my-pi/pi-ai";
+} from "@ohp/ai";
 import {
 	CODEX_BASE_URL,
 	getCodexAccountId,
 	OPENAI_HEADER_VALUES,
 	OPENAI_HEADERS,
-} from "@oh-my-pi/pi-ai/providers/openai-codex/constants";
-import { parseTextSignature } from "@oh-my-pi/pi-ai/providers/openai-responses-shared";
-import { transformMessages } from "@oh-my-pi/pi-ai/providers/transform-messages";
+} from "@ohp/ai/providers/openai-codex/constants";
+import { parseTextSignature } from "@ohp/ai/providers/openai-responses-shared";
+import { transformMessages } from "@ohp/ai/providers/transform-messages";
 import {
 	getOpenAIResponsesHistoryItems,
 	getOpenAIResponsesHistoryPayload,
 	normalizeResponsesToolCallId,
-} from "@oh-my-pi/pi-ai/utils";
-import { logger } from "@oh-my-pi/pi-utils";
+} from "@ohp/ai/utils";
+import { logger } from "@ohp/utils";
 import { renderPromptTemplate } from "../../config/prompt-templates";
 import compactionShortSummaryPrompt from "../../prompts/compaction/compaction-short-summary.md" with { type: "text" };
 import compactionSummaryPrompt from "../../prompts/compaction/compaction-summary.md" with { type: "text" };

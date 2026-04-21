@@ -5,7 +5,7 @@
  */
 import * as path from "node:path";
 import * as url from "node:url";
-import { getProjectDir, logger, withTimeout } from "@oh-my-pi/pi-utils";
+import { getProjectDir, logger, withTimeout } from "@ohp/utils";
 import { createHttpTransport } from "./transports/http";
 import { createStdioTransport } from "./transports/stdio";
 import type {

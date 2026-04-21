@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { disposeAllKernelSessions, executePython } from "@oh-my-pi/pi-coding-agent/ipy/executor";
-import type { KernelExecuteResult } from "@oh-my-pi/pi-coding-agent/ipy/kernel";
-import * as pythonKernel from "@oh-my-pi/pi-coding-agent/ipy/kernel";
-import { getProjectDir } from "@oh-my-pi/pi-utils";
+import { disposeAllKernelSessions, executePython } from "@ohp/coding-agent/ipy/executor";
+import type { KernelExecuteResult } from "@ohp/coding-agent/ipy/kernel";
+import * as pythonKernel from "@ohp/coding-agent/ipy/kernel";
+import { getProjectDir } from "@ohp/utils";
 
 class FakeKernel {
 	execute = vi.fn(async () => this.result);

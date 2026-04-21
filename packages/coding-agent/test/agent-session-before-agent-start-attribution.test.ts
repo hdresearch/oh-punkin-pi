@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 import * as path from "node:path";
-import { Agent, type AgentMessage } from "@oh-my-pi/pi-agent-core";
-import { type AssistantMessage, getBundledModel, type Message } from "@oh-my-pi/pi-ai";
-import { inferCopilotInitiator } from "@oh-my-pi/pi-ai/providers/github-copilot-headers";
-import { AssistantMessageEventStream } from "@oh-my-pi/pi-ai/utils/event-stream";
-import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
-import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import type { ExtensionRunner } from "@oh-my-pi/pi-coding-agent/extensibility/extensions";
-import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
-import { convertToLlm } from "@oh-my-pi/pi-coding-agent/session/messages";
-import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
-import { TempDir } from "@oh-my-pi/pi-utils";
+import { Agent, type AgentMessage } from "@ohp/agent-core";
+import { type AssistantMessage, getBundledModel, type Message } from "@ohp/ai";
+import { inferCopilotInitiator } from "@ohp/ai/providers/github-copilot-headers";
+import { AssistantMessageEventStream } from "@ohp/ai/utils/event-stream";
+import { ModelRegistry } from "@ohp/coding-agent/config/model-registry";
+import { Settings } from "@ohp/coding-agent/config/settings";
+import type { ExtensionRunner } from "@ohp/coding-agent/extensibility/extensions";
+import { AgentSession } from "@ohp/coding-agent/session/agent-session";
+import { AuthStorage } from "@ohp/coding-agent/session/auth-storage";
+import { convertToLlm } from "@ohp/coding-agent/session/messages";
+import { SessionManager } from "@ohp/coding-agent/session/session-manager";
+import { TempDir } from "@ohp/utils";
 
 class MockAssistantStream extends AssistantMessageEventStream {}
 

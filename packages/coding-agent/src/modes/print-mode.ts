@@ -6,7 +6,7 @@
  * - `ohp -p --print-thoughts "prompt"` - text output with thinking/squiggle
  * - `ohp --mode json "prompt"` - JSON event stream
  */
-import type { AssistantMessage, ImageContent } from "@oh-my-pi/pi-ai";
+import type { AssistantMessage, ImageContent } from "@ohp/ai";
 import type { AgentSession } from "../session/agent-session";
 
 /**

@@ -19,8 +19,8 @@
  * In Haskell this would be a ReaderT CarterKitRuntime IO monad.
  */
 
-import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import type { AssistantMessage } from "@oh-my-pi/pi-ai";
+import type { AgentMessage } from "@ohp/agent-core";
+import type { AssistantMessage } from "@ohp/ai";
 import { captureCoT, captureResult, decideIntercept, execHandleOp, type HandleOp } from "./interceptor.js";
 import { loadTemplate } from "./prompts/loader.js";
 import type { Store } from "./store.js";

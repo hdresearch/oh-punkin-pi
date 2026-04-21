@@ -1,6 +1,6 @@
-import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@oh-my-pi/pi-agent-core";
-import type { Component } from "@oh-my-pi/pi-tui";
-import { Text } from "@oh-my-pi/pi-tui";
+import type { AgentTool, AgentToolContext, AgentToolResult, AgentToolUpdateCallback } from "@ohp/agent-core";
+import type { Component } from "@ohp/tui";
+import { Text } from "@ohp/tui";
 import { type Static, Type } from "@sinclair/typebox";
 import type { SSHHost } from "../capability/ssh";
 import { sshCapability } from "../capability/ssh";
