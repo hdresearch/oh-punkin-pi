@@ -8639,8 +8639,8 @@
 				"image"
 			],
 			"cost": {
-				"input": 0.14,
-				"output": 0.4,
+				"input": 0.2,
+				"output": 0.5,
 				"cacheRead": 0,
 				"cacheWrite": 0
 			},
@@ -9043,8 +9043,8 @@
 				"image"
 			],
 			"cost": {
-				"input": 0.6,
-				"output": 3,
+				"input": 0.5,
+				"output": 2.8,
 				"cacheRead": 0,
 				"cacheWrite": 0
 			},
@@ -9328,7 +9328,7 @@
 			],
 			"cost": {
 				"input": 0.2,
-				"output": 0.8,
+				"output": 0.6,
 				"cacheRead": 0,
 				"cacheWrite": 0
 			},
@@ -10255,8 +10255,8 @@
 				"text"
 			],
 			"cost": {
-				"input": 0,
-				"output": 0,
+				"input": 1.4,
+				"output": 4.4,
 				"cacheRead": 0,
 				"cacheWrite": 0
 			},
@@ -13913,13 +13913,14 @@
 		},
 		"moonshotai/kimi-k2.6": {
 			"id": "moonshotai/kimi-k2.6",
-			"name": "MoonshotAI: Kimi K2.6 (new)",
+			"name": "Kimi K2.6",
 			"api": "openai-completions",
 			"provider": "kilo",
 			"baseUrl": "https://api.kilo.ai/api/gateway",
-			"reasoning": false,
+			"reasoning": true,
 			"input": [
-				"text"
+				"text",
+				"image"
 			],
 			"cost": {
 				"input": 0,
@@ -13927,8 +13928,13 @@
 				"cacheRead": 0,
 				"cacheWrite": 0
 			},
-			"contextWindow": 222222,
-			"maxTokens": 8888
+			"contextWindow": 262140,
+			"maxTokens": 262140,
+			"thinking": {
+				"mode": "effort",
+				"minLevel": "minimal",
+				"maxLevel": "xhigh"
+			}
 		},
 		"morph-warp-grep-v2": {
 			"id": "morph-warp-grep-v2",
@@ -35070,7 +35076,7 @@
 		},
 		"kimi-k2.6": {
 			"id": "kimi-k2.6",
-			"name": "Kimi K2.6",
+			"name": "Kimi K2.6 (3x limits)",
 			"api": "openai-completions",
 			"provider": "opencode-go",
 			"baseUrl": "https://opencode.ai/zen/go/v1",
@@ -35080,9 +35086,9 @@
 				"image"
 			],
 			"cost": {
-				"input": 0.95,
-				"output": 4,
-				"cacheRead": 0.16,
+				"input": 0.32,
+				"output": 1.34,
+				"cacheRead": 0.054,
 				"cacheWrite": 0
 			},
 			"contextWindow": 262144,
@@ -36100,6 +36106,31 @@
 				"maxLevel": "xhigh"
 			}
 		},
+		"kimi-k2.6": {
+			"id": "kimi-k2.6",
+			"name": "Kimi K2.6",
+			"api": "openai-completions",
+			"provider": "opencode-zen",
+			"baseUrl": "https://opencode.ai/zen/v1",
+			"reasoning": true,
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0.95,
+				"output": 4,
+				"cacheRead": 0.16,
+				"cacheWrite": 0
+			},
+			"contextWindow": 262144,
+			"maxTokens": 65536,
+			"thinking": {
+				"mode": "effort",
+				"minLevel": "minimal",
+				"maxLevel": "xhigh"
+			}
+		},
 		"mimo-v2-flash-free": {
 			"id": "mimo-v2-flash-free",
 			"name": "MiMo V2 Flash Free",
@@ -36241,6 +36272,30 @@
 			"maxTokens": 131072,
 			"thinking": {
 				"mode": "budget",
+				"minLevel": "minimal",
+				"maxLevel": "xhigh"
+			}
+		},
+		"minimax-m2.7": {
+			"id": "minimax-m2.7",
+			"name": "MiniMax M2.7",
+			"api": "openai-completions",
+			"provider": "opencode-zen",
+			"baseUrl": "https://opencode.ai/zen/v1",
+			"reasoning": true,
+			"input": [
+				"text"
+			],
+			"cost": {
+				"input": 0.3,
+				"output": 1.2,
+				"cacheRead": 0.06,
+				"cacheWrite": 0
+			},
+			"contextWindow": 204800,
+			"maxTokens": 131072,
+			"thinking": {
+				"mode": "effort",
 				"minLevel": "minimal",
 				"maxLevel": "xhigh"
 			}
@@ -37834,9 +37889,9 @@
 				"image"
 			],
 			"cost": {
-				"input": 0.08,
+				"input": 0.07,
 				"output": 0.35,
-				"cacheRead": 0.01,
+				"cacheRead": 0.04,
 				"cacheWrite": 0
 			},
 			"contextWindow": 262144,
@@ -38941,7 +38996,7 @@
 		},
 		"moonshotai/kimi-k2.6": {
 			"id": "moonshotai/kimi-k2.6",
-			"name": "MoonshotAI: Kimi K2.6",
+			"name": "Kimi K2.6",
 			"api": "openai-completions",
 			"provider": "openrouter",
 			"baseUrl": "https://openrouter.ai/api/v1",
@@ -38956,8 +39011,8 @@
 				"cacheRead": 0.19999999999999998,
 				"cacheWrite": 0
 			},
-			"contextWindow": 262144,
-			"maxTokens": 262144,
+			"contextWindow": 262140,
+			"maxTokens": 262140,
 			"thinking": {
 				"mode": "effort",
 				"minLevel": "minimal",
@@ -41195,7 +41250,7 @@
 			"cost": {
 				"input": 0.15,
 				"output": 0.7999999999999999,
-				"cacheRead": 0.12,
+				"cacheRead": 0.11,
 				"cacheWrite": 0
 			},
 			"contextWindow": 262144,
@@ -42602,9 +42657,9 @@
 				"text"
 			],
 			"cost": {
-				"input": 0.72,
-				"output": 2.3,
-				"cacheRead": 2.24,
+				"input": 0.65,
+				"output": 2.08,
+				"cacheRead": 0.13,
 				"cacheWrite": 0
 			},
 			"contextWindow": 200000,
@@ -50885,6 +50940,31 @@
 			},
 			"contextWindow": 262000,
 			"maxTokens": 64000,
+			"thinking": {
+				"mode": "effort",
+				"minLevel": "minimal",
+				"maxLevel": "xhigh"
+			}
+		},
+		"moonshotai/kimi-k2.6": {
+			"id": "moonshotai/kimi-k2.6",
+			"name": "Kimi K2.6",
+			"api": "openai-completions",
+			"provider": "zenmux",
+			"baseUrl": "https://zenmux.ai/api/v1",
+			"reasoning": true,
+			"input": [
+				"text",
+				"image"
+			],
+			"cost": {
+				"input": 0.95,
+				"output": 4,
+				"cacheRead": 0.16,
+				"cacheWrite": 0
+			},
+			"contextWindow": 262140,
+			"maxTokens": 262140,
 			"thinking": {
 				"mode": "effort",
 				"minLevel": "minimal",
