@@ -159,6 +159,7 @@ export interface HookMessage<T = unknown> {
 export interface TurnStartMessage {
 	role: "turnStart";
 	turn: number;
+	block?: number;
 	sigil: string;
 	nonce: string;
 	timestamp: number;
@@ -168,6 +169,7 @@ export interface TurnStartMessage {
 export interface TurnEndMessage {
 	role: "turnEnd";
 	turn: number;
+	block?: number;
 	sigil: string;
 	nonce: string;
 	hash: string;

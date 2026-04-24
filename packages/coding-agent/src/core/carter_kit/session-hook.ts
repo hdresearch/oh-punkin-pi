@@ -51,7 +51,8 @@ export interface CarterKitHook {
 	getTools(): AgentTool[];
 	shutdown(): void;
 
-	initializeTurnCounterFromEntries(entries: Array<{ type: string; turnNumber?: number }>): void;
+	initializeTurnCounterFromEntries(entries: Array<{ type: string; turnNumber?: number; blockNumber?: number }>): void;
+	markNextAssistantTurnAsNewTurn(): void;
 	onAssistantTurnStart(): void;
 	currentTurnStartMessage(): TurnStartMessage | undefined;
 	onAssistantTurnEnd(turnMessages: readonly AgentMessage[]): [TurnStartMessage, TurnEndMessage];
@@ -73,14 +74,23 @@ export function createCarterKitHook(storePath: string | undefined, sessionId: st
 	return {
 		runtime: rt,
 
-		initializeTurnCounterFromEntries(entries: Array<{ type: string; turnNumber?: number }>): void {
+		initializeTurnCounterFromEntries(
+			entries: Array<{ type: string; turnNumber?: number; blockNumber?: number }>,
+		): void {
 			let maxTurn = 0;
+			let maxBlock = 0;
 			for (const entry of entries) {
-				if (entry.type === "turn_boundary" && entry.turnNumber !== undefined) {
-					maxTurn = Math.max(maxTurn, entry.turnNumber);
+				if (entry.type === "turn_boundary") {
+					if (entry.turnNumber !== undefined) maxTurn = Math.max(maxTurn, entry.turnNumber);
+					if (entry.blockNumber !== undefined) maxBlock = Math.max(maxBlock, entry.blockNumber);
 				}
 			}
 			boundaryState.currentTurn = maxTurn;
+			boundaryState.currentBlock = maxBlock > 0 ? maxBlock : maxTurn;
+		},
+
+		markNextAssistantTurnAsNewTurn(): void {
+			boundaryState.pendingTurnAdvance = true;
 		},
 
 		onAssistantTurnStart(): void {

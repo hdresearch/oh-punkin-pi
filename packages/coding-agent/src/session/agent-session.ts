@@ -675,14 +675,20 @@ export class AgentSession {
 		// Initialize turn counter from existing messages so it doesn't reset on session resume
 		const messages = this.agent.state.messages;
 		let maxTurn = 0;
+		let maxBlock = 0;
 		for (const m of messages) {
 			if (m.role === "turnStart" || m.role === "turnEnd") {
 				const turn = (m as { turn?: number }).turn;
+				const block = (m as { block?: number }).block;
 				if (turn != null && turn > maxTurn) maxTurn = turn;
+				if (block != null && block > maxBlock) maxBlock = block;
+				if (block == null && turn != null && turn > maxBlock) maxBlock = turn;
 			}
 		}
-		if (maxTurn > 0) {
-			this.#carterKitHook.initializeTurnCounterFromEntries([{ type: "turn_boundary", turnNumber: maxTurn }]);
+		if (maxTurn > 0 || maxBlock > 0) {
+			this.#carterKitHook.initializeTurnCounterFromEntries([
+				{ type: "turn_boundary", turnNumber: maxTurn, blockNumber: maxBlock },
+			]);
 		}
 		this.#syncActiveToolsFromRegistry();
 	}
@@ -801,6 +807,9 @@ export class AgentSession {
 			// When a user message starts, check if it's from either queue and remove it BEFORE emitting
 			// This ensures the UI sees the updated queue state
 			if (event.type === "message_start" && event.message.role === "user") {
+				if (!event.message.synthetic) {
+					this.#carterKitHook?.markNextAssistantTurnAsNewTurn();
+				}
 				const messageText = this.#getUserMessageText(event.message);
 				if (messageText) {
 					// Check steering queue first

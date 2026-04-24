@@ -20,6 +20,7 @@ import {
 	MarketplaceManager,
 } from "../extensibility/plugins/marketplace";
 import type { InteractiveModeContext } from "../modes/types";
+import { setSessionTerminalTitle } from "../utils/title-generator";
 import { parseMarketplaceInstallArgs, parsePluginScopeArgs } from "./marketplace-install-parser";
 
 function refreshStatusLine(ctx: InteractiveModeContext): void {
@@ -266,6 +267,25 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<BuiltinSlashCommandSpec> = [
 			runtime.ctx.editor.setText("");
 		},
 	},
+	{
+		name: "name",
+		description: "Override session title for resume/work-in-progress flows",
+		inlineHint: "<title>",
+		allowArgs: true,
+		handle: async (command, runtime) => {
+			const name = command.args.trim();
+			if (!name) {
+				runtime.ctx.showError("Usage: /name <title>");
+				runtime.ctx.editor.setText("");
+				return;
+			}
+			await runtime.ctx.sessionManager.setSessionName(name);
+			setSessionTerminalTitle(name, runtime.ctx.sessionManager.getCwd());
+			runtime.ctx.showStatus(`Session name set to: ${name}`);
+			runtime.ctx.editor.setText("");
+		},
+	},
+
 	{
 		name: "jobs",
 		description: "Show async background jobs status",

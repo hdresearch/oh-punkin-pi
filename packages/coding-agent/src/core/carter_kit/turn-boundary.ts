@@ -25,6 +25,7 @@ function now(): Timestamp {
 export interface TurnStartMessage {
 	role: "turnStart";
 	turn: number;
+	block?: number;
 	sigil: string;
 	nonce: string;
 	timestamp: number;
@@ -34,6 +35,7 @@ export interface TurnStartMessage {
 export interface TurnEndMessage {
 	role: "turnEnd";
 	turn: number;
+	block?: number;
 	sigil: string;
 	nonce: string;
 	hash: string;
@@ -196,8 +198,12 @@ function formatDelta(fromTs: Timestamp | undefined, toTs: Timestamp): string | u
 // ============================================================================
 
 export interface TurnBoundaryState {
-	/** Current turn index */
+	/** Current user-turn index (advances when a fresh user turn is observed). */
 	currentTurn: number;
+	/** Current assistant block index (advances for every assistant block). */
+	currentBlock: number;
+	/** Whether the next assistant block should advance the turn counter. */
+	pendingTurnAdvance: boolean;
 	/** Timestamp when current turn started */
 	turnStartTimestamp?: Timestamp;
 	/** Timestamp when previous turn ended (for delta) */
@@ -211,6 +217,8 @@ export interface TurnBoundaryState {
 export function initTurnBoundaryState(): TurnBoundaryState {
 	return {
 		currentTurn: 0,
+		currentBlock: 0,
+		pendingTurnAdvance: false,
 	};
 }
 
@@ -223,7 +231,11 @@ export function initTurnBoundaryState(): TurnBoundaryState {
  * Records start time and assigns sigil/nonce for this turn.
  */
 export function onTurnStart(state: TurnBoundaryState): void {
-	state.currentTurn++;
+	state.currentBlock++;
+	if (state.pendingTurnAdvance || state.currentTurn === 0) {
+		state.currentTurn++;
+		state.pendingTurnAdvance = false;
+	}
 	state.turnStartTimestamp = now();
 	state.currentSigil = randomSigil();
 	state.currentNonce = randomNonce();
@@ -240,6 +252,7 @@ export function currentTurnStartMessage(state: TurnBoundaryState): TurnStartMess
 	return {
 		role: "turnStart",
 		turn: state.currentTurn,
+		block: state.currentBlock,
 		sigil: state.currentSigil,
 		nonce: state.currentNonce,
 		timestamp: state.turnStartTimestamp,
@@ -282,6 +295,7 @@ export function onTurnEnd(
 	const turnStart = currentTurnStartMessage(state) ?? {
 		role: "turnStart" as const,
 		turn: state.currentTurn,
+		block: state.currentBlock,
 		sigil: state.currentSigil,
 		nonce: state.currentNonce,
 		timestamp: startTs,
@@ -291,6 +305,7 @@ export function onTurnEnd(
 	const turnEnd: TurnEndMessage = {
 		role: "turnEnd",
 		turn: state.currentTurn,
+		block: state.currentBlock,
 		sigil: state.currentSigil,
 		nonce: state.currentNonce,
 		hash,
@@ -337,7 +352,8 @@ export function injectTurnBoundaries(
  */
 export function renderTurnStart(msg: TurnStartMessage): string {
 	const deltaStr = msg.delta ? ` │ Δ${msg.delta}` : "";
-	return `${msg.sigil} ${msg.nonce} │ turn:${msg.turn} │ T=${formatTimestamp(msg.timestamp)}${deltaStr}`;
+	const block = msg.block ?? msg.turn;
+	return `${msg.sigil} ${msg.nonce} │ turn:${msg.turn} │ block:${block} │ T=${formatTimestamp(msg.timestamp)}${deltaStr}`;
 }
 
 /**

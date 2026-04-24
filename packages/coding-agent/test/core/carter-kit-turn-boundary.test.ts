@@ -18,12 +18,15 @@ describe("CarterKit turn boundary timestamps", () => {
 		const msg: TurnStartMessage = {
 			role: "turnStart",
 			turn: 3,
+			block: 7,
 			sigil: "🍃",
 			nonce: "copper-drift-spruce",
 			timestamp: ts,
 			delta: "31s",
 		};
 
-		expect(renderTurnStart(msg)).toBe("🍃 copper-drift-spruce │ turn:3 │ T=2026-04-10T16:57:08.789-04:00 │ Δ31s");
+		expect(renderTurnStart(msg)).toBe(
+			"🍃 copper-drift-spruce │ turn:3 │ block:7 │ T=2026-04-10T16:57:08.789-04:00 │ Δ31s",
+		);
 	});
 });
