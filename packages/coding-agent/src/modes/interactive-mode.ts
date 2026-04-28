@@ -972,28 +972,41 @@ export class InteractiveMode implements InteractiveModeContext {
 		}
 	}
 
+	async #runShutdownStep<T>(label: string, step: () => T | Promise<T>): Promise<T> {
+		logger.debug("Shutdown step started", { label });
+		this.showStatus(`Shutting down: ${label}…`);
+		const startedAt = Date.now();
+		const timer = setInterval(() => {
+			const elapsedMs = Date.now() - startedAt;
+			logger.warn("Shutdown step still running", { label, elapsedMs });
+			this.showWarning(`Still shutting down: ${label} (${Math.round(elapsedMs / 1000)}s)`);
+		}, 2_000);
+		try {
+			return await step();
+		} finally {
+			clearInterval(timer);
+			logger.debug("Shutdown step finished", { label, elapsedMs: Date.now() - startedAt });
+		}
+	}
+
 	async shutdown(): Promise<void> {
 		if (this.#isShuttingDown) return;
 		this.#isShuttingDown = true;
 
-		// Flush pending session writes before shutdown
-		await this.sessionManager.flush();
+		await this.#runShutdownStep("session manager flush", () => this.sessionManager.flush());
 		this.#btwController.dispose();
 
-		// Emit shutdown event to hooks
-		await this.session.dispose();
+		await this.#runShutdownStep("agent session dispose", () => this.session.dispose());
 
 		if (this.isInitialized) {
 			this.ui.requestRender(true);
 		}
 
-		// Wait for any pending renders to complete
-		// requestRender() uses process.nextTick(), so we wait one tick
-		await new Promise(resolve => process.nextTick(resolve));
+		await this.#runShutdownStep("render tick", () => new Promise(resolve => process.nextTick(resolve)));
 
 		// Drain any in-flight Kitty key release events before stopping.
 		// This prevents escape sequences from leaking to the parent shell over slow SSH.
-		await this.ui.terminal.drainInput(1000);
+		await this.#runShutdownStep("terminal input drain", () => this.ui.terminal.drainInput(1000));
 		popTerminalTitle();
 		this.stop();
 
@@ -1006,7 +1019,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			);
 		}
 
-		await postmortem.quit(0);
+		await this.#runShutdownStep("postmortem cleanup", () => postmortem.quit(0));
 	}
 
 	async checkShutdownRequested(): Promise<void> {
