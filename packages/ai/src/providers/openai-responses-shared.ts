@@ -160,6 +160,11 @@ export function convertResponsesAssistantMessage<TApi extends Api>(
 			continue;
 		}
 
+		const toolName = block.name.trim();
+		if (toolName.length === 0) {
+			continue;
+		}
+
 		const normalized = normalizeResponsesToolCallId(block.id);
 		let itemId: string | undefined = normalized.itemId;
 		if (isDifferentModel && (itemId?.startsWith("fc_") || itemId?.startsWith("fcr_"))) {
@@ -170,7 +175,7 @@ export function convertResponsesAssistantMessage<TApi extends Api>(
 			type: "function_call",
 			id: itemId,
 			call_id: normalized.callId,
-			name: block.name,
+			name: toolName,
 			arguments: JSON.stringify(block.arguments),
 		});
 	}
@@ -182,7 +187,7 @@ export function appendResponsesToolResultMessages<TApi extends Api>(
 	messages: ResponseInput,
 	toolResult: ToolResultMessage,
 	model: Model<TApi>,
-	strictResponsesPairing: boolean,
+	_strictResponsesPairing: boolean,
 	knownCallIds: ReadonlySet<string>,
 ): void {
 	const textResult = toolResult.content
@@ -191,7 +196,7 @@ export function appendResponsesToolResultMessages<TApi extends Api>(
 		.join("\n");
 	const hasImages = toolResult.content.some((block): block is ImageContent => block.type === "image");
 	const normalized = normalizeResponsesToolCallId(toolResult.toolCallId);
-	if (strictResponsesPairing && !knownCallIds.has(normalized.callId)) {
+	if (!knownCallIds.has(normalized.callId)) {
 		return;
 	}
 

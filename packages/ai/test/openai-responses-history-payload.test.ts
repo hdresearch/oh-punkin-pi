@@ -640,6 +640,77 @@ describe("OpenAI responses history payload", () => {
 		});
 	});
 
+	it("skips corrupt rebuilt tool calls with empty names", async () => {
+		const context: Context = {
+			messages: [
+				{ role: "user", content: "Start", timestamp: Date.now() },
+				{
+					role: "assistant",
+					content: [{ type: "toolCall", id: "call_empty_name_1", name: "", arguments: {} }],
+					api: "openai-responses",
+					provider: "openai",
+					model: "gpt-5-mini",
+					usage: {
+						input: 0,
+						output: 0,
+						cacheRead: 0,
+						cacheWrite: 0,
+						totalTokens: 0,
+						cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+					},
+					stopReason: "error",
+					timestamp: Date.now(),
+				},
+				{ role: "user", content: "Resume", timestamp: Date.now() },
+			],
+		};
+		const model = getBundledModel("openai", "gpt-5-mini") as Model<"openai-responses">;
+		const payload = (await captureResponsesPayload(model, context)) as { input?: unknown[] };
+		const functionCallItem = findResponsesInputItem(payload.input, "function_call");
+
+		expect(functionCallItem).toBeUndefined();
+	});
+
+	it("skips tool results whose rebuilt tool call was dropped", async () => {
+		const callId = "call_empty_name_with_output_1";
+		const context: Context = {
+			messages: [
+				{ role: "user", content: "Start", timestamp: Date.now() },
+				{
+					role: "assistant",
+					content: [{ type: "toolCall", id: callId, name: "", arguments: {} }],
+					api: "openai-responses",
+					provider: "openai",
+					model: "gpt-5-mini",
+					usage: {
+						input: 0,
+						output: 0,
+						cacheRead: 0,
+						cacheWrite: 0,
+						totalTokens: 0,
+						cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+					},
+					stopReason: "error",
+					timestamp: Date.now(),
+				},
+				{
+					role: "toolResult",
+					toolCallId: callId,
+					toolName: "",
+					content: [{ type: "text", text: "orphan output" }],
+					isError: true,
+					timestamp: Date.now(),
+				},
+				{ role: "user", content: "Resume", timestamp: Date.now() },
+			],
+		};
+		const model = getBundledModel("openai", "gpt-5-mini") as Model<"openai-responses">;
+		const payload = (await captureResponsesPayload(model, context)) as { input?: unknown[] };
+
+		expect(findResponsesInputItem(payload.input, "function_call")).toBeUndefined();
+		expect(findResponsesInputItem(payload.input, "function_call_output")).toBeUndefined();
+	});
+
 	it("rebuilds failed tool calls before replaying tool results for openai-codex-responses", async () => {
 		const callId = "call_failed_codex_1";
 		const context: Context = {
