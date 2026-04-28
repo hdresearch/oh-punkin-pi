@@ -47,6 +47,7 @@ import { ReadTool } from "./read";
 import { RenderMermaidTool } from "./render-mermaid";
 import { ResolveTool } from "./resolve";
 import { reportFindingTool } from "./review";
+import { type SchedulerMode, SetSchedulerModeTool } from "./scheduler-mode";
 import { SearchToolBm25Tool } from "./search-tool-bm25";
 import { CloseSquiggleTool, OpenSquiggleTool } from "./squiggle";
 import { loadSshTool } from "./ssh";
@@ -85,6 +86,7 @@ export * from "./read";
 export * from "./render-mermaid";
 export * from "./resolve";
 export * from "./review";
+export * from "./scheduler-mode";
 export * from "./search-tool-bm25";
 export * from "./squiggle";
 export * from "./ssh";
@@ -169,6 +171,8 @@ export interface ToolSession {
 	getTodoPhases?: () => TodoPhase[];
 	/** Replace cached todo phases for this session. */
 	setTodoPhases?: (phases: TodoPhase[]) => void;
+	/** Set harness scheduler continuation policy. */
+	setSchedulerMode?: (mode: SchedulerMode) => void;
 	/** Whether MCP tool discovery is active for this session. */
 	isMCPDiscoveryEnabled?: () => boolean;
 	/** Get hidden-but-discoverable MCP tools for search_tool_bm25 prompts and fallbacks. */
@@ -221,6 +225,7 @@ export const BUILTIN_TOOLS: Record<string, ToolFactory> = {
 	cancel_job: CancelJobTool.createIf,
 	await: AwaitTool.createIf,
 	todo_write: s => new TodoWriteTool(s),
+	set_scheduler_mode: s => new SetSchedulerModeTool(s),
 	web_search: s => new SearchTool(s),
 	search_tool_bm25: SearchToolBm25Tool.createIf,
 	write: s => new WriteTool(s),

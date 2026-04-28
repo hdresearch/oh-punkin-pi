@@ -89,6 +89,19 @@ const planModeSegment: StatusLineSegment = {
 	},
 };
 
+const schedulerSegment: StatusLineSegment = {
+	id: "scheduler",
+	render(ctx) {
+		const mode = ctx.session.getSchedulerMode();
+		if (mode.tag === "co_design") {
+			const detail = mode.reason === "other" && mode.otherReason ? mode.otherReason : mode.reason;
+			const content = detail ? `Collab:${detail}` : "Collab";
+			return { content: theme.fg("warning", content), visible: true };
+		}
+		return { content: theme.fg("accent", "Auto"), visible: true };
+	},
+};
+
 const pathSegment: StatusLineSegment = {
 	id: "path",
 	render(ctx) {
@@ -362,6 +375,7 @@ export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
 	pi: piSegment,
 	model: modelSegment,
 	plan_mode: planModeSegment,
+	scheduler: schedulerSegment,
 	path: pathSegment,
 	git: gitSegment,
 	pr: prSegment,

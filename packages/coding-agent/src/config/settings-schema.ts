@@ -61,6 +61,7 @@ export type StatusLineSegmentId =
 	| "pi"
 	| "model"
 	| "plan_mode"
+	| "scheduler"
 	| "path"
 	| "git"
 	| "pr"

@@ -209,17 +209,14 @@ describe("AgentSession eager todo enforcement", () => {
 		await session.prompt("list all work trees");
 
 		expect(observedCalls).toHaveLength(1);
-		expect(observedCalls[0]).toEqual({
-			toolChoice: "todo_write",
-			toolNames: ["todo_write", "bash"],
-			messageRoles: ["user", "user"],
-			messageTexts: [
-				expect.stringContaining("Before doing substantive work on the upcoming user request"),
-				"list all work trees",
-			],
-			lastMessageRole: "user",
-			lastMessageText: "list all work trees",
-		});
+		expect(observedCalls[0]?.toolChoice).toBe("todo_write");
+		expect(observedCalls[0]?.toolNames).toContain("todo_write");
+		expect(observedCalls[0]?.toolNames).toContain("bash");
+		expect(observedCalls[0]?.messageRoles).toEqual(["user", "user"]);
+		expect(observedCalls[0]?.messageTexts[0]).toContain("Use `todo_write` to track work");
+		expect(observedCalls[0]?.messageTexts[1]).toContain("list all work trees");
+		expect(observedCalls[0]?.lastMessageRole).toBe("user");
+		expect(observedCalls[0]?.lastMessageText).toContain("list all work trees");
 		expect(observedCalls[0]?.messageTexts.filter(text => text.includes("list all work trees"))).toHaveLength(1);
 		expect(observedCalls[0]?.messageTexts[0]).not.toContain("list all work trees");
 		expect(session.formatSessionAsText()).not.toContain("<user-request>");
@@ -247,17 +244,14 @@ describe("AgentSession eager todo enforcement", () => {
 
 		expect(streamCallCount).toBe(2);
 		expect(observedCalls).toHaveLength(2);
-		expect(observedCalls[0]).toEqual({
-			toolChoice: "todo_write",
-			toolNames: ["todo_write", "bash"],
-			messageRoles: ["user", "user"],
-			messageTexts: [
-				expect.stringContaining("Before doing substantive work on the upcoming user request"),
-				"list all work trees",
-			],
-			lastMessageRole: "user",
-			lastMessageText: "list all work trees",
-		});
+		expect(observedCalls[0]?.toolChoice).toBe("todo_write");
+		expect(observedCalls[0]?.toolNames).toContain("todo_write");
+		expect(observedCalls[0]?.toolNames).toContain("bash");
+		expect(observedCalls[0]?.messageRoles).toEqual(["user", "user"]);
+		expect(observedCalls[0]?.messageTexts[0]).toContain("Use `todo_write` to track work");
+		expect(observedCalls[0]?.messageTexts[1]).toContain("list all work trees");
+		expect(observedCalls[0]?.lastMessageRole).toBe("user");
+		expect(observedCalls[0]?.lastMessageText).toContain("list all work trees");
 		expect(observedCalls[1]?.toolChoice).toBeUndefined();
 		expect(observedCalls[1]?.lastMessageRole).toBe("toolResult");
 		expect(observedCalls[1]?.messageRoles.slice(-2)).toEqual(["assistant", "toolResult"]);

@@ -125,6 +125,7 @@ import type { CheckpointState } from "../tools/checkpoint";
 import { outputMeta } from "../tools/output-meta";
 import { resolveToCwd } from "../tools/path-utils";
 import type { PendingActionStore } from "../tools/pending-action";
+import type { SchedulerMode } from "../tools/scheduler-mode";
 import { getLatestTodoPhasesFromEntries, type TodoItem, type TodoPhase } from "../tools/todo-write";
 import { clampTimeout } from "../tools/tool-timeouts";
 import { parseCommandArgs } from "../utils/command-args";
@@ -470,6 +471,7 @@ export class AgentSession {
 	// Todo completion reminder state
 	#todoReminderCount = 0;
 	#todoPhases: TodoPhase[] = [];
+	#schedulerMode: SchedulerMode = { tag: "eager_beaver", source: "harness" };
 	#todoClearTimers = new Map<string, Timer>();
 	#nextToolChoiceOverride: ToolChoice | undefined = undefined;
 
@@ -2325,6 +2327,14 @@ export class AgentSession {
 		if (!state) {
 			this.#pendingRewindReport = undefined;
 		}
+	}
+
+	getSchedulerMode(): SchedulerMode {
+		return { ...this.#schedulerMode };
+	}
+
+	setSchedulerMode(mode: SchedulerMode): void {
+		this.#schedulerMode = { ...mode };
 	}
 
 	/**
@@ -4314,8 +4324,9 @@ export class AgentSession {
 	}
 	/**
 	 * Build a compact open-items HUD summary.
-	 * Non-demanding: agent sees it as ambient context, not an action directive.
-	 * Injected once per user turn. Does NOT force an agent continue.
+	 * Nudge-bearing: schedules a blank user turn after injecting the HUD.
+	 * The blank user turn is structural; role-boundary wrapping gives the model a
+	 * fresh turn bracket, so the agent loop continues instead of yielding after one block.
 	 */
 	async #checkTodoCompletion(): Promise<void> {
 		const remindersEnabled = this.settings.get("todo.reminders.enabled");
@@ -4375,13 +4386,36 @@ export class AgentSession {
 		});
 
 		// Inject as developer message — ambient context, not a demand.
-		// Does NOT schedule agent continue. Agent sees it on next user-initiated turn.
+		// A blank user turn below creates the structural nudge to continue.
 		this.agent.appendMessage({
 			role: "developer",
 			content: [{ type: "text", text: hud }],
 			attribution: "agent",
 			timestamp: Date.now(),
 		});
+
+		if (this.#schedulerMode.tag === "co_design") {
+			logger.debug("Todo completion: scheduler is in co_design; suppressing auto-continuation", {
+				reason: this.#schedulerMode.reason,
+			});
+			return;
+		}
+
+		this.#schedulePostPromptTask(
+			async () => {
+				if (this.agent.state.isStreaming) return;
+				await this.agent.prompt({
+					role: "user",
+					content: [{ type: "text", text: "" }],
+					attribution: "agent",
+					timestamp: Date.now(),
+					bracketId: generateUserBracketId(),
+					synthetic: true,
+				});
+				await this.#waitForAgentQuiescence();
+			},
+			{ delayMs: 1, generation: this.#promptGeneration },
+		);
 	}
 
 	/**

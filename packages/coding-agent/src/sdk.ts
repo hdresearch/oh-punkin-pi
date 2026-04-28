@@ -890,6 +890,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		getCompactContext: () => session.formatCompactContext(),
 		getTodoPhases: () => session.getTodoPhases(),
 		setTodoPhases: phases => session.setTodoPhases(phases),
+		setSchedulerMode: mode => session.setSchedulerMode(mode),
 		isMCPDiscoveryEnabled: () => session.isMCPDiscoveryEnabled(),
 		getDiscoverableMCPTools: () => session.getDiscoverableMCPTools(),
 		getDiscoverableMCPSearchIndex: () => session.getDiscoverableMCPSearchIndex(),

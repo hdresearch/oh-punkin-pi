@@ -203,8 +203,8 @@ describe("AgentSession auto-compaction queue resume", () => {
 		expect(runtimeSignals.some(signal => signal.startsWith("compaction:end:"))).toBe(true);
 	});
 
-	it("forwards todo reminder lifecycle signals to extensions", async () => {
-		const continueSpy = vi.spyOn(session.agent, "continue").mockResolvedValue();
+	it("schedules a blank user turn after todo reminder HUD injection", async () => {
+		const promptSpy = vi.spyOn(session.agent, "prompt").mockResolvedValue();
 
 		session.setTodoPhases([
 			{
@@ -242,15 +242,68 @@ describe("AgentSession auto-compaction queue resume", () => {
 
 		await withTimeout(reminderDone, 1000, "Todo reminder timed out");
 		await Promise.resolve();
+		const idlePromise = session.waitForIdle();
 
-		// Todo reminders are ambient HUD context only: they emit the extension signal
-		// once with maxAttempts=1 and do not schedule agent.continue().
+		vi.runAllTimers();
+		await Promise.resolve();
+		vi.runAllTimers();
+		await Promise.resolve();
+		await withTimeout(idlePromise, 1000, "Todo scheduled blank turn never settled");
+
 		expect(getRuntimeSignals()).toContain("todo:1/1");
-		expect(continueSpy).toHaveBeenCalledTimes(0);
-		vi.runAllTimers();
-		await Promise.resolve();
-		vi.runAllTimers();
-		await Promise.resolve();
+		expect(promptSpy).toHaveBeenCalledTimes(1);
+		const [blankPrompt] = promptSpy.mock.calls[0] ?? [];
+		expect(blankPrompt).toMatchObject({
+			role: "user",
+			content: [{ type: "text", text: "" }],
+			attribution: "agent",
+			synthetic: true,
+		});
+	});
+
+	it("does not auto-continue todo reminders while scheduler is in co_design", async () => {
+		const promptSpy = vi.spyOn(session.agent, "prompt").mockResolvedValue();
+		session.setSchedulerMode({ tag: "co_design", reason: "design_review", source: "user_toggled" });
+		session.setTodoPhases([
+			{
+				id: "phase-1",
+				name: "Execution",
+				tasks: [{ id: "task-1", content: "Review design", status: "in_progress" }],
+			},
+		]);
+
+		const { promise: reminderDone, resolve: onReminderDone } = Promise.withResolvers<void>();
+		session.subscribe(event => {
+			if (event.type === "todo_reminder") onReminderDone();
+		});
+
+		const assistantMsg = {
+			role: "assistant" as const,
+			content: [],
+			api: "anthropic-messages" as const,
+			provider: "anthropic" as const,
+			model: "claude-sonnet-4-5",
+			stopReason: "stop" as const,
+			usage: {
+				input: 100,
+				output: 20,
+				cacheRead: 0,
+				cacheWrite: 0,
+				totalTokens: 120,
+				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+			},
+			timestamp: Date.now(),
+		};
+
+		session.agent.emitExternalEvent({ type: "message_end", message: assistantMsg });
+		session.agent.emitExternalEvent({ type: "agent_end", messages: [assistantMsg] });
+
+		await withTimeout(reminderDone, 1000, "Todo reminder timed out");
 		await withTimeout(session.waitForIdle(), 1000, "Todo waitForIdle timed out");
+		vi.runAllTimers();
+		await Promise.resolve();
+
+		expect(getRuntimeSignals()).toContain("todo:1/1");
+		expect(promptSpy).toHaveBeenCalledTimes(0);
 	});
 });

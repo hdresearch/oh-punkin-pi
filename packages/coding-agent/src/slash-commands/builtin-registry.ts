@@ -20,6 +20,7 @@ import {
 	MarketplaceManager,
 } from "../extensibility/plugins/marketplace";
 import type { InteractiveModeContext } from "../modes/types";
+import type { CoDesignReason } from "../tools/scheduler-mode";
 import { setSessionTerminalTitle } from "../utils/title-generator";
 import { parseMarketplaceInstallArgs, parsePluginScopeArgs } from "./marketplace-install-parser";
 
@@ -27,6 +28,68 @@ function refreshStatusLine(ctx: InteractiveModeContext): void {
 	ctx.statusLine.invalidate();
 	ctx.updateEditorTopBorder();
 	ctx.ui.requestRender();
+}
+
+const CO_DESIGN_REASONS = new Set<CoDesignReason>([
+	"needs_user_choice",
+	"ambiguous_requirements",
+	"design_review",
+	"risk_boundary",
+	"blocked",
+	"waiting_user_feedback",
+	"other",
+]);
+
+function formatSchedulerMode(ctx: InteractiveModeContext): string {
+	const mode = ctx.session.getSchedulerMode();
+	if (mode.tag === "eager_beaver") {
+		return `Scheduler: eager_beaver${mode.source ? `\nSet by: ${mode.source}` : ""}`;
+	}
+	const details = [
+		"Scheduler: co_design",
+		`Reason: ${mode.reason}${mode.otherReason ? `:${mode.otherReason}` : ""}`,
+		mode.message ? `Message: ${mode.message}` : undefined,
+		mode.source ? `Set by: ${mode.source}` : undefined,
+	].filter((line): line is string => Boolean(line));
+	return details.join("\n");
+}
+
+function handleSchedulerCommand(command: ParsedBuiltinSlashCommand, runtime: BuiltinSlashCommandRuntime): void {
+	const invoked = command.name.toLowerCase();
+	let args = command.args.trim();
+	if (invoked === "eager") args = `eager ${args}`.trim();
+	if (["co_design", "collab", "interactive_collab", "interactive-collab"].includes(invoked)) {
+		args = `co_design ${args}`.trim();
+	}
+
+	const [subRaw = "status", ...rest] = args.split(/\s+/).filter(Boolean);
+	const sub = subRaw.toLowerCase();
+	if (sub === "status" || sub === "why") {
+		runtime.ctx.showStatus(formatSchedulerMode(runtime.ctx));
+		runtime.ctx.editor.setText("");
+		return;
+	}
+	if (sub === "eager" || sub === "resume") {
+		runtime.ctx.session.setSchedulerMode({ tag: "eager_beaver", source: "user_toggled" });
+		refreshStatusLine(runtime.ctx);
+		runtime.ctx.showStatus("Scheduler set to eager_beaver.");
+		runtime.ctx.editor.setText("");
+		return;
+	}
+	if (sub === "co_design" || sub === "pause") {
+		const [reasonCandidate, ...messageParts] = rest;
+		const hasKnownReason = reasonCandidate && CO_DESIGN_REASONS.has(reasonCandidate as CoDesignReason);
+		const reason: CoDesignReason = hasKnownReason ? (reasonCandidate as CoDesignReason) : "other";
+		const otherReason = reason === "other" ? rest.join(" ").trim() || undefined : undefined;
+		const message = hasKnownReason ? messageParts.join(" ").trim() || undefined : otherReason;
+		runtime.ctx.session.setSchedulerMode({ tag: "co_design", reason, otherReason, message, source: "user_toggled" });
+		refreshStatusLine(runtime.ctx);
+		runtime.ctx.showStatus(formatSchedulerMode(runtime.ctx));
+		runtime.ctx.editor.setText("");
+		return;
+	}
+	runtime.ctx.showStatus("Usage: /scheduler [status|why|eager|co_design <reason> [message]]");
+	runtime.ctx.editor.setText("");
 }
 
 /** Declarative subcommand definition for commands like /mcp. */
@@ -108,6 +171,51 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<BuiltinSlashCommandSpec> = [
 			await runtime.ctx.handlePlanModeCommand(command.args || undefined);
 			runtime.ctx.editor.setText("");
 		},
+	},
+	{
+		name: "scheduler",
+		description: "Show or set scheduler continuation policy",
+		subcommands: [
+			{ name: "status", description: "Show scheduler mode" },
+			{ name: "why", description: "Explain current scheduler policy" },
+			{ name: "eager", description: "Resume autonomous continuation" },
+			{ name: "co_design", description: "Yield autonomous continuation to Carter", usage: "[reason] [message]" },
+		],
+		allowArgs: true,
+		handle: handleSchedulerCommand,
+	},
+	{
+		name: "eager",
+		description: "Resume autonomous scheduler continuation",
+		handle: handleSchedulerCommand,
+	},
+	{
+		name: "co_design",
+		description: "Yield autonomous scheduler continuation to Carter",
+		inlineHint: "[reason] [message]",
+		allowArgs: true,
+		handle: handleSchedulerCommand,
+	},
+	{
+		name: "collab",
+		description: "Enter collaborative/co-design scheduler mode",
+		inlineHint: "[reason] [message]",
+		allowArgs: true,
+		handle: handleSchedulerCommand,
+	},
+	{
+		name: "interactive_collab",
+		description: "Enter collaborative/co-design scheduler mode",
+		inlineHint: "[reason] [message]",
+		allowArgs: true,
+		handle: handleSchedulerCommand,
+	},
+	{
+		name: "interactive-collab",
+		description: "Enter collaborative/co-design scheduler mode",
+		inlineHint: "[reason] [message]",
+		allowArgs: true,
+		handle: handleSchedulerCommand,
 	},
 	{
 		name: "model",
